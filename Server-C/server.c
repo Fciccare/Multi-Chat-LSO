@@ -37,6 +37,8 @@ int main(int argc, char const *argv[]) {
     // Creation socket TCP SERVER
     if ((server_tcp = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         error_handler("Errore socket");
+    if (setsockopt(server_tcp, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
+        error_handler("Errore setsockopt");
     if (bind(server_tcp, (struct sockaddr *)&saddress, sizeof(saddress)) < 0)
         error_handler("Errore bind");
     if (listen(server_tcp, 5) < 0) error_handler("Errore listen");
@@ -65,10 +67,12 @@ int main(int argc, char const *argv[]) {
                     if (client > maxfdp) maxfdp = client;
                 } else {  // exist connetion
                     printf("[TCP SOCKET ACTIVE - EXIST CONNECTION] (%d)\n", i);
+                    // socket_handler((void*)&i);
                     pthread_t thread_id;
                     if (pthread_create(&thread_id, NULL,socket_handler, (void *)&i) < 0)
                         error_handler("Errore creazione socket");
-                    pthread_detach(thread_id);  // Stacco in modo che il thread venga deallocato
+                    pthread_join(thread_id, NULL);
+                    // pthread_detach(thread_id);
                 }
             }
         }
@@ -79,8 +83,8 @@ int main(int argc, char const *argv[]) {
 void *socket_handler(void *client_void) {//passare a un puntatore e non a una copia
     int client = *(int *)client_void;
     char buffer[256] = {0};
-    bzero(buffer, sizeof(buffer));
     int byte = read(client, buffer, sizeof(buffer));
+    pthread_detach(pthread_self());  // Stacco in modo che il thread venga deallocato
     if (byte <= 0) {
         printf("Client disconnect [%d]\n", client);
         close(client);

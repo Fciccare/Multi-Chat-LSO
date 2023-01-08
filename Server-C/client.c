@@ -47,7 +47,7 @@ int main(int argc, char const *argv[]){
         if (write(client, (char *)buffer, 256) < 0)
             error_handler("Errore write");
         
-        sleep(1);
+        // sleep(1);
     }
     
 }
@@ -55,9 +55,15 @@ int main(int argc, char const *argv[]){
 void *socket_print_handler(void *client_void) {//Migliorare tutto il thread
     int client = *(int *)client_void;
     char buffer[256] = {0};
+    int byte = 0;
     while(1){
         bzero(buffer, 256);
-        if (read(client, buffer, 256) < 0) error_handler("Errore write");
+        if ((byte = read(client, buffer, 256)) < 0) error_handler("Errore write");
+        if (byte == 0) {
+            printf("Server disconnected\n");
+            close(client);
+            exit(EXIT_SUCCESS);
+        }
         printf("> %s \n", buffer);
         //TODO: MIGLIORARE LA CLOSE
     }
