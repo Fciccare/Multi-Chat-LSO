@@ -1,6 +1,6 @@
 # Multi-Chat-LSO
 
-##Funzionalità da implementare :soon:
+## Funzionalità da implementare :soon:
 
 :white_check_mark: N utenti (client) possono accedere ad un sistema di chat <br />
 :black_square_button:	Gli utenti devono potersi registrare e loggare al server <br />
