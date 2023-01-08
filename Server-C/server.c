@@ -1,0 +1,106 @@
+#include <arpa/inet.h>
+#include <fcntl.h> 
+#include <netinet/in.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/time.h>  
+#include <sys/types.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <signal.h>
+
+#define PORT 9192
+
+void error_handler(char[]);
+void *socket_handler(void *);
+void signal_handler(int);
+
+int count_client = 0;
+int clients[1024] = {0};
+fd_set readfds, master;
+
+int main(int argc, char const *argv[]) {
+    signal(SIGINT, signal_handler);
+    char buffer[256] = {0};
+    char *message = "Hello i'm server";
+    struct sockaddr_in saddress, caddress;
+    int server_tcp, len, client;
+
+    // Setup socket TCP SERVER
+    saddress.sin_family = AF_INET;
+    saddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+    saddress.sin_port = htons(PORT);
+
+    // Creation socket TCP SERVER
+    if ((server_tcp = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+        error_handler("Errore socket");
+    if (bind(server_tcp, (struct sockaddr *)&saddress, sizeof(saddress)) < 0)
+        error_handler("Errore bind");
+    if (listen(server_tcp, 5) < 0) error_handler("Errore listen");
+
+    FD_ZERO(&master);
+    FD_ZERO(&readfds);
+    FD_SET(0, &master);
+    FD_SET(server_tcp, &master);
+
+    int maxfdp = server_tcp;
+    printf("server_tcp_socket id: %d\n", server_tcp);
+    while (1) {
+        readfds = master;
+
+        int nready = select(maxfdp + 1, &readfds, NULL, NULL, NULL);  // Select get the highest socket ID + 1.
+
+        for (int i = 0; i <= maxfdp; i++) {
+            if (FD_ISSET(i, &readfds)) {
+                if (i == server_tcp) {  // new Connection
+                    printf("[TCP SOCKET ACTIVE - NEW CONNECTION] (%d)\n", i);
+                    len = sizeof(caddress);
+                    client = accept(server_tcp, (struct sockaddr *)&caddress, &len);
+                    // fcntl(client, F_SETFL, O_NONBLOCK);//non blocking
+                    clients[count_client++] = client;
+                    FD_SET(client, &master);
+                    if (client > maxfdp) maxfdp = client;
+                } else {  // exist connetion
+                    printf("[TCP SOCKET ACTIVE - EXIST CONNECTION] (%d)\n", i);
+                    pthread_t thread_id;
+                    if (pthread_create(&thread_id, NULL,socket_handler, (void *)&i) < 0)
+                        error_handler("Errore creazione socket");
+                    pthread_detach(thread_id);  // Stacco in modo che il thread venga deallocato
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+void *socket_handler(void *client_void) {//passare a un puntatore e non a una copia
+    int client = *(int *)client_void;
+    char buffer[256] = {0};
+    bzero(buffer, sizeof(buffer));
+    int byte = read(client, buffer, sizeof(buffer));
+    if (byte <= 0) {
+        printf("Client disconnect [%d]\n", client);
+        close(client);
+        FD_CLR(client, &master);//da aggiustare poiché fondamentale per la disconnesione
+        // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
+    } else
+        printf("Message receveid: %s\n", buffer);
+    for (int k = 0; k < count_client; ++k) {
+        printf("[Send to client %d]\n", clients[k]);
+        write(clients[k], buffer, byte);
+    }
+    printf("\n\n THREAD FINISH \n\n");
+    pthread_exit(NULL);
+}
+
+void error_handler(char text[]) {
+    perror(text);
+    exit(EXIT_FAILURE);
+}
+
+void signal_handler(int sig) { 
+    exit(EXIT_SUCCESS);
+}
