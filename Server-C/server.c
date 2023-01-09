@@ -17,6 +17,7 @@
 void error_handler(char[]);
 void *socket_handler(void *);
 void signal_handler(int);
+void remove_client(int);
 
 int count_client = 0;
 int clients[1024] = {0};
@@ -88,16 +89,43 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
     if (byte <= 0) {
         printf("Client disconnect [%d]\n", client);
         close(client);
+        for (int i = 0; i < count_client; i++){
+            printf("[%d]: %d\t", i, clients[i]);
+        }
         FD_CLR(client, &master);//da aggiustare poiché fondamentale per la disconnesione
+        remove_client(client);
         // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
-    } else
-        printf("Message receveid: %s\n", buffer);
-    for (int k = 0; k < count_client; ++k) {
-        printf("[Send to client %d]\n", clients[k]);
-        write(clients[k], buffer, byte);
+    } else printf("Message receveid: %s\n", buffer);
+
+    if (strncmp(buffer, "[MSG]", 5) == 0) {
+        for (int k = 0; k < count_client; ++k) {
+            if(clients[k] != 0){
+                printf("[Send to client %d]\n", clients[k]);
+                write(clients[k], buffer, byte);
+            }
+        }
+    } else if (strncmp(buffer, "[LGN]", 5) == 0) {
+        write(client, "Login successful", 17);
+        printf("Send Login successful\n");
+    } else {
+        write(client, "Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD ", 102);
+        printf("Send istruction\n");
     }
+
     printf("\n\n THREAD FINISH \n\n");
     pthread_exit(NULL);
+}
+
+void remove_client(int client){
+    for(int k = 0; k < count_client; ++k){
+        if(clients[k] == client){
+            printf("Removed %d from client\n", client);
+            clients[k] = 0;
+        }
+    }
+    for (int i = 0; i < count_client; i++) {
+        printf("[%d]: %d\t", i, clients[i]);
+    }
 }
 
 void error_handler(char text[]) {
