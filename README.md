@@ -9,3 +9,5 @@
 :black_square_button:	Gli utenti possono accedere a stanze già create <br />
 :black_square_button:	Il creatore della stanza deve poter accettare un utente che si vuole aggiungere alla stanza <br />
 :black_square_button:	[OPZIONALE] Usare un database Mysql or PostgreSQL <br />
+
+Testiamo come va l'estensione di Git su VisualCoso
