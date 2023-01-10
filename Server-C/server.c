@@ -42,7 +42,8 @@ int main(int argc, char const *argv[]) {
         error_handler("Errore setsockopt");
     if (bind(server_tcp, (struct sockaddr *)&saddress, sizeof(saddress)) < 0)
         error_handler("Errore bind");
-    if (listen(server_tcp, 5) < 0) error_handler("Errore listen");
+    if (listen(server_tcp, 5) < 0) 
+        error_handler("Errore listen");
 
     FD_ZERO(&master);
     FD_ZERO(&readfds);
@@ -55,7 +56,7 @@ int main(int argc, char const *argv[]) {
         readfds = master;
 
         int nready = select(maxfdp + 1, &readfds, NULL, NULL, NULL);  // Select get the highest socket ID + 1.
-
+         
         for (int i = 0; i <= maxfdp; i++) {
             if (FD_ISSET(i, &readfds)) {
                 if (i == server_tcp) {  // new Connection
@@ -70,7 +71,7 @@ int main(int argc, char const *argv[]) {
                     printf("[TCP SOCKET ACTIVE - EXISTING CONNECTION] (%d)\n", i);
                     // socket_handler((void*)&i);
                     pthread_t thread_id;
-                    if (pthread_create(&thread_id, NULL,socket_handler, (void *)&i) < 0)
+                    if (pthread_create(&thread_id, NULL, socket_handler, (void *)&i) < 0)
                         error_handler("Errore creazione socket");
                     pthread_join(thread_id, NULL);
                     // pthread_detach(thread_id);
@@ -93,6 +94,7 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
             printf("[%d]: %d\t", i, clients[i]);
         }
         FD_CLR(client, &master);//da aggiustare poiché fondamentale per la disconnesione
+        //TODO: Decrementare maxfds
         remove_client(client);
         // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
     } else printf("Message received: %s\n", buffer);
@@ -104,6 +106,7 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
                 write(clients[k], buffer, byte);
             }
         }
+    
     } else if (strncmp(buffer, "[LGN]", 5) == 0) {
         write(client, "Login successful", 17);
         printf("Send Login successful\n");
@@ -111,7 +114,7 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
         write(client, "Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD ", 102);
         printf("Send instruction\n");
     }
-
+    
     printf("\n\n\t THREAD FINISH \n\n");
     pthread_exit(NULL);
 }

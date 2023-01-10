@@ -42,7 +42,7 @@ int main(int argc, char const *argv[]){
 
     while(1){
         bzero(buffer,256);
-        // strcpy(buffer, "Messaggio di test");
+        // strcpy(buffer, "[MSG] Messaggio di test");
         fgets(buffer,256,stdin);
         if (write(client, (char *)buffer, 256) < 0)
             error_handler("Errore write");
