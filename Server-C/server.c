@@ -99,22 +99,25 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
         // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
     } else printf("Message received: %s\n", buffer);
 
-    if (strncmp(buffer, "[MSG]", 5) == 0) {
+    char tag[5] = {0};
+    strncpy(tag, buffer, 5); //get the tag
+    strncpy(buffer, buffer + 5, sizeof(buffer) - 5);  // remove tag from buffer
+
+    if (strncmp(tag, "[MSG]", 5) == 0) {
         for (int k = 0; k < count_client; ++k) {
             if(clients[k] != 0){
                 printf("[Send to client %d]\n", clients[k]);
                 write(clients[k], buffer, byte);
             }
         }
-    
-    } else if (strncmp(buffer, "[LGN]", 5) == 0) {
+    } else if (strncmp(tag, "[LGN]", 5) == 0) {
         write(client, "Login successful", 17);
         printf("Send Login successful\n");
     } else {
         write(client, "Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD ", 102);
         printf("Send instruction\n");
     }
-    
+
     printf("\n\n\t THREAD FINISH \n\n");
     pthread_exit(NULL);
 }
