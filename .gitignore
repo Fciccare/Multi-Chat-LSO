@@ -5,3 +5,4 @@ Server-C/server
 #vscode files
 .vscode/settings.json
 .vscode/**
+Server-C/database/TODO.md
