@@ -1,2 +1,7 @@
+#Compiled files
 Server-C/client
 Server-C/server
+
+#vscode files
+.vscode/settings.json
+.vscode/**
