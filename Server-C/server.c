@@ -26,7 +26,7 @@ fd_set readfds, master;
 int main(int argc, char const *argv[]) {
     signal(SIGINT, signal_handler);
     char buffer[256] = {0};
-    char *message = "Hello i'm server";
+    char *message = "Hello I'm server";
     struct sockaddr_in saddress, caddress;
     int server_tcp, len, client;
 
@@ -66,8 +66,8 @@ int main(int argc, char const *argv[]) {
                     clients[count_client++] = client;
                     FD_SET(client, &master);
                     if (client > maxfdp) maxfdp = client;
-                } else {  // exist connetion
-                    printf("[TCP SOCKET ACTIVE - EXIST CONNECTION] (%d)\n", i);
+                } else {  // existing connetion
+                    printf("[TCP SOCKET ACTIVE - EXISTING CONNECTION] (%d)\n", i);
                     // socket_handler((void*)&i);
                     pthread_t thread_id;
                     if (pthread_create(&thread_id, NULL,socket_handler, (void *)&i) < 0)
@@ -87,7 +87,7 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
     int byte = read(client, buffer, sizeof(buffer));
     pthread_detach(pthread_self());  // Stacco in modo che il thread venga deallocato
     if (byte <= 0) {
-        printf("Client disconnect [%d]\n", client);
+        printf("Client disconnected [%d]\n", client);
         close(client);
         for (int i = 0; i < count_client; i++){
             printf("[%d]: %d\t", i, clients[i]);
@@ -95,7 +95,7 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
         FD_CLR(client, &master);//da aggiustare poiché fondamentale per la disconnesione
         remove_client(client);
         // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
-    } else printf("Message receveid: %s\n", buffer);
+    } else printf("Message received: %s\n", buffer);
 
     if (strncmp(buffer, "[MSG]", 5) == 0) {
         for (int k = 0; k < count_client; ++k) {
@@ -109,10 +109,10 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
         printf("Send Login successful\n");
     } else {
         write(client, "Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD ", 102);
-        printf("Send istruction\n");
+        printf("Send instruction\n");
     }
 
-    printf("\n\n THREAD FINISH \n\n");
+    printf("\n\n\t THREAD FINISH \n\n");
     pthread_exit(NULL);
 }
 
