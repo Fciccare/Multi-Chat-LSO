@@ -6,8 +6,7 @@
 int createTable();
 bool isExistingUser();
 
-    int main()
-{
+int main(){
     sqlite3* db;
     sqlite3_open("database.db", &db);
     
@@ -16,7 +15,7 @@ bool isExistingUser();
 
 /* SQL query for creating tables */
 int createTable(){
-    char query[100] = "CREATE TABLE IF NOT EXIST Users("
+    char query[] =    "CREATE TABLE IF NOT EXIST Users("
                       "username VARCHAR(20) PRIMARY KEY, "
                       "password VARCHAR(20) NOT NULL,"
                       "image BLOB ;)"; /*da vedere*/

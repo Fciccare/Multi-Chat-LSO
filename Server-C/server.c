@@ -95,7 +95,7 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
         }
         FD_CLR(client, &master);//da aggiustare poiché fondamentale per la disconnesione
         //TODO: Decrementare maxfds
-        remove_client(client);
+        // remove_client(client);
         // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
     } else printf("Message received: %s\n", buffer);
 
@@ -111,8 +111,13 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
             }
         }
     } else if (strncmp(tag, "[LGN]", 5) == 0) {
-        write(client, "Login successful", 17);
+        // funzione di login
+        write(client, "Login successful\n", 18); //Rember: Java recv need string end with EOF
         printf("Send Login successful\n");
+    } else if (strncmp(tag, "[RGT]", 5) == 0){
+        //funzione di registazione
+        write(client, "Register successful\n", 21); //Rember: Java recv need string end with EOF
+        printf("Send Register successful\n");
     } else {
         write(client, "Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD ", 102);
         printf("Send instruction\n");
