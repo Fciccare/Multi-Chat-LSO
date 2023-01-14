@@ -101,13 +101,13 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
 
     char tag[5] = {0};
     strncpy(tag, buffer, 5); //get the tag
-    strncpy(buffer, buffer + 5, sizeof(buffer) - 5);  // remove tag from buffer
+    char* message = buffer + 5; //point to buffer without tag
 
     if (strncmp(tag, "[MSG]", 5) == 0) {
         for (int k = 0; k < count_client; ++k) {
             if(clients[k] != 0){
                 printf("[Send to client %d]\n", clients[k]);
-                write(clients[k], buffer, byte);
+                write(clients[k], message, strlen(message));
             }
         }
     } else if (strncmp(tag, "[LGN]", 5) == 0) {

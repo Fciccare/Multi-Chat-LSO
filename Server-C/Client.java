@@ -2,9 +2,6 @@ import java.net.*;
 import java.util.Scanner;
 import java.io.*;
 
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
-
 public class Client{
 
     private Scanner scanner = null;
@@ -14,7 +11,8 @@ public class Client{
 
     public Client(String address, int port){
        try{
-            socket = new Socket(address, port);
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(address, port), 5000); //Timeout 5 sec for to avoid stuck
             System.out.println("Connected");
 
             scanner = new Scanner(System.in);
@@ -146,6 +144,10 @@ public class Client{
         while(true){
             try {
                 String recevString = input.readLine();
+                if(recevString == null){
+                    System.out.println("Server disconnected");
+                    System.exit(0);
+                }
                 System.out.println(">>>" + recevString);
                 System.out.flush();
             } catch (IOException e) {
