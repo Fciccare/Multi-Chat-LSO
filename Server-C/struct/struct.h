@@ -22,9 +22,6 @@ typedef struct {
 } Room;
 
 
-//User function
-
-
 
 //Client function
 
@@ -35,5 +32,6 @@ typedef struct {
 void initRoom();
 void addRoom(Room*);
 void printRooms();
+void deleteRoom();
 
 #endif

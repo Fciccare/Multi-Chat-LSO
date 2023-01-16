@@ -20,3 +20,7 @@ void printRooms(){
         printf("(%d): %s \n", i, rooms[i].name);
     }
 }
+
+void deleteRoom(){
+    free(rooms);
+}
