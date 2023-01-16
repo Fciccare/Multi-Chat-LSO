@@ -79,7 +79,7 @@ public class Client{
         scanner.nextLine();
 
         switch (choise) {
-            case 1:{
+            case 1:{ //Register
                 String username = getDataFromStdin("username");
                 String password = getDataFromStdin("password");
                 if (register(username, password)) {
@@ -90,7 +90,7 @@ public class Client{
                     return false;
                 }
             } 
-            case 2:{
+            case 2:{ //Login
                 String username = getDataFromStdin("username");
                 String password = getDataFromStdin("password");
                 if (login(username, password)) {

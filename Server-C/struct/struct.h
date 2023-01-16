@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#define MAX_CLIENT 32  // Limite attuale
+#define MAX_CLIENTS 32  // Limite attuale
 
 typedef struct{
     char* propic;
@@ -18,7 +18,7 @@ typedef struct {
     char name[128];
     int online_client;
     Client* master_client;
-    Client* client[MAX_CLIENT];
+    Client* clients[MAX_CLIENTS];
 } Room;
 
 

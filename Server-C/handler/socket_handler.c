@@ -14,11 +14,11 @@ void socketDispatcher(int* client, char* buffer, int* clients) {
         broadcastMessageRoom(&(*message), clients);
     } else if (strncmp(tag, "[LGN]", 5) == 0) {
         // funzione di login
-        write(*client, "Login successful\n", 18);  // Rember: Java recv need string end with EOF
+        write(*client, "Login successful\n", 18);  // Remember: Java recv need string end with EOF
         printf("Send Login successful\n");
     } else if (strncmp(tag, "[RGT]", 5) == 0) {
         // funzione di registazione
-        write(*client, "Register successful\n", 21);  // Rember: Java recv need string end with EOF
+        write(*client, "Register successful\n", 21);  // Remember: Java recv need string end with EOF
         printf("Send Register successful\n");
     } else {
         write(*client,"Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD\n",102);
