@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include "struct/struct.h"
+#include "handler/socket_handler.h"
+
 #define PORT 9192
 
 void error_handler(char[]);
@@ -90,54 +93,28 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
     if (byte <= 0) {
         printf("Client disconnected [%d]\n", client);
         close(client);
-        for (int i = 0; i < count_client; i++){
-            printf("[%d]: %d\t", i, clients[i]);
-        }
         FD_CLR(client, &master);//da aggiustare poiché fondamentale per la disconnesione
         //TODO: Decrementare maxfds
-        // remove_client(client);
         // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
     } else printf("Message received: %s\n", buffer);
 
-    char tag[5] = {0};
-    strncpy(tag, buffer, 5); //get the tag
-    char* message = buffer + 5; //point to buffer without tag
-
-    if (strncmp(tag, "[MSG]", 5) == 0) {
-        for (int k = 0; k < count_client; ++k) {
-            if(clients[k] != 0){
-                printf("[Send to client %d]\n", clients[k]);
-                write(clients[k], message, strlen(message));
-            }
-        }
-    } else if (strncmp(tag, "[LGN]", 5) == 0) {
-        // funzione di login
-        write(client, "Login successful\n", 18); //Rember: Java recv need string end with EOF
-        printf("Send Login successful\n");
-    } else if (strncmp(tag, "[RGT]", 5) == 0){
-        //funzione di registazione
-        write(client, "Register successful\n", 21); //Rember: Java recv need string end with EOF
-        printf("Send Register successful\n");
-    } else {
-        write(client, "Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD ", 102);
-        printf("Send instruction\n");
-    }
+    socketDispatcher(&client, buffer, clients); //clients is only for legacy function
 
     printf("\n\n\t THREAD FINISH \n\n");
     pthread_exit(NULL);
 }
 
-void remove_client(int client){
-    for(int k = 0; k < count_client; ++k){
-        if(clients[k] == client){
-            printf("Removed %d from client\n", client);
-            clients[k] = 0;
-        }
-    }
-    for (int i = 0; i < count_client; i++) {
-        printf("[%d]: %d\t", i, clients[i]);
-    }
-}
+// void remove_client(int client){
+//     for(int k = 0; k < count_client; ++k){
+//         if(clients[k] == client){
+//             printf("Removed %d from client\n", client);
+//             clients[k] = 0;
+//         }
+//     }
+//     for (int i = 0; i < count_client; i++) {
+//         printf("[%d]: %d\t", i, clients[i]);
+//     }
+// }
 
 void error_handler(char text[]) {
     perror(text);
