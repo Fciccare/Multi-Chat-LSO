@@ -32,6 +32,8 @@ typedef struct {
 
 //Room function
 
-
+void initRoom();
+void addRoom(Room*);
+void printRooms();
 
 #endif

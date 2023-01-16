@@ -48,6 +48,19 @@ int main(int argc, char const *argv[]) {
     if (listen(server_tcp, 5) < 0) 
         error_handler("Errore listen");
 
+    /*----------------------------------------*/
+    /*----------------------------------------*/
+    /*----------------------------------------*/
+    initRoom();
+    Room room1 = {"Gatti", 0, NULL, 0};
+    Room room2 = {"Cani", 0, NULL, 0};
+    addRoom(&room1);
+    addRoom(&room2);
+    printRooms();
+    /*----------------------------------------*/
+    /*----------------------------------------*/
+    /*----------------------------------------*/
+
     FD_ZERO(&master);
     FD_ZERO(&readfds);
     FD_SET(0, &master);
