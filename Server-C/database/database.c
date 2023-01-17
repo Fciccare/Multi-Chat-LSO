@@ -1,10 +1,8 @@
 #include <stdio.h>
-#include "sqlite3.h"
+#include "library/sqlite3.h"
+#include "database.h"
 #include <string.h>
 #include <stdbool.h>
-
-int createTable();
-bool isExistingUser();
 
 int main(){
     sqlite3* db;
@@ -14,13 +12,11 @@ int main(){
 } 
 
 /* SQL query for creating tables */
-int createTable(){
+void createTable(){
     char query[] =    "CREATE TABLE IF NOT EXIST Users("
                       "username VARCHAR(20) PRIMARY KEY, "
                       "password VARCHAR(20) NOT NULL,"
                       "image BLOB ;)"; /*da vedere*/
-
-        return 0;
 }
 
 bool isExistingUser(){
