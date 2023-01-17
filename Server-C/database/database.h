@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 void createTable();
-bool isExistingUser();
+bool isExistingUser(char[], char[]);
 void insertUser(char[], char[]);
 
 #endif
