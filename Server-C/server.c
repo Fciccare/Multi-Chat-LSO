@@ -12,8 +12,8 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "struct/struct.h"
 #include "handler/socket_handler.h"
+#include "objects/room.h"
 
 #define PORT 9192
 
@@ -21,6 +21,7 @@ void error_handler(char[]);
 void *socket_handler(void *);
 void signal_handler(int);
 void remove_client(int);
+void testone();
 
 int count_client = 0;
 int clients[1024] = {0};
@@ -48,19 +49,8 @@ int main(int argc, char const *argv[]) {
     if (listen(server_tcp, 5) < 0) 
         error_handler("Errore listen");
 
-    /*----------------------------------------*/
-    /*----------------------------------------*/
-    /*----------------------------------------*/
-    initRoom();
-    Room room1 = {"Gatti", 0, NULL, 0};
-    Room room2 = {"Cani", 0, NULL, 0};
-    addRoom(&room1);
-    addRoom(&room2);
-    printRooms();
-    deleteRoom();
-    /*----------------------------------------*/
-    /*----------------------------------------*/
-    /*----------------------------------------*/
+    testone();
+
 
     FD_ZERO(&master);
     FD_ZERO(&readfds);
@@ -137,4 +127,34 @@ void error_handler(char text[]) {
 
 void signal_handler(int sig) { 
     exit(EXIT_SUCCESS);
+}
+
+
+void testone() {
+
+    // initRoom();
+    // Room room1 = {"Gatti", 0, NULL, 0};
+    // Room room2 = {"Cani", 0, NULL, 0};
+    // addRoom(&room1);
+    // addRoom(&room2);
+    // printRooms();
+    // deleteRoom();
+
+    User *u = user_create("nome", "pw");
+    user_print(u);
+    user_setName(u, "nome diverso");
+    user_print(u);
+    user_setPassword(u, "password diversa");
+    user_print(u);
+    // user_destroy(u);
+
+    Client *c = client_create(u, 12324, 1);
+    client_print(c);
+    User *u2 = user_create_default();
+    client_setUser(c, u2);
+    client_print(c);
+    client_setSocket_id(c, 54321);
+    client_print(c);
+    client_destory(c);
+
 }
