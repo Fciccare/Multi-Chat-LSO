@@ -34,7 +34,7 @@ void createTable(){
     }
 }
 
-void insertUser(char username[], char password[]){
+bool insertUser(char username[], char password[]){
     char* error = 0;
     sqlite3_stmt* stmt;
     char query[] = "INSERT INTO Users (username, password) VALUES(?, ?);";
@@ -42,16 +42,20 @@ void insertUser(char username[], char password[]){
     sqlite3_prepare_v2(db,query,strlen(query), &stmt, NULL);
     if (stmt == NULL) {
         errorHandler("Error Creation Statement");
-        return;
+        return false;
     }
     sqlite3_bind_text(stmt, 1, username, strlen(username), SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_TRANSIENT);
 
     if(sqlite3_step(stmt) == SQLITE_DONE){
         printf("Insert successful\n");
-    } else errorHandler("Insert failed");
+    } else {
+        errorHandler("Insert failed");
+        return false;
+    }
 
     sqlite3_finalize(stmt);
+    return true;
 }
 
 void errorHandler(char text[]){

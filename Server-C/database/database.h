@@ -5,6 +5,6 @@
 
 void createTable();
 bool isExistingUser(char[], char[]);
-void insertUser(char[], char[]);
+bool insertUser(char[], char[]);
 
 #endif
