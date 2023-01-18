@@ -7,14 +7,29 @@ void errorHandler(char[]);
 
 sqlite3* db;
 
-int main(){
-    sqlite3_open("database.db", &db);
-    createTable();
-    //insertUser("CELENTANI", "DEVASTATA");
-    isExistingUser("CELENTANI", "DEVASTATA");
-    sqlite3_close(db);
-    return 0;
+// int main(){
+//     sqlite3_open("database.db", &db);
+//     createTable();
+//     //insertUser("CELENTANI", "DEVASTATA");
+//     isExistingUser("CELENTANI", "DEVASTATA");
+//     sqlite3_close(db);
+//     return 0;
+// }
+
+void traceCallback( void* udp, const char* sql ) { 
+    printf("{SQL} %s\n", sql); 
 } 
+
+void initDatabase(){
+    printf("Starting database...\n");
+    sqlite3_open("database/database.db", &db);
+    sqlite3_trace(db, traceCallback, NULL);
+    createTable();
+}
+
+void closeDatabase() { 
+    sqlite3_close(db); 
+}
 
 /* SQL query for creating tables */
 void createTable(){
@@ -64,17 +79,19 @@ void errorHandler(char text[]){
 }
 
 bool isExistingUser(char username[], char password[]) {
+    printf("Checking: %s (%ld)\n", username, strlen(username));
+    printf("Checking: %s (%ld)\n", password, strlen(password));
     sqlite3_stmt* stmt;
     char query[] =
         "SELECT * FROM Users WHERE username = ? and password = ?;";
-
+    
     sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
     if (stmt == NULL) {
         errorHandler("Error Creation Statement");
         return false;
     }
-    sqlite3_bind_text(stmt, 1, username, strlen(username), SQLITE_TRANSIENT);
-    sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 1, username, strlen(username), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_STATIC);
 
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         printf("User exists \n");

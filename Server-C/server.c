@@ -13,6 +13,7 @@
 #include <signal.h>
 
 #include "struct/struct.h"
+#include "database/database.h"
 #include "handler/socket_handler.h"
 
 #define PORT 9192
@@ -28,6 +29,7 @@ fd_set readfds, master;
 
 int main(int argc, char const *argv[]) {
     signal(SIGINT, signal_handler);
+    initDatabase();
     char buffer[256] = {0};
     char *message = "Hello I'm server";
     struct sockaddr_in saddress, caddress;
@@ -136,5 +138,6 @@ void error_handler(char text[]) {
 }
 
 void signal_handler(int sig) { 
-    exit(EXIT_SUCCESS);
+    closeDatabase();
+    exit(EXIT_SUCCESS); 
 }
