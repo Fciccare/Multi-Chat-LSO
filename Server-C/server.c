@@ -13,7 +13,10 @@
 #include <signal.h>
 
 #include "database/database.h"
+
 #include "handler/socket_handler.h"
+#include "handler/rooms_handler.h"
+
 #include "objects/room.h"
 
 #define PORT 9192
@@ -110,17 +113,6 @@ void *socket_handler(void *client_void) {//passare a un puntatore e non a una co
     pthread_exit(NULL);
 }
 
-// void remove_client(int client){
-//     for(int k = 0; k < count_client; ++k){
-//         if(clients[k] == client){
-//             printf("Removed %d from client\n", client);
-//             clients[k] = 0;
-//         }
-//     }
-//     for (int i = 0; i < count_client; i++) {
-//         printf("[%d]: %d\t", i, clients[i]);
-//     }
-// }
 
 void error_handler(char text[]) {
     perror(text);
@@ -134,14 +126,6 @@ void signal_handler(int sig) {
 
 
 void testone() {
-
-    // initRoom();
-    // Room room1 = {"Gatti", 0, NULL, 0};
-    // Room room2 = {"Cani", 0, NULL, 0};
-    // addRoom(&room1);
-    // addRoom(&room2);
-    // printRooms();
-    // deleteRoom();
 
     User *u = user_create("nome", "pw");
     user_print(u);
@@ -158,6 +142,14 @@ void testone() {
     client_print(c);
     client_setSocket_id(c, 54321);
     client_print(c);
-    client_destory(c);
+    // client_destory(c);
+
+    printf("\n");
+    Room *r1 = room_create(0, "r1", 1, c);
+    room_print(r1);
+
+    add_room(r1);
+    print_rooms();
+    delete_room(r1->id);
 
 }

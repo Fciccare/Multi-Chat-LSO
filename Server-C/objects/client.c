@@ -38,5 +38,5 @@ void client_setRoom_id(Client* c, unsigned int room_id) {
 void client_print(Client* c) { //function for testing
   printf("CLIENT:\n");
   user_print(c->user);
-  printf("Socket_id: %d\nRoom_id: %d", c->socket_id, c->room_id);
+  printf("Socket_id: %d\nRoom_id: %d\n", c->socket_id, c->room_id);
 }  

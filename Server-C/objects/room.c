@@ -11,7 +11,7 @@
 Room* room_create(unsigned int id, const char* name, unsigned int clients_counter, Client* master_client) {
   Room* r = (Room*)malloc(sizeof(Room));
   r->id = id;
-  strcpy(r->name, "defaultName");
+  // strcpy(r->name, "defaultName");
   r->clients_counter = 1;
   r->master_client = master_client;
   bzero(r->clients, MAX_CLIENTS); //setta tutto l'array a 0
