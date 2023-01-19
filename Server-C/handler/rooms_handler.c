@@ -5,6 +5,7 @@
 
 #include "rooms_handler.h"
 
+Room* rooms[MAX_ROOMS] = {0};
 unsigned int rooms_active = 1; //c'è la stanza 0 "sempre attiva"
 unsigned int next_room_index = 0; //0 never used as an id 
 
@@ -13,6 +14,7 @@ bool add_room(Room* new_room) {
     return false;
   
   next_room_index = find_next_room_index();
+  // printf("Next_room_index: %d\n", next_room_index);
   rooms[next_room_index] = new_room;
 
   new_room->id=next_room_index;
@@ -22,7 +24,6 @@ bool add_room(Room* new_room) {
 }
 
 void delete_room(unsigned int room_id) {
-  
   if(rooms[room_id] == NULL) {
     perror("Try deleting a non-existing room");
     return;
@@ -38,8 +39,8 @@ unsigned int find_next_room_index() {
     next_room_index++;
   unsigned int i = next_room_index;
   while (true) {
-    if (rooms[i] == NULL) {
-      if(i++ == MAX_ROOMS)
+    if (rooms[i] != NULL) {
+      if(i++ == MAX_ROOMS-1)
         i=1;
     } else return i;
   }

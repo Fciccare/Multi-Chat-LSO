@@ -5,8 +5,6 @@
 
 #define MAX_ROOMS 64 //Limite di stanze esistenti+1
 
-Room *rooms[MAX_ROOMS];
-
 bool add_room(Room* room);
 void delete_room(unsigned int room_id);
 

@@ -45,9 +45,9 @@ void room_setMaster_client(Room* r, Client* master_client) {
 //Other funcions
 
 void room_print(Room* r) {
-  printf("id = %d\nname = %s\nclients_counter = %d\nmaster_client:\n", r->id, r->name,r->clients_counter);
+  printf("---\nid = %d\nname = %s\nclients_counter = %d\nmaster_client:\n", r->id, r->name,r->clients_counter);
   client_print(r->master_client);
-  printf("Per ora ometto la stampa della lista dei client");
+  printf("Per ora ometto la stampa della lista dei client\n---\n");
 }
 
 void room_add_client(Room* r, Client* client) {
