@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "user.h"
 #include "client.h"
@@ -12,10 +13,14 @@ Room* room_create(unsigned int id, const char* name, unsigned int clients_counte
   Room* r = (Room*)malloc(sizeof(Room));
   r->id = id;
   // strcpy(r->name, "defaultName");
-  r->clients_counter = 1;
+  r->clients_counter = 0;
   r->master_client = master_client;
-  bzero(r->clients, MAX_CLIENTS); //setta tutto l'array a 0
-  room_add_client(r, master_client);
+  if(master_client != NULL)
+    room_add_client(r, master_client);
+  if(id == 0)
+    r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);  // Dinamico 256 POSTI
+  else 
+    r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS);  // Dinamico 32 POSTI
   return r;
 }
 
@@ -50,14 +55,14 @@ void room_print(Room* r) {
   printf("Per ora ometto la stampa della lista dei client\n---\n");
 }
 
-void room_add_client(Room* r, Client* client) {
-  //TO DO
-  r->clients_counter++;
-  printf("\nHo aggiunto (per finta, ho solo incrementato il contatore) il client:\n");
-  client_print(client);
-  printf("Nella Stanza");
-  room_print(r);
-  printf("\n");
+bool room_add_client(Room* r, Client* client) {
+  if (r->id != 0 && r->clients_counter == MAX_CLIENTS) {
+    return false;
+  } else if (r->id == 0 && r->clients_counter == MAX_CLIENTS_ZERO ){
+    return false;
+  }
+  r->clients[r->clients_counter++] = client;
+  return true;
 }
 
 void room_remove_client(Room* r, int socket_id) {

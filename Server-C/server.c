@@ -34,10 +34,11 @@ fd_set readfds, master;
 int main(int argc, char const *argv[]) {
     signal(SIGINT, signal_handler);
     initDatabase();
+    init_first_room();
     char buffer[256] = {0};
     char *message = "Hello I'm server";
     struct sockaddr_in saddress, caddress;
-    int server_tcp, len, client;
+    int server_tcp, len;
 
     // Setup socket TCP SERVER
     saddress.sin_family = AF_INET;
@@ -54,7 +55,7 @@ int main(int argc, char const *argv[]) {
     if (listen(server_tcp, 5) < 0) 
         error_handler("Errore listen");
 
-    testone();
+    // testone();
 
 
     FD_ZERO(&master);
@@ -74,11 +75,9 @@ int main(int argc, char const *argv[]) {
                 if (i == server_tcp) {  // new Connection
                     printf("[TCP SOCKET ACTIVE - NEW CONNECTION] (%d)\n", i);
                     len = sizeof(caddress);
-                    client = accept(server_tcp, (struct sockaddr *)&caddress, &len);
-                    // fcntl(client, F_SETFL, O_NONBLOCK);//non blocking
-                    clients[count_client++] = client;
-                    FD_SET(client, &master);
-                    if (client > maxfdp) maxfdp = client;
+                    int client_socket_id = accept(server_tcp, (struct sockaddr *)&caddress, &len);                    
+                    FD_SET(client_socket_id, &master);
+                    if (client_socket_id > maxfdp) maxfdp = client_socket_id;
                 } else {  // existing connetion
                     printf("[TCP SOCKET ACTIVE - EXISTING CONNECTION] (%d)\n", i);
                     // socket_handler((void*)&i);
@@ -94,20 +93,20 @@ int main(int argc, char const *argv[]) {
     return 0;
 }
 
-void *socket_handler(void *client_void) {//passare a un puntatore e non a una copia
-    int client = *(int *)client_void;
+void *socket_handler(void *client_socket_id_void) {//passare a un puntatore e non a una copia
+    int client_socket_id = *(int *)client_socket_id_void;
     char buffer[256] = {0};
-    int byte = read(client, buffer, sizeof(buffer));
+    int byte = read(client_socket_id, buffer, sizeof(buffer));
     pthread_detach(pthread_self());  // Stacco in modo che il thread venga deallocato
     if (byte <= 0) {
-        printf("Client disconnected [%d]\n", client);
-        close(client);
-        FD_CLR(client, &master);//da aggiustare poiché fondamentale per la disconnesione
+        printf("Client disconnected [%d]\n", client_socket_id);
+        close(client_socket_id);
+        FD_CLR(client_socket_id, &master);//da aggiustare poiché fondamentale per la disconnesione
         //TODO: Decrementare maxfds
         // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
     } else printf("Message received: %s\n", buffer);
 
-    socketDispatcher(&client, buffer, clients); //clients is only for legacy function
+    socketDispatcher(&client_socket_id, buffer, clients); //clients is only for legacy function
 
     printf("\n\n\t THREAD FINISH \n\n");
     pthread_exit(NULL);
