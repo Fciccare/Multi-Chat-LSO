@@ -10,7 +10,7 @@
 
 typedef struct {
     unsigned int id; 
-    char* name;
+    char name[128];
     unsigned int clients_counter;
     Client* master_client;
     Client** clients;
@@ -21,7 +21,7 @@ typedef struct {
 
 //Constructors and Drestory
 
-Room* room_create(unsigned int id, const char* name, unsigned int clients_counter, Client* master_client);
+Room* room_create(unsigned int id, const char* name, Client* master_client);
 void room_destroy(Room* r);
 
 //set

@@ -7,10 +7,11 @@
 // #include "../objects/user.h"
 
 
-void socketDispatcher(int* client_socket_id, char* buffer, int* clients) {
+void socketDispatcher(int* client_socket_id, char* buffer) {
     char tag[5] = {0};
     strncpy(tag, buffer, 5);     // get the tag
     char* message = buffer + 5;  // point to buffer without tag
+    message = strdup(message);
 
     if (strncmp(tag, "[MSG]", 5) == 0) {
         broadcastMessageRoom(&(*message), client_socket_id);
@@ -18,10 +19,27 @@ void socketDispatcher(int* client_socket_id, char* buffer, int* clients) {
         login(&(*message), client_socket_id);
     } else if (strncmp(tag, "[RGT]", 5) == 0) {
         registerUser(&(*message), client_socket_id);
+    } else if (strncmp(tag, "[CRT]", 5) == 0){
+        createRoom(&(*message), client_socket_id);
+        print_rooms();
     } else {
         write(*client_socket_id,"Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD\n",102);
         printf("Send instruction\n");
     }
+}
+
+void createRoom(char* message, int* client_socket_id){
+    Client* client = get_user_by_id(*client_socket_id);
+    Room* room = NULL;
+    if(client != NULL)
+        room = room_create(0, message, client);//crash   
+    if(add_room(room)){
+        write(*client_socket_id, "Room create successful\n", 24);  // Remember: Java recv need string end with EOF
+        printf("Room created successful\n");
+        return;
+    }
+    write(*client_socket_id, "Room create failed\n", 20);  // Remember: Java recv need string end with EOF
+    printf("Room create failed\n");
 }
 
 void broadcastMessageRoom(char* message, int* client_socket_id) {

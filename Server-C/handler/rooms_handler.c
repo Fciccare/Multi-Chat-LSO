@@ -10,12 +10,23 @@ unsigned int rooms_active = 1; //c'è la stanza 0 "sempre attiva"
 unsigned int next_room_index = 0; //0 never used as an id 
 
 void init_first_room(){
-  rooms[0] = room_create(0, "Defualt Room", 0, NULL);
+  rooms[0] = room_create(0, "Defualt Room", NULL);
 }
 
 Room* get_room_by_id(int room_id){
   //TODO: Aggiungere controlli (forse)
   return rooms[room_id];
+}
+
+Client* get_user_by_id(int client_socket_id){
+  Room* room_zero = rooms[0];
+  // room_print(room_zero);
+  for(int i = 0; i < room_zero->clients_counter; ++i){
+    if(room_zero->clients[i] != NULL && room_zero->clients[i]->socket_id == client_socket_id){
+      return room_zero->clients[i];
+    }
+  }
+  return NULL;
 }
 
 bool add_room(Room* new_room) {

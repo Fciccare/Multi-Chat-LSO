@@ -27,8 +27,8 @@ void signal_handler(int);
 void remove_client(int);
 void testone();
 
-int count_client = 0;
-int clients[1024] = {0};
+// int count_client = 0;
+// int clients[1024] = {0};
 fd_set readfds, master;
 
 int main(int argc, char const *argv[]) {
@@ -106,7 +106,7 @@ void *socket_handler(void *client_socket_id_void) {//passare a un puntatore e no
         // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
     } else printf("Message received: %s\n", buffer);
 
-    socketDispatcher(&client_socket_id, buffer, clients); //clients is only for legacy function
+    socketDispatcher(&client_socket_id, buffer); //clients is only for legacy function
 
     printf("\n\n\t THREAD FINISH \n\n");
     pthread_exit(NULL);
@@ -144,7 +144,7 @@ void testone() {
     // client_destory(c);
 
     printf("\n");
-    Room *r1 = room_create(0, "r1", 1, c);
+    Room *r1 = room_create(0, "r1", c);
     room_print(r1);
 
     add_room(r1);

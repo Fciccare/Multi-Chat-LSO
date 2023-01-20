@@ -9,18 +9,19 @@
 
 //Constructors and Drestory
 
-Room* room_create(unsigned int id, const char* name, unsigned int clients_counter, Client* master_client) {
+Room* room_create(unsigned int id, const char* name, Client* master_client) {
   Room* r = (Room*)malloc(sizeof(Room));
   r->id = id;
-  // strcpy(r->name, "defaultName");
+  strcpy(r->name, name);
   r->clients_counter = 0;
   r->master_client = master_client;
-  if(master_client != NULL)
-    room_add_client(r, master_client);
   if(id == 0)
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);  // Dinamico 256 POSTI
   else 
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS);  // Dinamico 32 POSTI
+
+  if(master_client != NULL)
+    room_add_client(r, master_client);
   return r;
 }
 
@@ -51,7 +52,17 @@ void room_setMaster_client(Room* r, Client* master_client) {
 
 void room_print(Room* r) {
   printf("---\nid = %d\nname = %s\nclients_counter = %d\nmaster_client:\n", r->id, r->name,r->clients_counter);
-  client_print(r->master_client);
+  if(r->master_client!=NULL)
+    client_print(r->master_client);
+
+  // for(int i = 0; i < r->clients_counter; ++i){
+  //   printf("(%d) : ", i);
+  //   if(r->clients[i] == NULL)
+  //     printf("NULL\n");
+  //   else 
+  //     printf("NOT NULL\n");
+  // }
+
   printf("Per ora ometto la stampa della lista dei client\n---\n");
 }
 
@@ -61,7 +72,10 @@ bool room_add_client(Room* r, Client* client) {
   } else if (r->id == 0 && r->clients_counter == MAX_CLIENTS_ZERO ){
     return false;
   }
-  r->clients[r->clients_counter++] = client;
+  int index = r->clients_counter;
+  r->clients[index] = client; 
+  r->clients_counter = index+1;
+
   return true;
 }
 

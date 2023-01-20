@@ -157,6 +157,43 @@ public class Client{
         
     }
 
+    private boolean roomMenu() {
+        System.out.print("1)Create Room\n2)Join Room\n3)Exit\n>");
+        Integer choise = scanner.nextInt();
+        scanner.nextLine();
+
+        switch (choise) {
+            case 1: { // Create Room
+                String chatRoomName = getDataFromStdin("nome della stanza");
+                out.println("[CRT]"+chatRoomName);
+                System.out.flush();
+                String recevString = null;
+                try {
+                    recevString = input.readLine();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                if (recevString.isEmpty()) {
+                    System.out.println("Room create failed");
+                    return false;
+                }
+
+                if (recevString.contains("Room create successful")) {
+                    System.out.println("Room create successful\n");
+                    return true;
+                }
+                System.out.println("Room create failed");
+                return false;
+            }
+            case 2: { // Join Room
+            }
+            default:
+                System.exit(0);
+
+        }
+        return true;
+    }
 
     public static void main(String argv[]){
         Client c = new Client("127.0.0.1", 9192);
@@ -164,7 +201,12 @@ public class Client{
         while(status == false){
             status = c.accessMenu();
         }
-    
+        
+        boolean status1 = false;
+        while (status1 == false) {
+            status1 = c.roomMenu();
+        }
+        
         c.chatRoom();
 
         try{
@@ -176,4 +218,5 @@ public class Client{
             e.printStackTrace();
         } 
     }
+
 }

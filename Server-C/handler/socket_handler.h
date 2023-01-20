@@ -6,9 +6,10 @@
 #include "../database/database.h"
 #include "rooms_handler.h"
 
-void socketDispatcher(int* client, char* buffer, int* clients);
+void socketDispatcher(int* client, char* buffer);
 void broadcastMessageRoom(char* message, int* clients);
 void login(char* message, int* client);
 void registerUser(char* message, int* client);
 bool logged_user(User* u, int client_socket_id);
+void createRoom(char* message, int* client_socket_id);
 #endif
