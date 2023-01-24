@@ -1,8 +1,14 @@
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
 
+
+
 public class Client{
+
+    private ArrayList<Room> rooms;
+    private int MAX_CLIENT = 0;
 
     private Scanner scanner = null;
     private Socket socket = null;
@@ -186,7 +192,28 @@ public class Client{
                 System.out.println("Room create failed");
                 return false;
             }
-            case 2: { // Join Room
+            case 2: { 
+                out.println("[LST]");
+                String recevString = "";
+                while(!recevString.equals("[/LST]")){
+                    try {
+                        recevString = input.readLine();
+                        if(recevString.contains("[LST]")){
+                            recevString = recevString.replace("[LST]", "");
+                            int max_client = Integer.parseInt(recevString.trim());
+                            rooms = new ArrayList<Room>();
+                            MAX_CLIENT = max_client;
+                        }else if(recevString.contains("<>")){
+                            String[] splitted = recevString.split("<>");
+                            int online_client = Integer.parseInt(splitted[1]);
+                            rooms.add(new Room(splitted[0], MAX_CLIENT, online_client));
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                System.out.println(rooms.toString());
+                return false;
             }
             default:
                 System.exit(0);
@@ -219,4 +246,54 @@ public class Client{
         } 
     }
 
+}
+
+class Room {
+    String name = "";
+    int max_client = 0;
+    int online_client = 0;
+
+
+    public Room(String name, int max_client, int online_client) {
+        this.name = name;
+        this.max_client = max_client;
+        this.online_client = online_client;
+    }
+
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getMax_client() {
+        return this.max_client;
+    }
+
+    public void setMax_client(int max_client) {
+        this.max_client = max_client;
+    }
+
+    public int getOnline_client() {
+        return this.online_client;
+    }
+
+    public void setOnline_client(int online_client) {
+        this.online_client = online_client;
+    }
+
+
+    @Override
+    public String toString() {
+        return "{" +
+            " name='" + getName() + "'" +
+            ", max_client='" + getMax_client() + "'" +
+            ", online_client='" + getOnline_client() + "'" +
+            "}";
+    }
+
+    
 }
