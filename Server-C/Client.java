@@ -205,8 +205,9 @@ public class Client{
                             MAX_CLIENT = max_client;
                         }else if(recevString.contains("<>")){
                             String[] splitted = recevString.split("<>");
-                            int online_client = Integer.parseInt(splitted[1]);
-                            rooms.add(new Room(splitted[0], MAX_CLIENT, online_client));
+                            int id = Integer.parseInt(splitted[0].trim());
+                            int online_client = Integer.parseInt(splitted[2]);
+                            rooms.add(new Room(splitted[1], MAX_CLIENT, online_client, id));
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -252,12 +253,14 @@ class Room {
     String name = "";
     int max_client = 0;
     int online_client = 0;
+    int id = 0;
 
 
-    public Room(String name, int max_client, int online_client) {
+    public Room(String name, int max_client, int online_client, int id) {
         this.name = name;
         this.max_client = max_client;
         this.online_client = online_client;
+        this.id = id;
     }
 
 
@@ -285,6 +288,14 @@ class Room {
         this.online_client = online_client;
     }
 
+    public int getId() {
+        return this.id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
 
     @Override
     public String toString() {
@@ -292,6 +303,7 @@ class Room {
             " name='" + getName() + "'" +
             ", max_client='" + getMax_client() + "'" +
             ", online_client='" + getOnline_client() + "'" +
+            ", id='" + getId() + "'" +
             "}";
     }
 

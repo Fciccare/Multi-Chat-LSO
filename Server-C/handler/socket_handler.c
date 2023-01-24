@@ -122,7 +122,7 @@ void registerUser(char* message, int* client_socket_id) {
 void getList(int* client_socket_id) {
     char start[10];
     char end[] = "[/LST]\n";
-    char buff[40] = {0}; //formatted room buffer
+    char buff[42] = {0}; //formatted room buffer
 
     sprintf(start, "[LST]%d\n", MAX_CLIENTS);
     write(*client_socket_id, start, strlen(start));
@@ -136,7 +136,7 @@ void getList(int* client_socket_id) {
         get_formatted_room(i, buff); //ottiene nomeStanza<>clientConnessi, carattere di terminazione se non esiste
         if (buff[0] != '\0') {
             write(*client_socket_id, buff, strlen(buff));
-            bzero(buff, 40);
+            bzero(buff, 42);
             tmpFound++;
         }
         i++;

@@ -83,10 +83,7 @@ void get_formatted_room(int i, char* buff) {
   if (rooms[i] == NULL)
     buff[0] = '\0';
   else {
-    printf("%s\n", rooms[i]->name);
-    printf("%s<>%d\n",rooms[i]->name, rooms[i]->clients_counter);
-    sprintf(buff, "%s<>%d\n",rooms[i]->name, rooms[i]->clients_counter);
-
+    sprintf(buff, "%d<>%s<>%d\n",i, rooms[i]->name, rooms[i]->clients_counter);
   }
 }
 
