@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "socket_handler.h"
+#include "rooms_handler.h"
 // #include "../objects/user.h"
 
 
@@ -22,6 +23,8 @@ void socketDispatcher(int* client_socket_id, char* buffer) {
     } else if (strncmp(tag, "[CRT]", 5) == 0){
         createRoom(&(*message), client_socket_id);
         print_rooms();
+    } else if (strncmp(tag, "[LST]", 5) == 0){
+        getList(client_socket_id);        
     } else {
         write(*client_socket_id,"Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD\n",102);
         printf("Send instruction\n");
@@ -31,7 +34,12 @@ void socketDispatcher(int* client_socket_id, char* buffer) {
 void createRoom(char* message, int* client_socket_id){
     Client* client = get_user_by_id(*client_socket_id);
     Room* room = NULL;
+
+    if(*(message+strlen(message)-1) == '\n'){ //Java mette uno \n alla fine delle stringhe, lo togliamo
+        *(message+strlen(message)-1) = '\0'; //Si ringrazia Francesco ❤
+    }
     if(client != NULL)
+
         room = room_create(0, message, client);//crash   
     if(add_room(room)){
         write(*client_socket_id, "Room create successful\n", 24);  // Remember: Java recv need string end with EOF
@@ -109,4 +117,31 @@ void registerUser(char* message, int* client_socket_id) {
         write(*client_socket_id, "Register failed\n", 17);  // Remember: Java recv need string end with EOF
         printf("Register failed\n");
     }
+}
+
+void getList(int* client_socket_id) {
+    char start[10];
+    char end[] = "[/LST]\n";
+    char buff[40] = {0}; //formatted room buffer
+
+    sprintf(start, "[LST]%d\n", MAX_CLIENTS);
+    write(*client_socket_id, start, strlen(start));
+
+    int tmpFound= 0; //quante stanze attive abbiamo trovato
+    int i = 1; //indice per visitare tutto l'array
+    while (tmpFound<(rooms_getActive_rooms()-1)) { //Se ha trovato tutte le stanze attive non continua a scorrere l'array delle stanze
+        if(i>MAX_ROOMS) { //controllo per evitare seg fault
+            perror("Qualcosa non va con l'array delle stanze");
+        }
+        get_formatted_room(i, buff); //ottiene nomeStanza<>clientConnessi, carattere di terminazione se non esiste
+        if (buff[0] != '\0') {
+            write(*client_socket_id, buff, strlen(buff));
+            bzero(buff, 40);
+            tmpFound++;
+        }
+        i++;
+    }
+
+    write(*client_socket_id, end, strlen(end));
+    printf("Write room list successful");
 }

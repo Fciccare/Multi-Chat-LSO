@@ -18,7 +18,7 @@ Room* get_room_by_id(int room_id){
   return rooms[room_id];
 }
 
-Client* get_user_by_id(int client_socket_id){
+Client* get_user_by_id(int client_socket_id){ // Please fix it ❤
   Room* room_zero = rooms[0];
   // room_print(room_zero);
   for(int i = 0; i < room_zero->clients_counter; ++i){
@@ -54,6 +54,10 @@ void delete_room(unsigned int room_id) {
   rooms_active--;
 }
 
+int rooms_getActive_rooms() {
+  return rooms_active;
+}
+
 unsigned int find_next_room_index() {
   if (next_room_index == 0)
     next_room_index++;
@@ -72,6 +76,17 @@ void print_rooms() {
       room_print(rooms[i]);
     else
       printf("%d : NULL ROOM\n", i);
+  }
+}
+
+void get_formatted_room(int i, char* buff) {
+  if (rooms[i] == NULL)
+    buff[0] = '\0';
+  else {
+    printf("%s\n", rooms[i]->name);
+    printf("%s<>%d\n",rooms[i]->name, rooms[i]->clients_counter);
+    sprintf(buff, "%s<>%d\n",rooms[i]->name, rooms[i]->clients_counter);
+
   }
 }
 

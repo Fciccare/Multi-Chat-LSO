@@ -10,7 +10,7 @@
 
 typedef struct {
     unsigned int id; 
-    char name[128];
+    char name[32];
     unsigned int clients_counter;
     Client* master_client;
     Client** clients;
