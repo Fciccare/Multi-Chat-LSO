@@ -10,3 +10,18 @@
 :black_square_button:	Gli utenti possono accedere a stanze già create <br />
 :black_square_button:	Il creatore della stanza deve poter accettare un utente che si vuole aggiungere alla stanza <br />
 :white_check_mark:	[OPZIONALE] Usare un database Mysql or PostgreSQL <br />
+
+
+## TO DO:
+- **Impementazione della logica dei Client all'interno delle stanze**
+  - Entrare e uscire <br />
+  - Scrivere<br />
+  - OPZIONALE: Passare la proprietà della stanza<br /><br />
+
+- **Fix logica di gestione delle stanze**<br />
+  -Ovvero: conrollare i for e gestire i "buchi" nell'array <br />
+
+- **Logica di cancellazione delle stanze**<br />
+  - Cancellare la stanza se il master esce<br />
+  - Cacciare la gente quando la stanza viene cancellata<br />
+
