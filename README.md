@@ -25,6 +25,7 @@
 ## API
 
 |Tag    | Success                   | Failed
+|:---:  | :---:                     | :---:
 |\[MSG\]| Send message brodcast room| :boom:
 |\[LGN\]| Send "Login succeful"     | :boom:
 
