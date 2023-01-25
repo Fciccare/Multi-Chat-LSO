@@ -14,13 +14,13 @@
 
 ## TO DO :page_with_curl:
 **Impementazione della logica dei Client all'interno delle stanze**
-  - :white_check_mark: Entrare e uscire 
-  - :white_check_mark: Scrivere
-  - :white_check_mark: OPZIONALE: Passare la proprietà della stanza
+  - :black_square_button: Entrare e uscire 
+  - :black_square_button: Scrivere
+  - :black_square_button: OPZIONALE: Passare la proprietà della stanza
 
 **Logica di cancellazione delle stanze**
-  - :white_check_mark: Cancellare la stanza se il master esce
-  - :white_check_mark: Cacciare la gente quando la stanza viene cancellata
+  - :black_square_button: Cancellare la stanza se il master esce
+  - :black_square_button: Cacciare la gente quando la stanza viene cancellata
  
 ## API :books:
 
