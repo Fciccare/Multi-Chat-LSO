@@ -21,4 +21,10 @@
 - **Logica di cancellazione delle stanze**<br />
   - Cancellare la stanza se il master esce<br />
   - Cacciare la gente quando la stanza viene cancellata<br />
+ 
+## API
+
+|Tag    | Success                   | Failed
+|\[MSG\]| Send message brodcast room| :boom:
+|\[LGN\]| Send "Login succeful"     | :boom:
 
