@@ -4,7 +4,7 @@
 //Structure//
 
 typedef struct{
-    char name[64];
+    char name[32];
     char password[256];
     char* propic;
 } User;

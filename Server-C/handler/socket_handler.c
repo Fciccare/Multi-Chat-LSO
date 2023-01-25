@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include "socket_handler.h"
 #include "rooms_handler.h"
@@ -24,11 +25,37 @@ void socketDispatcher(int* client_socket_id, char* buffer) {
         createRoom(&(*message), client_socket_id);
         print_rooms();
     } else if (strncmp(tag, "[LST]", 5) == 0){
-        getList(client_socket_id);        
+        getList(client_socket_id);
+    } else if (strncmp(tag, "[RQT]", 5) == 0) { //Request from client to enter in a room
+        enter_room(&(*message), client_socket_id);
+    } else if (strncmp(tag, "[ACC]", 5) == 0) {
+
+    } else if (strncmp(tag, "[NAC]", 5) == 0) {
+
     } else {
         write(*client_socket_id,"Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD\n",102);
         printf("Send instruction\n");
     }
+}
+
+void request_master(){
+    
+    // room_add_client(room, client);
+}
+
+void enter_room(char* message, int* client_socket_id){
+    unsigned int room_id = atoi(message);  // thx atoi
+    printf("Room id chosen from client is: %d\n", room_id);
+    Room* room = get_room_by_id(room_id);
+    Client* client = get_user_by_id(*client_socket_id);
+    
+    int master_client_socket_id = 0;
+    if(room->master_client != NULL) //useless
+        master_client_socket_id = room->master_client->socket_id;
+    char buffer[50];
+    sprintf(buffer, "[RQT]%d<>%s<>%d\n", *client_socket_id, client->user->name, room_id);
+    write(master_client_socket_id, buffer, strlen(buffer));
+    printf("Send to master client: %s\n", buffer);
 }
 
 void createRoom(char* message, int* client_socket_id){

@@ -79,7 +79,7 @@ void room_print(Room* r) {
   printf("Per ora ometto la stampa della lista dei client\n---\n");
 }
 
-bool room_add_client(Room* r, Client* client) {
+bool room_add_client(Room* r, Client* client) {//Non cicla, please fix it ❤
   if (r->id != 0 && r->clients_counter == MAX_CLIENTS) {
     return false;
   } else if (r->id == 0 && r->clients_counter == MAX_CLIENTS_ZERO ){

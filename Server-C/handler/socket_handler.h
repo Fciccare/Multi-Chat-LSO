@@ -13,4 +13,6 @@ void registerUser(char* message, int* client);
 bool logged_user(User* u, int client_socket_id);
 void createRoom(char* message, int* client_socket_id);
 void getList(int* client_socket_id);
+void enter_room(char* message, int* client_socket_id);
+
 #endif

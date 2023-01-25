@@ -1,6 +1,11 @@
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import java.io.*;
 
 
@@ -155,12 +160,24 @@ public class Client{
                     System.exit(0);
                 }
                 if(recevString.contains("[RQT]")){
-                    String data = "";
-                    while(!data.equals("1") || !data.equals("2")){
-                        System.out.println(">>>>>You want accept ?<<<<<\n1)Yes\n2)No\n>>>");
-                        data = scanner.nextLine();
+                    recevString = recevString.replace("[RQT]", "");
+                    String[] splitted = recevString.split("<>");
+                    int socket_id_client = Integer.parseInt(splitted[0].trim());
+                    int room_id = Integer.parseInt(splitted[2].trim());
+                    String client_name = splitted[1];
+                    String data = "1";
+                    // while(!data.equals("1") || !data.equals("2")){
+                        // System.out.println(">>>>>You want accept "+client_name+"?<<<<<\n1)Yes\n2)No\n>>>");
+                        // data = getDataFromStdin("");
+                        // JFrame frame = new JFrame();
+                        // JOptionPane dialog = new JOptionPane("Pippo", JOptionPane.YES_NO_OPTION);
+                        // dialog.showMessageDialog(frame, "");
+                    // }
+                    if(data == "1"){
+                        out.println("[ACC]"+socket_id_client+"<>"+room_id);
+                    }else{
+                        out.println("[NAC]"+socket_id_client);
                     }
-                    out.println("[ACP]"+data);
                 }
                 System.out.println(">>>" + recevString);
                 System.out.flush();
@@ -179,7 +196,7 @@ public class Client{
         switch (choise) {
             case 1: { // Create Room
                 String chatRoomName = getDataFromStdin("nome della stanza");
-                out.println("[CRT]"+chatRoomName);
+                out.println("[CRT]"+chatRoomName); //Example: [CRT]Chat Molto Bella
                 System.out.flush();
                 String recevString = null;
                 try {
@@ -222,6 +239,17 @@ public class Client{
                     }
                 }
                 System.out.println(rooms.toString());
+
+                String room_choise = getDataFromStdin("room id");
+                int room_chosen = Integer.parseInt(room_choise.trim());
+                for(Room r: rooms){
+                    if(r.online_client!=MAX_CLIENT && r.id == room_chosen){
+                        out.println("[RQT]"+room_chosen);
+                        //Logica di accettanzione o rifiuta (agli studi)
+                        System.out.println("Sei entrato ̶p̶e̶r̶ ̶f̶i̶n̶t̶a̶  nella stanza: " + r.name);
+                        return true;
+                    }
+                }
                 return false;
             }
             default:
