@@ -12,17 +12,17 @@
 :white_check_mark:	[OPZIONALE] Usare un database Mysql or PostgreSQL <br />
 
 
-## TO DO:
-- **Impementazione della logica dei Client all'interno delle stanze**
-  - Entrare e uscire <br />
-  - Scrivere<br />
-  - OPZIONALE: Passare la proprietà della stanza<br /><br />
+## TO DO :page_with_curl:
+**Impementazione della logica dei Client all'interno delle stanze**
+  - :white_check_mark: Entrare e uscire 
+  - :white_check_mark: Scrivere
+  - :white_check_mark: OPZIONALE: Passare la proprietà della stanza
 
-- **Logica di cancellazione delle stanze**<br />
-  - Cancellare la stanza se il master esce<br />
-  - Cacciare la gente quando la stanza viene cancellata<br />
+**Logica di cancellazione delle stanze**
+  - :white_check_mark: Cancellare la stanza se il master esce
+  - :white_check_mark: Cacciare la gente quando la stanza viene cancellata
  
-## API
+## API :books:
 
 |Tag    | Success                   | Failed
 |:---:  | :---:                     | :---:
