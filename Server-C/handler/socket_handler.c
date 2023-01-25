@@ -91,10 +91,10 @@ bool logged_user(User* u, int client_socket_id){
     Room* room_zero = get_room_by_id(0);
     bool status = room_add_client(room_zero, client);
 
-    for(int i = 0; i < room_zero->clients_counter; ++i){
-        if(room_zero->clients[i] != NULL)
-            client_print(room_zero->clients[i]);
-    }
+    // for(int i = 0; i < room_zero->clients_counter; ++i){
+    //     if(room_zero->clients[i] != NULL)
+    //         client_print(room_zero->clients[i]);
+    // }
 
     return status;
 }

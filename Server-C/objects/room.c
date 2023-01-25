@@ -47,6 +47,19 @@ void room_setMaster_client(Room* r, Client* master_client) {
   r->master_client = master_client;
 }
 
+Client* room_get_user_by_id(Room* r, int client_socket_id){
+  int online_client = r->clients_counter;
+  int count = 0;
+  for (int i = 0; i < MAX_CLIENTS; i++) {
+    if(r->clients[i] != NULL){
+      count++;
+      if(r->clients[i]->socket_id == client_socket_id)
+        return r->clients[i];
+    }
+    if(count == online_client)
+      return NULL;
+  }
+}
 
 //Other funcions
 

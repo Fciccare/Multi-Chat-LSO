@@ -18,15 +18,8 @@ Room* get_room_by_id(int room_id){
   return rooms[room_id];
 }
 
-Client* get_user_by_id(int client_socket_id){ // Please fix it ❤
-  Room* room_zero = rooms[0];
-  // room_print(room_zero);
-  for(int i = 0; i < room_zero->clients_counter; ++i){
-    if(room_zero->clients[i] != NULL && room_zero->clients[i]->socket_id == client_socket_id){
-      return room_zero->clients[i];
-    }
-  }
-  return NULL;
+Client* get_user_by_id(int client_socket_id){ // Please fix it ❤ //Ti ho fixato 😨
+  return room_get_user_by_id(rooms[0], client_socket_id);
 }
 
 bool add_room(Room* new_room) {

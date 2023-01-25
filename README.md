@@ -18,9 +18,6 @@
   - Scrivere<br />
   - OPZIONALE: Passare la proprietà della stanza<br /><br />
 
-- **Fix logica di gestione delle stanze**<br />
-  -Ovvero: conrollare i for e gestire i "buchi" nell'array <br />
-
 - **Logica di cancellazione delle stanze**<br />
   - Cancellare la stanza se il master esce<br />
   - Cacciare la gente quando la stanza viene cancellata<br />

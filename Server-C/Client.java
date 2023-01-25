@@ -154,6 +154,14 @@ public class Client{
                     System.out.println("Server disconnected");
                     System.exit(0);
                 }
+                if(recevString.contains("[RQT]")){
+                    String data = "";
+                    while(!data.equals("1") || !data.equals("2")){
+                        System.out.println(">>>>>You want accept ?<<<<<\n1)Yes\n2)No\n>>>");
+                        data = scanner.nextLine();
+                    }
+                    out.println("[ACP]"+data);
+                }
                 System.out.println(">>>" + recevString);
                 System.out.flush();
             } catch (IOException e) {

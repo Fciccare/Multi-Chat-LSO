@@ -106,7 +106,7 @@ void *socket_handler(void *client_socket_id_void) {//passare a un puntatore e no
         // TODO GESTIRE MEGLIO L'ARRAY DEI CLIENT
     } else printf("Message received: %s\n", buffer);
 
-    socketDispatcher(&client_socket_id, buffer); //clients is only for legacy function
+    socketDispatcher(&client_socket_id, buffer);
 
     printf("\n\n\t THREAD FINISH \n\n");
     pthread_exit(NULL);
