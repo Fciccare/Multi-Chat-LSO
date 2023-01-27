@@ -2,10 +2,6 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
 import java.io.*;
 
 public class Client{
@@ -166,13 +162,9 @@ public class Client{
                     int room_id = Integer.parseInt(splitted[2].trim());
                     String client_name = splitted[1];
                     String data = "1";
-                    // while(!data.equals("1") || !data.equals("2")){
-                        // System.out.println(">>>>>You want accept "+client_name+"?<<<<<\n1)Yes\n2)No\n>>>");
-                        // data = getDataFromStdin("");
-                        // JFrame frame = new JFrame();
-                        // JOptionPane dialog = new JOptionPane("Pippo", JOptionPane.YES_NO_OPTION);
-                        // dialog.showMessageDialog(frame, "");
-                    // }
+
+                    //get input from user
+
                     if(data == "1"){
                         out.println("[ACC]"+socket_id_client+"<>"+room_id);
                         System.out.println("\n>>>" + " (" + client_name + ")" + " sta entrando nella chat<<<\n");
