@@ -14,8 +14,10 @@
 
 ## TO DO :page_with_curl:
 **Impementazione della logica dei Client all'interno delle stanze**
-  - :black_square_button: Entrare e uscire 
-  - :black_square_button: Scrivere
+  - :white_check_mark: Entrare 
+  - :black_square_button: Uscire se si disconnette
+  - :black_square_button: Uscire a comando
+  - :black_square_button: Scrivere nella chat a tutti i presenti
   - :black_square_button: OPZIONALE: Passare la proprietà della stanza
 
 **Logica di cancellazione delle stanze**
