@@ -68,13 +68,13 @@ void room_print(Room* r) {
   if(r->master_client!=NULL)
     client_print(r->master_client);
 
-  // for(int i = 0; i < r->clients_counter; ++i){
-  //   printf("(%d) : ", i);
-  //   if(r->clients[i] == NULL)
-  //     printf("NULL\n");
-  //   else 
-  //     printf("NOT NULL\n");
-  // }
+  for(int i = 0; i < r->clients_counter; ++i){
+    printf("(%d) : ", i);
+    if(r->clients[i] == NULL)
+      printf("NULL\n");
+    else 
+      printf("NOT NULL\n");
+  }
 
   printf("Per ora ometto la stampa della lista dei client\n---\n");
 }
@@ -89,12 +89,34 @@ bool room_add_client(Room* r, Client* client) {//Non cicla, please fix it ❤
   r->clients[index] = client; 
   r->clients_counter = index+1;
 
+  //Remove from room zero
+  client->room_id = r->id;
   return true;
 }
 
-void room_remove_client(Room* r, int socket_id) {
+bool room_remove_client(Room* r, int socket_id) {
   //TO DO ricerca lineare del Client e rimozione dall'Array Clients
-  if(r->clients_counter>0)
-    r->clients_counter--;
+  if(r== NULL || r->clients_counter<=0){
+    printf("Room null or Client count <=0 in room id: %d\n", r->id);
+    return false;
+  }
+  Client** clients = r->clients;
+  int online_client = r->clients_counter;
+  int max = MAX_CLIENTS;
+  if(r->id==0)
+    max = MAX_CLIENTS_ZERO;
+  int count = 0;
+  for (int i = 0; i < max; i++) {
+    if (*(clients+i) != NULL) {
+      count++;
+      if ((*(clients+i))->socket_id == socket_id){
+        r->clients_counter = r->clients_counter-1;
+        *(clients+i) = NULL;
+        return true;
+      }    
+    }
+    if (count == online_client) return false;
+  }
+
   printf("\nHo cancellato (per finta, ho solo derementato il contatore) il client\n");
 }

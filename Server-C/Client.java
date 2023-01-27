@@ -8,13 +8,13 @@ import javax.swing.JOptionPane;
 
 import java.io.*;
 
-
-
 public class Client{
 
     private ArrayList<Room> rooms;
     private int MAX_CLIENT = 0;
 
+    private Integer room_id = null;
+    private User user = null;
     private Scanner scanner = null;
     private Socket socket = null;
     private PrintWriter out = null;
@@ -146,7 +146,7 @@ public class Client{
                     break;
                 }
             }
-            out.println("[MSG]"+data);
+            out.println("[MSG]"+data+"<>"+room_id);
             System.out.flush();
         }
     }
@@ -175,12 +175,15 @@ public class Client{
                     // }
                     if(data == "1"){
                         out.println("[ACC]"+socket_id_client+"<>"+room_id);
+                        System.out.println("\n>>>" + " (" + client_name + ")" + " sta entrando nella chat<<<\n");
                     }else{
                         out.println("[NAC]"+socket_id_client);
+                        System.out.println("\n>>>" + "Hai rifiutato (" + client_name + ")" + " nella chat<<<\n");
                     }
+                }else{
+                    System.out.println(">>>" + recevString);
+                    System.out.flush();
                 }
-                System.out.println(">>>" + recevString);
-                System.out.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -211,13 +214,15 @@ public class Client{
                 }
 
                 if (recevString.contains("Room create successful")) {
+                    String[] splitted = recevString.split("<>");
+                    this.room_id = Integer.parseInt(splitted[1].trim());
                     System.out.println("Room create successful\n");
                     return true;
                 }
                 System.out.println("Room create failed");
                 return false;
             }
-            case 2: { 
+            case 2: { //Join Room
                 out.println("[LST]");
                 String recevString = "";
                 while(!recevString.equals("[/LST]")){
@@ -238,6 +243,7 @@ public class Client{
                         e.printStackTrace();
                     }
                 }
+                //Ask to client room id
                 System.out.println(rooms.toString());
 
                 String room_choise = getDataFromStdin("room id");
@@ -245,9 +251,22 @@ public class Client{
                 for(Room r: rooms){
                     if(r.online_client!=MAX_CLIENT && r.id == room_chosen){
                         out.println("[RQT]"+room_chosen);
-                        //Logica di accettanzione o rifiuta (agli studi)
-                        System.out.println("Sei entrato ̶p̶e̶r̶ ̶f̶i̶n̶t̶a̶  nella stanza: " + r.name);
-                        return true;
+                        String recev = null;
+                        try {
+                            recev = input.readLine();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        if (recev.contains("Access accept")) {
+                            System.out.println("Accettato nella stanza\n");
+                            String splitted[] = recev.split("<>");
+                            room_id = Integer.parseInt(splitted[1].trim());
+                            return true;
+                        }else if (recev.contains("Access denied")){
+                            System.out.println("Bro ti hanno rifiutato nella stanza\n");
+                            return false;
+                        }
                     }
                 }
                 return false;
@@ -281,6 +300,43 @@ public class Client{
         }catch (Exception e){
             e.printStackTrace();
         } 
+    }
+
+}
+
+
+class User {
+    // User user;
+    int socket_id;
+    int room_id;
+
+    public User(int socket_id, int room_id) {
+        this.socket_id = socket_id;
+        this.room_id = room_id;
+    }
+
+    public int getSocket_id() {
+        return this.socket_id;
+    }
+
+    public void setSocket_id(int socket_id) {
+        this.socket_id = socket_id;
+    }
+
+    public int getRoom_id() {
+        return this.room_id;
+    }
+
+    public void setRoom_id(int room_id) {
+        this.room_id = room_id;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+            " socket_id='" + getSocket_id() + "'" +
+            ", room_id='" + getRoom_id() + "'" +
+            "}";
     }
 
 }

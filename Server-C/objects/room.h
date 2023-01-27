@@ -32,8 +32,8 @@ void room_setMaster_client(Room* r, Client* master_client);
 
 //Other functions
 void room_print(Room* r);
-bool room_add_client(Room* r, Client* client); //TO DO
-void room_remove_client(Room* r, int socket_id); //TO DO
+bool room_add_client(Room* r, Client* client);
+bool room_remove_client(Room* r, int socket_id); 
 Client* room_get_user_by_id(Room* r, int client_socket_id);
 
 #endif

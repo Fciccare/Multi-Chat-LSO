@@ -15,37 +15,72 @@ void socketDispatcher(int* client_socket_id, char* buffer) {
     char* message = buffer + 5;  // point to buffer without tag
     message = strdup(message);
 
-    if (strncmp(tag, "[MSG]", 5) == 0) {
+    if (strncmp(tag, "[MSG]", 5) == 0) { //Message in broadcast room
         broadcastMessageRoom(&(*message), client_socket_id);
-    } else if (strncmp(tag, "[LGN]", 5) == 0) {
+    } else if (strncmp(tag, "[LGN]", 5) == 0) { //Login user
         login(&(*message), client_socket_id);
-    } else if (strncmp(tag, "[RGT]", 5) == 0) {
+    } else if (strncmp(tag, "[RGT]", 5) == 0) { //Register user 
         registerUser(&(*message), client_socket_id);
-    } else if (strncmp(tag, "[CRT]", 5) == 0){
+    } else if (strncmp(tag, "[CRT]", 5) == 0){ //Create room
         createRoom(&(*message), client_socket_id);
-        print_rooms();
-    } else if (strncmp(tag, "[LST]", 5) == 0){
+        print_rooms();//debug
+    } else if (strncmp(tag, "[LST]", 5) == 0){ //List of room
         getList(client_socket_id);
     } else if (strncmp(tag, "[RQT]", 5) == 0) { //Request from client to enter in a room
-        enter_room(&(*message), client_socket_id);
-    } else if (strncmp(tag, "[ACC]", 5) == 0) {
-
-    } else if (strncmp(tag, "[NAC]", 5) == 0) {
-
+        request_to_enter_room(&(*message), client_socket_id);
+    } else if (strncmp(tag, "[ACC]", 5) == 0) { //Accept user in a room
+        accept_request(&(*message));
+    } else if (strncmp(tag, "[NAC]", 5) == 0) { //Denied access in a room
+        not_accept_request(&(*message));
     } else {
         write(*client_socket_id,"Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD\n",102);
         printf("Send instruction\n");
     }
 }
 
-void request_master(){
-    
-    // room_add_client(room, client);
+void accept_request(char* message){ //Rivedi i casi limiti strani (in inglese)
+    //Retrdfgdfognofdgaival && Cast
+    char* string_socket_id_client = strtok(message, "<>");
+    char* string_room_id = strtok(NULL, "<>");
+
+    int socket_id_client = atoi(string_socket_id_client);
+    int room_id = atoi(string_room_id);
+
+    //Insert into array
+    Room* room = get_room_by_id(room_id);
+    Client* client = get_user_by_id(socket_id_client);
+    room_add_client(room, client);
+    remove_from_zero(client->socket_id); //Returna un boolean 
+
+    room_print(room); //Current room
+    room_print(get_room_by_id(0));  // Room Zero
+
+    //Send to Client information
+    // printf("Socket id client: %d \nRoom id: %d\n", socket_id_client, room_id);//debug
+   
+    char text[25];
+    sprintf(text, "Access accept<>%d\n", room->id);
+    write(socket_id_client, text, strlen(text));
 }
 
-void enter_room(char* message, int* client_socket_id){
+bool remove_from_zero(int socket_id){
+    Room* room_zero = get_room_by_id(0);
+    return room_remove_client(room_zero, socket_id);
+}
+
+void not_accept_request(char* message){
+    unsigned int client_socket_id = atoi(message);  // thx atoi
+    char text[] = "Access denied\n";
+    write(client_socket_id, text, strlen(text));
+    printf("Send to client %s\n", text);  // debug
+}
+
+
+
+void request_to_enter_room(char* message, int* client_socket_id){ //Send to master client Room request to join another client, please Valentina fix it 💔
+    // client_socket_id is client requesting (no master client)
     unsigned int room_id = atoi(message);  // thx atoi
-    printf("Room id chosen from client is: %d\n", room_id);
+    printf("Room id chosen from client is: %d\n", room_id);//debug
     Room* room = get_room_by_id(room_id);
     Client* client = get_user_by_id(*client_socket_id);
     
@@ -55,7 +90,7 @@ void enter_room(char* message, int* client_socket_id){
     char buffer[50];
     sprintf(buffer, "[RQT]%d<>%s<>%d\n", *client_socket_id, client->user->name, room_id);
     write(master_client_socket_id, buffer, strlen(buffer));
-    printf("Send to master client: %s\n", buffer);
+    printf("Send to master client: %s\n", buffer);//debug
 }
 
 void createRoom(char* message, int* client_socket_id){
@@ -67,21 +102,50 @@ void createRoom(char* message, int* client_socket_id){
     }
     if(client != NULL)
 
-        room = room_create(0, message, client);//crash   
+    room = room_create(0, message, client);//crash   
     if(add_room(room)){
-        write(*client_socket_id, "Room create successful\n", 24);  // Remember: Java recv need string end with EOF
+        char text[35];
+        sprintf(text, "Room create successful<>%d\n", room->id);
+        write(*client_socket_id, text, strlen(text));  // Remember: Java recv need string end with EOF
         printf("Room created successful\n");
+        remove_from_zero(client->socket_id);  // Returna un boolean
         return;
     }
     write(*client_socket_id, "Room create failed\n", 20);  // Remember: Java recv need string end with EOF
     printf("Room create failed\n");
 }
 
-void broadcastMessageRoom(char* message, int* client_socket_id) {
-    for (int k = 0; k < 1024; ++k) {
-        if (*(client_socket_id + k) != 0) {
-            printf("[Send to client %d]\n", *(client_socket_id + k));
-            write(*(client_socket_id + k), message, strlen(message));
+void broadcastMessageRoom(char* message, int* client_socket_id) { //Send message to every client in room
+    // for (int k = 0; k < 1024; ++k) {
+    //     if (*(client_socket_id + k) != 0) {
+    //         printf("[Send to client %d]\n", *(client_socket_id + k));
+    //         write(*(client_socket_id + k), message, strlen(message));
+    //     }
+    // }
+    // Client* client = get_user_by_id(socket_id_client);
+    // "[MSG]Ciao bella fra<>5"
+    char* message_to_send = strtok(message, "<>");
+    char* string_room_id = strtok(NULL, "<>");
+
+    int room_id = atoi(string_room_id);
+    int length = strlen(message_to_send)+1;
+    char text[length+15];
+
+    Room* room = get_room_by_id(room_id);
+    Client** clients = room->clients;
+    int online_client = room->clients_counter;
+
+    int count = 0;
+    for(int i = 0; i < MAX_CLIENTS; ++i){
+        if(count == online_client){
+            return;
+        }else{
+            if((clients+i) != NULL){
+                int client_id = (*(clients+i))->socket_id;
+                sprintf(text, "[MSG]%s<>%d\n", message_to_send, client_id);
+                write(client_id, text, strlen(text));
+                count++;
+            }
         }
     }
 }
