@@ -6,7 +6,7 @@
 :white_check_mark:	Gli utenti devono potersi registrare e loggare al server <br />
 :white_check_mark:	Registrazione può essere sviluppata tramite database sql o file <br />
 :white_check_mark:	Gli utenti possono creare stanze <br />
-:black_square_button:	Gli utenti possono chattare solo con gli utenti presenti nella stanza <br />
+:white_check_mark:	Gli utenti possono chattare solo con gli utenti presenti nella stanza <br />
 :black_square_button:	Gli utenti possono accedere a stanze già create <br />
 :black_square_button:	Il creatore della stanza deve poter accettare un utente che si vuole aggiungere alla stanza <br />
 :white_check_mark:	[OPZIONALE] Usare un database Mysql or PostgreSQL <br />
@@ -17,7 +17,7 @@
   - :white_check_mark: Entrare 
   - :black_square_button: Uscire se si disconnette
   - :black_square_button: Uscire a comando
-  - :black_square_button: Scrivere nella chat a tutti i presenti
+  - :white_check_mark: Scrivere nella chat a tutti i presenti
   - :black_square_button: OPZIONALE: Passare la proprietà della stanza
 
 **Logica di cancellazione delle stanze**
