@@ -142,7 +142,7 @@ void broadcastMessageRoom(char* message, int* client_socket_id) { //Send message
         }else{
             if((clients+i) != NULL){
                 int client_id = (*(clients+i))->socket_id;
-                sprintf(text, "[MSG]%s<>%d\n", message_to_send, client_id);
+                sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id);
                 write(client_id, text, strlen(text));
                 count++;
             }
