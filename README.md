@@ -1,6 +1,6 @@
 # Multi-Chat-LSO
 
-## Funzionalità da implementare :soon:
+## Funzionalità da implementare (Server Side) :soon:
 
 :white_check_mark: N utenti (client) possono accedere ad un sistema di chat <br />
 :white_check_mark:	Gli utenti devono potersi registrare e loggare al server <br />
@@ -23,6 +23,9 @@
 **Logica di cancellazione delle stanze**
   - :black_square_button: Cancellare la stanza se il master esce
   - :black_square_button: Cacciare la gente quando la stanza viene cancellata
+ 
+ **Client Android**
+  - Tutto 
  
 ## API :books:
 
