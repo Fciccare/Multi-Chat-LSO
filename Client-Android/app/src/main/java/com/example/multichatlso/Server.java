@@ -34,7 +34,7 @@ public class Server {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        Thread thread = new Thread(() -> {
+        new Thread(() -> {
             socket = new Socket();
             try {
                 socket.connect(new InetSocketAddress("10.0.2.2", 9192), 15000); //Timeout 15 sec for to avoid stuck
@@ -42,8 +42,7 @@ public class Server {
             } catch (IOException e) {
                 Log.e(TAG, e.toString());
             }
-        });
-        thread.start();
+        }).start();
     }
 
     private void initRead(){
