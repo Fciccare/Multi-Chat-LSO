@@ -82,9 +82,12 @@ public class Server {
             initRead();
         try {
             message = input.readLine();
+            if(message == null)
+                Log.e(TAG, "Server disconnected");
         } catch (IOException e) {
             Log.e(TAG, e.toString());
         }
         return message;
     }
 }
+

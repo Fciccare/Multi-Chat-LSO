@@ -10,6 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -25,7 +28,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    private EditText username, passwordText;
+    private EditText passwordText;
+    private TextInputEditText username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         Server.getInstance();//Init server
 
-        Button button = findViewById(R.id.button);
+        ExtendedFloatingActionButton button = findViewById(R.id.buttonLogin);
         username = findViewById(R.id.editTextTextPersonName);
         passwordText = findViewById(R.id.editTextTextPassword);
         button.setOnClickListener(view -> {
@@ -52,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, message);
             Server.getInstance().write(message);
             String recevingString = Server.getInstance().read();
-            Log.d(TAG, recevingString);
+            if(recevingString != null) Log.d(TAG, recevingString + String.valueOf(recevingString.length()));
             if(recevingString.contains("Login successful"))
                 Toasty.success(getApplicationContext(), "Loggato con successo", Toast.LENGTH_LONG, true).show();
             else
