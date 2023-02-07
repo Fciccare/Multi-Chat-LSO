@@ -2,8 +2,10 @@ package com.example.multichatlso;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -16,19 +18,25 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
 
-    private EditText passwordText;
-    private TextInputEditText username;
+    private EditText passwordText, username;
+    ExtendedFloatingActionButton signIn, signUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        ExtendedFloatingActionButton button = findViewById(R.id.buttonLogin);
+        signIn = findViewById(R.id.buttonLogin);
+        signUp = findViewById(R.id.buttonSignUp);
         username = findViewById(R.id.editTextTextPersonName);
         passwordText = findViewById(R.id.editTextTextPassword);
-        button.setOnClickListener(view -> {
+        signIn.setOnClickListener(view -> {
             login();
+        });
+
+        signUp.setOnClickListener(view -> {
+            Log.d(TAG, "Switch to SignUpActivity");
+            startActivity(new Intent(this, SignupActivity.class));
         });
 
     }

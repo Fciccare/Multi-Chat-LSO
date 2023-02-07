@@ -4,4 +4,6 @@
     <string name="login">Login</string>
     <string name="loginFAB">Login</string>
     <string name="username">Username</string>
+    <string name="registrati">Registrati</string>
+    <string name="conferma_password">Conferma Password</string>
 </resources>
