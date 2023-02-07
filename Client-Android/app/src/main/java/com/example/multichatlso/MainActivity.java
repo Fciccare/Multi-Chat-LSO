@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
+    private EditText username, passwordText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,30 +35,29 @@ public class MainActivity extends AppCompatActivity {
         Server.getInstance();//Init server
 
         Button button = findViewById(R.id.button);
-        EditText username = findViewById(R.id.editTextTextPersonName);
-        EditText passwordText = findViewById(R.id.editTextTextPassword);
+        username = findViewById(R.id.editTextTextPersonName);
+        passwordText = findViewById(R.id.editTextTextPassword);
         button.setOnClickListener(view -> {
-            if(username.getText().toString().isEmpty() || passwordText.getText().toString().isEmpty())
-                Toasty.error(getApplicationContext(), "Riempi i campi", Toasty.LENGTH_LONG, true).show();
-            else{
-                String name = username.getText().toString();
-                String password = passwordText.getText().toString();
-                String message = "[LGN]" + name + "<>" + password;
-                Log.d(TAG, message);
-                Server.getInstance().write(message);
-                String recevingString = Server.getInstance().read();
-                Log.d(TAG, recevingString);
-                if(recevingString.contains("Login successful"))
-                    Toasty.success(getApplicationContext(), "Loggato con successo", Toast.LENGTH_LONG, true).show();
-                else
-                    Toasty.error(getApplicationContext(), "Login errato", Toast.LENGTH_LONG, true).show();
-
-            }
-
+            login();
         });
     }
 
-
-
+    public void login(){
+        if(username.getText().toString().isEmpty() || passwordText.getText().toString().isEmpty())
+            Toasty.error(getApplicationContext(), "Riempi i campi", Toasty.LENGTH_LONG, true).show();
+        else{
+            String name = username.getText().toString();
+            String password = passwordText.getText().toString();
+            String message = "[LGN]" + name + "<>" + password;
+            Log.d(TAG, message);
+            Server.getInstance().write(message);
+            String recevingString = Server.getInstance().read();
+            Log.d(TAG, recevingString);
+            if(recevingString.contains("Login successful"))
+                Toasty.success(getApplicationContext(), "Loggato con successo", Toast.LENGTH_LONG, true).show();
+            else
+                Toasty.error(getApplicationContext(), "Login errato", Toast.LENGTH_LONG, true).show();
+        }
+    }
 
 }

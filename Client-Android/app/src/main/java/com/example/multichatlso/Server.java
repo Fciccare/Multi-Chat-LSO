@@ -69,9 +69,11 @@ public class Server {
     }
 
     public void write(String message){
-        if(out == null)
-            initWrite();
-        out.println(message);
+        new Thread(() -> {
+            if(out == null)
+                initWrite();
+            out.println(message);
+        }).start();
     }
 
     public String read(){
