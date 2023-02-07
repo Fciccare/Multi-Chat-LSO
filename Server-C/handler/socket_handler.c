@@ -60,6 +60,7 @@ void accept_request(char* message){ //Rivedi i casi limiti strani (in inglese)
    
     char text[25];
     sprintf(text, "Access accept<>%d\n", room->id);
+    printf("Server is sending: '%s'(%d)", text,strlen(text)); //debug
     write(socket_id_client, text, strlen(text));
 }
 
@@ -71,8 +72,8 @@ bool remove_from_zero(int socket_id){
 void not_accept_request(char* message){
     unsigned int client_socket_id = atoi(message);  // thx atoi
     char text[] = "Access denied\n";
+    printf("Server is sending: '%s'(%d)", text,strlen(text)); //debug
     write(client_socket_id, text, strlen(text));
-    printf("Send to client %s\n", text);  // debug
 }
 
 
@@ -89,8 +90,8 @@ void request_to_enter_room(char* message, int* client_socket_id){ //Send to mast
         master_client_socket_id = room->master_client->socket_id;
     char buffer[50];
     sprintf(buffer, "[RQT]%d<>%s<>%d\n", *client_socket_id, client->user->name, room_id);
+    printf("Server is sending: '%s'(%d)", buffer,strlen(buffer)); //debug
     write(master_client_socket_id, buffer, strlen(buffer));
-    printf("Send to master client: %s\n", buffer);//debug
 }
 
 void createRoom(char* message, int* client_socket_id){
@@ -106,6 +107,7 @@ void createRoom(char* message, int* client_socket_id){
     if(add_room(room)){
         char text[35];
         sprintf(text, "Room create successful<>%d\n", room->id);
+        printf("Server is sending: '%s'(%d)", text,strlen(text)); //debug
         write(*client_socket_id, text, strlen(text));  // Remember: Java recv need string end with EOF
         printf("Room created successful\n");
         remove_from_zero(client->socket_id);  // Returna un boolean
@@ -143,6 +145,7 @@ void broadcastMessageRoom(char* message, int* client_socket_id) { //Send message
             if((clients+i) != NULL){
                 int client_id = (*(clients+i))->socket_id;
                 sprintf(text, "[MSG]%s<>%d\n", message_to_send, client_id);
+                printf("Server is sending: '%s'(%d)", text,strlen(text)); //debug
                 write(client_id, text, strlen(text));
                 count++;
             }
@@ -216,6 +219,7 @@ void getList(int* client_socket_id) {
     char buff[42] = {0}; //formatted room buffer
 
     sprintf(start, "[LST]%d\n", MAX_CLIENTS);
+    printf("Server is sending: '%s'(%d)", start,strlen(start)); //debug
     write(*client_socket_id, start, strlen(start));
 
     int tmpFound= 0; //quante stanze attive abbiamo trovato
@@ -226,13 +230,14 @@ void getList(int* client_socket_id) {
         }
         get_formatted_room(i, buff); //ottiene nomeStanza<>clientConnessi, carattere di terminazione se non esiste
         if (buff[0] != '\0') {
+            printf("Server is sending: '%s'(%d)", buff,strlen(buff)); //debug
             write(*client_socket_id, buff, strlen(buff));
             bzero(buff, 42);
             tmpFound++;
         }
         i++;
     }
-
+    printf("Server is sending: '%s'(%d)", end,strlen(end)); //debug
     write(*client_socket_id, end, strlen(end));
     printf("Write room list successful");
 }
