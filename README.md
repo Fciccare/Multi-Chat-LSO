@@ -25,7 +25,7 @@
   - :black_square_button: Cacciare la gente quando la stanza viene cancellata
  
  **Client Android**
-  - Tutto 
+  - Tutto - Login e Regiser
  
 ## API :books:
 
