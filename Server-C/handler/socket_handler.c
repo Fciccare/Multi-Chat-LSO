@@ -143,8 +143,8 @@ void broadcastMessageRoom(char* message, int* client_socket_id) { //Send message
             return;
         }else{
             if((clients+i) != NULL){
-                int client_id = (*(clients+i))->socket_id;
-                sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id);
+                int client_id = (*(clients+i))->socket_id; //client_id changes at every loop, it is the destination socket id
+                sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id); //[MSG]HelloWorld<>5  "5" is sender socket id
                 printf("Server is sending: '%s'(%d)", text,strlen(text)); //debug
                 write(client_id, text, strlen(text));
                 count++;
