@@ -16,6 +16,5 @@ void getList(int* client_socket_id);
 void request_to_enter_room(char* message, int* client_socket_id);
 void not_accept_request(char* message);
 void accept_request(char* message);
-bool remove_from_zero(int socket_id);
 
 #endif

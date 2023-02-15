@@ -2,9 +2,8 @@
 #define ROOMS_HANDLER_H
 
 #include "../objects/room.h"
-#include <stdbool.h>
 
-#define MAX_ROOMS 64 //Limite di stanze esistenti+1
+#define MAX_ROOMS 64 //Max rooms that can exist + 1 (room 0 is th starting room)
 
 bool add_room(Room* room);
 void delete_room(unsigned int room_id);
@@ -14,8 +13,9 @@ Room* get_room_by_id(int room_id);
 Client* get_user_by_id(int client_socket_id);
 void get_formatted_room(int i, char* buff);
 
-unsigned int find_next_room_index();
+unsigned int find_next_unactive_room_index();
+bool remove_from_zero(int socket_id);
 
-void print_rooms();
+void print_rooms(); //debug function
 
 #endif

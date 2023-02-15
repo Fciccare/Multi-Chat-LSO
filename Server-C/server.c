@@ -30,8 +30,6 @@ void signal_handler(int);
 void remove_client(int);
 void testone();
 
-// int count_client = 0;
-// int clients[1024] = {0};
 fd_set readfds, master;
 
 int main(int argc, char const *argv[]) {

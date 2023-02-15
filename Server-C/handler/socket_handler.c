@@ -2,20 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdint.h>
 
 #include "socket_handler.h"
 #include "rooms_handler.h"
-// #include "../objects/user.h"
 
 
 void socketDispatcher(int* client_socket_id, char* buffer) {
     char tag[5] = {0};
     strncpy(tag, buffer, 5);     // get the tag
     char* message = buffer + 5;  // point to buffer without tag
-    message = strdup(message);
+    message = strdup(message);   // get rid of tag
 
-    if (strncmp(tag, "[MSG]", 5) == 0) { //Message in broadcast room
+    if (strncmp(tag, "[MSG]", 5) == 0) { //Message sent in room
         broadcastMessageRoom(&(*message), client_socket_id);
     } else if (strncmp(tag, "[LGN]", 5) == 0) { //Login user
         login(&(*message), client_socket_id);
@@ -24,7 +22,7 @@ void socketDispatcher(int* client_socket_id, char* buffer) {
     } else if (strncmp(tag, "[CRT]", 5) == 0){ //Create room
         createRoom(&(*message), client_socket_id);
         print_rooms();//debug
-    } else if (strncmp(tag, "[LST]", 5) == 0){ //List of room
+    } else if (strncmp(tag, "[LST]", 5) == 0){ //Get List of room
         getList(client_socket_id);
     } else if (strncmp(tag, "[RQT]", 5) == 0) { //Request from client to enter in a room
         request_to_enter_room(&(*message), client_socket_id);
@@ -38,50 +36,51 @@ void socketDispatcher(int* client_socket_id, char* buffer) {
     }
 }
 
-void accept_request(char* message){ //Rivedi i casi limiti strani (in inglese)
-    //Retrdfgdfognofdgaival && Cast
+void accept_request(char* message){ //Accept user in a room
+    //TODO: Rivedi i casi limiti strani
+
     char* string_socket_id_client = strtok(message, "<>");
     char* string_room_id = strtok(NULL, "<>");
+
+    //DOMANDA: questo socket id è il master client o il client che è stato accettato? controllare, io su client java non capisco niente )=
 
     int socket_id_client = atoi(string_socket_id_client);
     int room_id = atoi(string_room_id);
 
-    //Insert into array
+    //Insert client into room
     Room* room = get_room_by_id(room_id);
     Client* client = get_user_by_id(socket_id_client);
     room_add_client(room, client);
-    remove_from_zero(client->socket_id); //Returna un boolean 
+    remove_from_zero(client->socket_id); //TODO: questo ritorna un boolean, vedere se lo vogliamo gestire
 
-    room_print(room); //Current room
-    room_print(get_room_by_id(0));  // Room Zero
+    //Debug prints: current and starting room
+    room_print(room);
+    room_print(get_room_by_id(0));
 
-    //Send to Client information
-    // printf("Socket id client: %d \nRoom id: %d\n", socket_id_client, room_id);//debug
+    //printf("Socket id client: %d \nRoom id: %d\n", socket_id_client, room_id);//Debug print
    
+    //Send to Client it has been accepted
     char text[25];
     sprintf(text, "Access accept<>%d\n", room->id);
-    printf("Server is sending: '%s'(%ld)", text,strlen(text)); //debug
+    printf("Server is sending: '%s'(%ld)", text,strlen(text)); //Debug print
     write(socket_id_client, text, strlen(text));
 }
 
-bool remove_from_zero(int socket_id){
-    Room* room_zero = get_room_by_id(0);
-    return room_remove_client(room_zero, socket_id);
-}
-
-void not_accept_request(char* message){
-    unsigned int client_socket_id = atoi(message);  // thx atoi
+void not_accept_request(char* message){ //Don't accept a Client in a room
+    //Send to Client it has not been accepted
+    unsigned int client_socket_id = atoi(message);
     char text[] = "Access denied\n";
-    printf("Server is sending: '%s'(%ld)", text,strlen(text)); //debug
+    printf("Server is sending: '%s'(%ld)", text,strlen(text)); //Debug print
     write(client_socket_id, text, strlen(text));
 }
 
 
-
-void request_to_enter_room(char* message, int* client_socket_id){ //Send to master client Room request to join another client, please Valentina fix it 💔
+void request_to_enter_room(char* message, int* client_socket_id){ 
+    //TODO: CHE SE DEVE FIXAAA OOOOOOOOOOOO vabbè questa la metto a posto poi
+    //Send to master client Room request to join another client, please Valentina fix it 💔(non so che devo fixà)
     // client_socket_id is client requesting (no master client)
     unsigned int room_id = atoi(message);  // thx atoi
-    printf("Room id chosen from client is: %d\n", room_id);//debug
+    printf("Room id chosen from client is: %d\n", room_id);//Debug print
     Room* room = get_room_by_id(room_id);
     Client* client = get_user_by_id(*client_socket_id);
     
@@ -90,7 +89,7 @@ void request_to_enter_room(char* message, int* client_socket_id){ //Send to mast
         master_client_socket_id = room->master_client->socket_id;
     char buffer[50];
     sprintf(buffer, "[RQT]%d<>%s<>%d\n", *client_socket_id, client->user->name, room_id);
-    printf("Server is sending: '%s'(%ld)", buffer,strlen(buffer)); //debug
+    printf("Server is sending: '%s'(%ld)", buffer,strlen(buffer)); //Debug print
     write(master_client_socket_id, buffer, strlen(buffer));
 }
 
@@ -98,12 +97,12 @@ void createRoom(char* message, int* client_socket_id){
     Client* client = get_user_by_id(*client_socket_id);
     Room* room = NULL;
 
-    if(*(message+strlen(message)-1) == '\n'){ //Java mette uno \n alla fine delle stringhe, lo togliamo
-        *(message+strlen(message)-1) = '\0'; //Si ringrazia Francesco ❤
+    if(*(message+strlen(message)-1) == '\n'){ //Remove '\n' from end of string that java puts
+        *(message+strlen(message)-1) = '\0';
     }
     if(client != NULL)
 
-    room = room_create(0, message, client);//crash   
+    room = room_create(0, message, client);//crash   ???
     if(add_room(room)){
         char text[35];
         sprintf(text, "Room create successful<>%d\n", room->id);
@@ -240,7 +239,7 @@ void getList(int* client_socket_id) {
         if(i>MAX_ROOMS) { //controllo per evitare seg fault
             perror("Qualcosa non va con l'array delle stanze");
         }
-        get_formatted_room(i, buff); //ottiene nomeStanza<>clientConnessi, carattere di terminazione se non esiste
+        get_formatted_room(i, buff); //ottiene id<>nomeStanza<>clientConnessi, carattere di terminazione se non esiste
         if (buff[0] != '\0') {
             printf("Server is sending: '%s'(%ld)", buff,strlen(buff)); //debug
             write(*client_socket_id, buff, strlen(buff));
