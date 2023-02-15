@@ -1,8 +1,8 @@
 #ifndef ROOM_H
 #define ROOM_H
 
-#define MAX_CLIENTS 32  // Limite attuale di client supportati da una stanza
-#define MAX_CLIENTS_ZERO 256  // Limite attuale di client supportati da una stanza
+#define MAX_CLIENTS 32  // Max Clients supported by a room
+#define MAX_CLIENTS_ZERO 256  // Max Clients supported by room zero, the starting room
 
 #include "client.h"
 
@@ -13,14 +13,13 @@ typedef struct {
     char name[32];
     unsigned int clients_counter;
     Client* master_client;
-    Client** clients;
+    Client** clients; //Clients connected to the room
 } Room;
 
 
 //Functions//
 
-//Constructors and Drestory
-
+//Constructor and Drestory
 Room* room_create(unsigned int id, const char* name, Client* master_client);
 void room_destroy(Room* r);
 
@@ -31,7 +30,7 @@ void room_setClients_counter(Room* r, unsigned int clients_counter);
 void room_setMaster_client(Room* r, Client* master_client);
 
 //Other functions
-void room_print(Room* r);
+void room_print(Room* r); //Debug function
 bool room_add_client(Room* r, Client* client);
 bool room_remove_client(Room* r, int socket_id); 
 Client* room_get_user_by_id(Room* r, int client_socket_id);

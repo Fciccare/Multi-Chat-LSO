@@ -26,6 +26,10 @@
  
  **Client Android**
   - Tutto 
+
+  **Funzionalià interamente opzionali da sviluppare per utlime se ci va**
+  - Propic
+  - Scegliere a chi passare la proprietà della stanza
  
 ## API :books:
 

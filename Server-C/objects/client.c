@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
 #include "user.h"
 #include "client.h"
 
@@ -35,7 +31,7 @@ void client_setRoom_id(Client* c, unsigned int room_id) {
 
 //Other Functions
 
-void client_print(Client* c) { //function for testing
+void client_print(Client* c) { //Debug Funcion
   printf("CLIENT:\n");
   user_print(c->user);
   printf("Socket_id: %d\nRoom_id: %d\n", c->socket_id, c->room_id);

@@ -1,13 +1,10 @@
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "user.h"
-#include "client.h"
 #include "room.h"
+#include "client.h"
 
-//Constructors and Drestory
+//Constructor and Drestory
 
 Room* room_create(unsigned int id, const char* name, Client* master_client) {
   Room* r = (Room*)malloc(sizeof(Room));
@@ -15,10 +12,11 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
   strcpy(r->name, name);
   r->clients_counter = 0;
   r->master_client = master_client;
-  if(id == 0)
-    r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);  // Dinamico 256 POSTI
-  else 
-    r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS);  // Dinamico 32 POSTI
+
+  if(id == 0) //Starting room
+    r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);
+  else //Regular room
+    r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS);
 
   if(master_client != NULL)
     room_add_client(r, master_client);
@@ -63,7 +61,7 @@ Client* room_get_user_by_id(Room* r, int client_socket_id){
 
 //Other funcions
 
-void room_print(Room* r) {
+void room_print(Room* r) { //Debug funcion
   printf("---\nid = %d\nname = %s\nclients_counter = %d\nmaster_client:\n", r->id, r->name,r->clients_counter);
   if(r->master_client!=NULL)
     client_print(r->master_client);
@@ -75,11 +73,11 @@ void room_print(Room* r) {
     else 
       printf("NOT NULL\n");
   }
-
+  //TODO: stampa lista client
   printf("Per ora ometto la stampa della lista dei client\n---\n");
 }
 
-bool room_add_client(Room* r, Client* client) {//Non cicla, please fix it ❤
+bool room_add_client(Room* r, Client* client) { //Non cicla, please fix it ❤
   if (r->id != 0 && r->clients_counter == MAX_CLIENTS) {
     return false;
   } else if (r->id == 0 && r->clients_counter == MAX_CLIENTS_ZERO ){
@@ -95,7 +93,7 @@ bool room_add_client(Room* r, Client* client) {//Non cicla, please fix it ❤
 }
 
 bool room_remove_client(Room* r, int socket_id) {
-  //TO DO ricerca lineare del Client e rimozione dall'Array Clients
+  //TODO: ricerca lineare del Client e rimozione dall'Array Clients
   if(r== NULL || r->clients_counter<=0){
     printf("Room null or Client count <=0 in room id: %d\n", r->id);
     return false;

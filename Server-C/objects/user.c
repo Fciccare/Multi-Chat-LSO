@@ -5,12 +5,14 @@
 
 #include "user.h"
 
+//TODO: Gestione Propic, al momento:  u->propic=0;  sempre
+
 //Constructors and Destory
 User* user_create_default() {
   User *u = (User*)malloc(sizeof(User));
   strcpy(u->name, "defaultName");
   strcpy(u->password, "change your password!");
-  u->propic=0; //no propic? non so il DB come gestisce, contorllare
+  u->propic=0;
   return u;
 }
 
@@ -18,7 +20,7 @@ User* user_create(const char* name, const char* password) {
   User *u = (User*)malloc(sizeof(User));
   strcpy(u->name, name);
   strcpy(u->password, password);
-  u->propic=0; //no propic? non so il DB come gestisce, contorllare
+  u->propic=0;
   return u;
 }
 
@@ -37,8 +39,7 @@ void user_setPassword(User* u, const char* password) {
 }
 
 //Other functions
-//Si deve pensare alle altre funzionalità di User
 
-void user_print(User* u) {
+void user_print(User* u) { //Debug function
   printf("USER: Nome: %s, Password: %s\n", u->name, u->password);
 }

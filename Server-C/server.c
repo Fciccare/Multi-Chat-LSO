@@ -1,23 +1,26 @@
-#include <arpa/inet.h>
-#include <fcntl.h> 
-#include <netinet/in.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+#include <signal.h>
+#include <pthread.h>
+#include <fcntl.h> 
+
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
 #include <sys/socket.h>
 #include <sys/time.h>  
 #include <sys/types.h>
 #include <sys/un.h>
-#include <unistd.h>
-#include <signal.h>
 
 #include "database/database.h"
 
 #include "handler/socket_handler.h"
 #include "handler/rooms_handler.h"
 
-#include "objects/room.h"
+#include "objects/room.h" //room includes the other objects
 
 #define PORT 9192
 

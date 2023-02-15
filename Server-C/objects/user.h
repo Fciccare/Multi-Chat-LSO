@@ -11,9 +11,6 @@ typedef struct{
 
 //Functions//
 
-//DISCLAIMER: Non ci volgio pensare per ora come gestire la propic (penso sia uguale ma poi vedo)
-//Tutte le funzioni non gestiscono la propic, i costruttori hanno u->propic=0;
-
 //Construtors and Destroy
 
 User* user_create_default();
@@ -26,6 +23,6 @@ void user_setPassword(User* user, const char* password);
 
 
 //Other functions
-void user_print(User* user);
+void user_print(User* user); //Debug function
 
 #endif
