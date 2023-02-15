@@ -2,6 +2,8 @@
 #define CLIENT_H
 
 #include "user.h"
+#include "client.h"
+
 
 //Structure//
 

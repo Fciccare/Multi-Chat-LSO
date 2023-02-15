@@ -2,7 +2,6 @@
 #define ROOMS_HANDLER_H
 
 #include "../objects/room.h"
-// #include "../objects/client.h"
 #include <stdbool.h>
 
 #define MAX_ROOMS 64 //Limite di stanze esistenti+1
