@@ -25,7 +25,7 @@
   - :black_square_button: Cacciare la gente quando la stanza viene cancellata
  
  **Client Android**
-  - Tutto 
+  - Tutto - Login e Regiser
 
   **Funzionalià interamente opzionali da sviluppare per utlime se ci va**
   - Propic
