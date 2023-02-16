@@ -78,17 +78,23 @@ void not_accept_request(char* message){ //Don't accept a Client in a room
 void request_to_enter_room(char* message, int* client_socket_id){ 
     //TODO: CHE SE DEVE FIXAAA OOOOOOOOOOOO vabbè questa la metto a posto poi
     //Send to master client Room request to join another client, please Valentina fix it 💔(non so che devo fixà)
-    // client_socket_id is client requesting (no master client)
-    unsigned int room_id = atoi(message);  // thx atoi
-    printf("Room id chosen from client is: %d\n", room_id);//Debug print
+    
+    // client_socket_id is client requesting to enter room
+    unsigned int room_id = atoi(message);
+    printf("Room id chosen from client is: %d\n", room_id); //Debug print
     Room* room = get_room_by_id(room_id);
     Client* client = get_user_by_id(*client_socket_id);
     
     int master_client_socket_id = 0;
-    if(room->master_client != NULL) //useless
-        master_client_socket_id = room->master_client->socket_id;
+
+    // if(room->master_client != NULL) //allo sto coso cerve a evitare il seg fault,
+    //dovremmo valutare quanto vogliamo fare controlli
+    //in teoira queste cose non dovrebbero succedere, ma di solito comunque si controlla
+    
+    master_client_socket_id = room->master_client->socket_id;
     char buffer[50];
     sprintf(buffer, "[RQT]%d<>%s<>%d\n", *client_socket_id, client->user->name, room_id);
+    //[RQT]client_requesting_to_enter_socket_id<>user_name<>room_id
     printf("Server is sending: '%s'(%ld)", buffer,strlen(buffer)); //Debug print
     write(master_client_socket_id, buffer, strlen(buffer));
 }
@@ -106,45 +112,44 @@ void createRoom(char* message, int* client_socket_id){
     if(add_room(room)){
         char text[35];
         sprintf(text, "Room create successful<>%d\n", room->id);
-        printf("Server is sending: '%s'(%ld)", text,strlen(text)); //debug
+        printf("Server is sending: '%s'(%ld)", text,strlen(text)); //Debug print
         write(*client_socket_id, text, strlen(text));  // Remember: Java recv need string end with EOF
         printf("Room created successful\n");
-        remove_from_zero(client->socket_id);  // Returna un boolean
+        remove_from_zero(client->socket_id);  //TODO: Ritorna un boolean, forse lo vogliamo gestire?
         return;
     }
-    write(*client_socket_id, "Room create failed\n", 20);  // Remember: Java recv need string end with EOF
+
+    //else: failed to create room
+    write(*client_socket_id, "Room create failed\n", 20);  // Java recv need string end with EOF
     printf("Room create failed\n");
 }
 
-void broadcastMessageRoom(char* message, int* client_socket_id) { //Send message to every client in room
-    // for (int k = 0; k < 1024; ++k) {
-    //     if (*(client_socket_id + k) != 0) {
-    //         printf("[Send to client %d]\n", *(client_socket_id + k));
-    //         write(*(client_socket_id + k), message, strlen(message));
-    //     }
-    // }
-    // Client* client = get_user_by_id(socket_id_client);
-    // "[MSG]Ciao bella fra<>5"
+void broadcastMessageRoom(char* message, int* client_socket_id) { 
+    //Send message to every client in room
+
+
     char* message_to_send = strtok(message, "<>");
     char* string_room_id = strtok(NULL, "<>");
-
+    
     int room_id = atoi(string_room_id);
+
     int length = strlen(message_to_send)+1;
     char text[length+15];
-
+    
     Room* room = get_room_by_id(room_id);
     Client** clients = room->clients;
     int online_client = room->clients_counter;
 
     int count = 0;
     for(int i = 0; i < MAX_CLIENTS; ++i){
-        if(count == online_client){
+        if(count == online_client){ //if message has been sent to every online client
             return;
         }else{
             if((clients+i) != NULL){
-                int client_id = (*(clients+i))->socket_id; //client_id changes at every loop, it is the destination socket id
-                sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id); //[MSG]HelloWorld<>5  "5" is sender socket id
-                printf("Server is sending: '%s'(%ld)", text,strlen(text)); //debug
+                int client_id = (*(clients+i))->socket_id; //client_id changes at every loop, it's the destination socket id
+                sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id);
+                //[MSG]message_to_send<>sender_socket_id
+                printf("Server is sending: '%s'(%ld)", text,strlen(text)); //Debug print
                 write(client_id, text, strlen(text));
                 count++;
             }
@@ -153,8 +158,6 @@ void broadcastMessageRoom(char* message, int* client_socket_id) { //Send message
 }
 
 void login(char* message, int* client_socket_id) {
-    // write(*client, "Login successful\n", 18);  // Remember: Java recv need string end with EOF
-    // printf("Send Login successful\n");
     char* text = strdup(message);
 
     char* username = NULL;
@@ -163,7 +166,7 @@ void login(char* message, int* client_socket_id) {
     username = strtok(text, "<>");
     password = strtok(NULL, "<>");
     password[strlen(password)-1] = '\0';  // remove \n from a string
-    text = NULL;
+    text = NULL; //perchè?
 
     if(isExistingUser(username, password)){
         if(logged_user(user_create(username, password), *client_socket_id)){
@@ -176,7 +179,7 @@ void login(char* message, int* client_socket_id) {
             write(*client_socket_id, "Room full\n", 11);  // Remember: Java recv need string end with EOF
             printf("Room full\n");
         }
-    }else{
+    }else{ //user doesn't exist
         char buffer[20] = {0};
         strcpy(buffer, "Login failed\n");
         printf("Server is sending: '%s'(%ld)", buffer,strlen(buffer)); //debug
@@ -212,14 +215,14 @@ void registerUser(char* message, int* client_socket_id) {
     if (insertUser(username, password)) {
         char buffer[25] = {0};
         strcpy(buffer, "Register successful\n");
-        printf("Server is sending: '%s'(%ld)", buffer,strlen(buffer)); //debug
-        write(*client_socket_id, buffer, strlen(buffer));  // Remember: Java recv need string end with EOF
+        printf("Server is sending: '%s'(%ld)", buffer,strlen(buffer)); //Debug print
+        write(*client_socket_id, buffer, strlen(buffer));  //Java recv need string end with EOF
         printf("Register successful\n");
     } else {
         char buffer[25] = {0};
         strcpy(buffer, "Register failed\n");
-        printf("Server is sending: '%s'(%ld)", buffer,strlen(buffer)); //debug
-        write(*client_socket_id, buffer, strlen(buffer));  // Remember: Java recv need string end with EOF
+        printf("Server is sending: '%s'(%ld)", buffer,strlen(buffer)); //Debug print
+        write(*client_socket_id, buffer, strlen(buffer));  //Java recv need string end with EOF
         printf("Register failed\n");
     }
 }
