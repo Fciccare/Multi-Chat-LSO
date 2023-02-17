@@ -28,18 +28,19 @@ public class BottomNavigationActivity extends AppCompatActivity {
 
         bottomNavigationView = findViewById(R.id.bottom_navigation_view);
 
-        //fragmentManager.beginTransaction().add(R.id.frameLayout, ProfileFragment.getInstance(), "2").hide(ProfileFragment.getInstance()).commit();
+        fragmentManager.beginTransaction().add(R.id.frameLayout, ProfileFragment.getInstance(), "2").hide(ProfileFragment.getInstance()).commit();
         fragmentManager.beginTransaction().add(R.id.frameLayout, HomepageFragment.getInstance(), "1").commit();
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             switch (item.getItemId()){
                 case R.id.home_menu:
                     Log.d(TAG, "Click home");
-                    //fragmentManager.beginTransaction().hide(HomepageFragment.getInstance()).show(HomepageFragment.getInstance()).commit();
+                    fragmentManager.beginTransaction().hide(ProfileFragment.getInstance()).show(HomepageFragment.getInstance()).commit();
                 break;
 
                 case R.id.home_profile:
                     Log.d(TAG, "Click profile");
+                    fragmentManager.beginTransaction().hide(HomepageFragment.getInstance()).show(ProfileFragment.getInstance()).commit();
                 break;
 
             }

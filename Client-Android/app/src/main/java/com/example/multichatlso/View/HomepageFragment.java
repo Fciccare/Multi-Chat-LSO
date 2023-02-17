@@ -56,12 +56,6 @@ public class HomepageFragment extends Fragment {
     }
 
 
-    public static HomepageFragment newInstance(String param1, String param2) {
-        HomepageFragment fragment = new HomepageFragment();
-
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,10 +73,10 @@ public class HomepageFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Button buttonSKT = view.findViewById(R.id.buttonSocket);
-        Button buttonLST = view.findViewById(R.id.buttonList);
+        //Button buttonSKT = view.findViewById(R.id.buttonSocket);
+        //Button buttonLST = view.findViewById(R.id.buttonList);
         swipeContainer = view.findViewById(R.id.swipeContainer);
-        EditText txtSocket = view.findViewById(R.id.editTextSocket);
+        //EditText txtSocket = view.findViewById(R.id.editTextSocket);
 
 
         recyclerView = view.findViewById(R.id.recyclerView);
