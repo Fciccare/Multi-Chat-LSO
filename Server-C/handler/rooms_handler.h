@@ -1,6 +1,8 @@
 #ifndef ROOMS_HANDLER_H
 #define ROOMS_HANDLER_H
 
+#include <stdbool.h>
+
 #include "../objects/room.h"
 
 #define MAX_ROOMS 64 //Max rooms that can exist + 1 (room 0 is th starting room)

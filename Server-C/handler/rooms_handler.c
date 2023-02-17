@@ -75,12 +75,11 @@ void print_rooms() { //debug function
   }
 }
 
-void get_formatted_room(int i, char* buff) { //Get a specific room in a formatted manner
-  if (rooms[i] == NULL)
+void get_formatted_room(int i, char* buff) { //Get a specific room in a formatted manner 
+  if (rooms[i] == NULL) //If room is not active, returns terminatoin character
     buff[0] = '\0';
-  else {
-    sprintf(buff, "%d<>%s<>%d\n",i, rooms[i]->name, rooms[i]->clients_counter); //id<>nomeStanza<>clientConnessi
-  }
+  else
+    sprintf(buff, "%d<>%s<>%d\n",i, rooms[i]->name, rooms[i]->clients_counter); // roomID<>roomNAME<>clientsConnected
 }
 
 bool remove_from_zero(int socket_id){ //removes a client from starting room

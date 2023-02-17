@@ -13,6 +13,11 @@
 
 
 ## TO DO :page_with_curl:
+
+**Logica di controllo**
+  - :black_square_button: Controllo e gestione degli errori
+  - :black_square_button: Controllo se utente già loggato
+
 **Impementazione della logica dei Client all'interno delle stanze**
   - :white_check_mark: Entrare 
   - :black_square_button: Uscire se si disconnette
