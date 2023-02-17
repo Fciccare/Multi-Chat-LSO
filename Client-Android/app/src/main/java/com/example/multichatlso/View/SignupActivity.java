@@ -1,14 +1,15 @@
-package com.example.multichatlso;
+package com.example.multichatlso.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.multichatlso.R;
+import com.example.multichatlso.Model.Server;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import es.dmoral.toasty.Toasty;

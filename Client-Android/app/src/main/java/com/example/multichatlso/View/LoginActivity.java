@@ -1,16 +1,16 @@
-package com.example.multichatlso;
+package com.example.multichatlso.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.multichatlso.R;
+import com.example.multichatlso.Model.Server;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.android.material.textfield.TextInputEditText;
 
 import es.dmoral.toasty.Toasty;
 
@@ -55,7 +55,7 @@ public class LoginActivity extends AppCompatActivity {
         String recevingString = Server.getInstance().read();
         if(recevingString != null) Log.d(TAG, recevingString + String.valueOf(recevingString.length()));
         if(recevingString.contains("Login successful"))
-            Toasty.success(getApplicationContext(), "Loggato con successo", Toast.LENGTH_SHORT, true).show();
+            startActivity(new Intent(this, HomepageActivity.class));
         else
             Toasty.error(getApplicationContext(), "Login errato", Toast.LENGTH_SHORT, true).show();
 

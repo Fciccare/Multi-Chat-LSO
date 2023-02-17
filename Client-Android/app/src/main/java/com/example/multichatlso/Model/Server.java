@@ -1,7 +1,5 @@
-package com.example.multichatlso;
+package com.example.multichatlso.Model;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.os.StrictMode;
 import android.util.Log;
 
