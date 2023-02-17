@@ -41,14 +41,17 @@ public class RecyclerRoomAdapter extends RecyclerView.Adapter<RecyclerRoomAdapte
     public class ViewHolder extends RecyclerView.ViewHolder{
 
         private TextView roomName;
+        private TextView roomCounter;
 
         public ViewHolder(final View view) {
             super(view);
             roomName = view.findViewById(R.id.txtRoomCardName);
+            roomCounter = view.findViewById(R.id.txtRoomCardCounter);
         }
 
         public void setDetail(Room room) {
             roomName.setText(room.getName());
+            roomCounter.setText(String.format("%d/%d", room.getClients_counter(), room.getMax_client()));
         }
     }
 }

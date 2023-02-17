@@ -17,7 +17,14 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".View.HomepageActivity"
+            android:name=".RoomActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".View.BottomNavigationActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
