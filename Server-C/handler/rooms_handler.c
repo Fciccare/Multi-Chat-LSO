@@ -10,7 +10,7 @@ unsigned int rooms_active = 1; //room 0 is always active
 unsigned int next_unactive_room_index = 0; //next empty spot to fill with new room
 //0 must never be used as an id!
 
-void init_first_room(){
+void init_starting_room(){
   rooms[0] = room_create(0, "Defualt Room", NULL);
 }
 
