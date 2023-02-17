@@ -10,7 +10,7 @@ unsigned int rooms_active = 1; //room 0 is always active
 unsigned int next_unactive_room_index = 0; //next empty spot to fill with new room
 //0 must never be used as an id!
 
-void init_first_room(){
+void init_starting_room(){
   rooms[0] = room_create(0, "Defualt Room", NULL);
 }
 
@@ -75,12 +75,11 @@ void print_rooms() { //debug function
   }
 }
 
-void get_formatted_room(int i, char* buff) { //Get a specific room in a formatted manner
-  if (rooms[i] == NULL)
+void get_formatted_room(int i, char* buff) { //Get a specific room in a formatted manner 
+  if (rooms[i] == NULL) //If room is not active, returns terminatoin character
     buff[0] = '\0';
-  else {
-    sprintf(buff, "%d<>%s<>%d\n",i, rooms[i]->name, rooms[i]->clients_counter); //id<>nomeStanza<>clientConnessi
-  }
+  else
+    sprintf(buff, "%d<>%s<>%d\n",i, rooms[i]->name, rooms[i]->clients_counter); // roomID<>roomNAME<>clientsConnected
 }
 
 bool remove_from_zero(int socket_id){ //removes a client from starting room
