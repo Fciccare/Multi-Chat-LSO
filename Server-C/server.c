@@ -118,7 +118,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
     close(client_socket_id);
     FD_CLR(client_socket_id, &master); 
     // TODO: controllare se si deve fare altro per la disconnessione!
-    if(client_setSocket_id == maxfdp)
+    if(client_socket_id == maxfdp)
       maxfdp--;
     //  TODO : togliere il client dalla stanza in cui stava! [Funzione ancora da implementare]
   } else {//fulfill client request
