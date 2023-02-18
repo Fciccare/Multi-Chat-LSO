@@ -115,7 +115,7 @@ void createRoom(char *message, int *client_socket_id) {
 
   if (*(message + strlen(message) - 1) == '\n') { // Remove '\n' from end of string that java puts
     *(message + strlen(message) - 1) = '\0';
-    log_info("Removed newline from message");
+    //log_debug("Removed newline from message");
   }
   
   //if (client != NULL){

@@ -19,13 +19,14 @@ sqlite3* db;
 // }
 
 void traceCallback( void* udp, const char* sql ) { 
-    printf("{SQL} %s\n", sql); 
+    log_debug("SQL: {%s}", sql); 
 } 
 
-void initDatabase(){
+void initDatabase(bool debug){
     log_debug("Starting database...");
     sqlite3_open("database/database.db", &db);
-    //sqlite3_trace(db, traceCallback, NULL);
+    if(debug)
+        sqlite3_trace(db, traceCallback, NULL);
     createTable();
 }
 

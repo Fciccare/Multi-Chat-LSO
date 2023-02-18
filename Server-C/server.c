@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
   char buffer[256] = {0};
   int opt, port = 9192;
   char ipaddr[16] = "127.0.0.1";
+  bool debug = false;
   log_set_level(2);
 
   //get arguments from command line
@@ -50,6 +51,7 @@ int main(int argc, char* argv[]) {
     switch(opt){
       case 'd':
         log_set_level(1);
+        debug = true;
       break;
       case 'h':
         printf("Command line arguments:\n -h for show this\n -d for logging to stdout \n -i for set ip address (default: localhost)\n -p for set port (defualt: 9192)\n");
@@ -65,13 +67,11 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  log_info("Server address: %s", ipaddr);
-  log_info("Port : %d", port);
+  log_info("Server address: %s, Port: %d", ipaddr, port);
   //Init database and structure
-  initDatabase();
-  log_info("Init Database");
+  initDatabase(debug);
   init_starting_room();
-  log_info("Init Room");
+  log_debug("Room initiated");
 
   //Setup socket
   struct sockaddr_in saddress, caddress;
