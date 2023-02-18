@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include <fcntl.h>
 #include <pthread.h>
@@ -15,14 +16,13 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
+
 #include "database/database.h"
 
 #include "handler/rooms_handler.h"
 #include "handler/socket_handler.h"
 
 #include "objects/room.h" //room includes the other objects
-
-#define PORT 9192
 
 void error_handler(char[]);
 void *socket_handler(void *);
@@ -33,14 +33,38 @@ fd_set readfds, master;
 
 int maxfdp;
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char* argv[]) {
 
 ////INITIALIZATION SERVER////////////////////////////////////////////////
   signal(SIGINT, signal_handler); //Close database when server is stopped
 
+  char buffer[256] = {0};
+  int opt, port = 9192;
+  char ipaddr[16] = "127.0.0.1";
+
+  //get arguments from command line
+  while ((opt = getopt (argc, argv, "i:p:dh")) != -1){ //i need argument , p need argument, d no arg, h no arg
+    switch(opt){
+      case 'd':
+        //enable logging
+      break;
+      case 'h':
+        printf("Command line arguments:\n -h for show this\n -d for logging to stdout \n -i for set ip address (default: localhost)\n -p for set port (defualt: 9192)\n");
+        exit(EXIT_SUCCESS);
+      case 'p':
+        port = atoi(optarg);
+      break;
+      case 'i':
+        strcpy(ipaddr, optarg);
+      break;
+      case '?': //when i or p don't have arguments
+        exit(EXIT_FAILURE);
+    }
+  }
+
+  //Init database and structure
   initDatabase();
   init_starting_room();
-  char buffer[256] = {0};
 
   //Setup socket
   struct sockaddr_in saddress, caddress;
@@ -49,7 +73,7 @@ int main(int argc, char const *argv[]) {
   // Setup socket TCP SERVER
   saddress.sin_family = AF_INET;
   saddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-  saddress.sin_port = htons(PORT);
+  saddress.sin_port = htons(port);
 
   // Creation socket TCP SERVER
   if ((server_tcp = socket(AF_INET, SOCK_STREAM, 0)) < 0)

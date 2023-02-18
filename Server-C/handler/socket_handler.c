@@ -105,9 +105,10 @@ void createRoom(char *message, int *client_socket_id) {
   if (*(message + strlen(message) - 1) == '\n') { // Remove '\n' from end of string that java puts
     *(message + strlen(message) - 1) = '\0';
   }
+  printf("IL BALLO DEL GODO \n");
   if (client != NULL)
-
     room = room_create(0, message, client); // crash   ???
+  printf("IL SECONDO BALLO DEL GODO \n");
   if (add_room(room)) {
     char text[35];
     sprintf(text, "Room create successful<>%d\n", room->id);
