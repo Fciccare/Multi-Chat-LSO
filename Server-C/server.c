@@ -43,13 +43,13 @@ int main(int argc, char* argv[]) {
   char buffer[256] = {0};
   int opt, port = 9192;
   char ipaddr[16] = "127.0.0.1";
-  log_set_quiet(true);
+  log_set_level(2);
 
   //get arguments from command line
   while ((opt = getopt (argc, argv, "i:p:dh")) != -1){ //i need argument , p need argument, d no arg, h no arg
     switch(opt){
       case 'd':
-        log_set_quiet(false);
+        log_set_level(1);
       break;
       case 'h':
         printf("Command line arguments:\n -h for show this\n -d for logging to stdout \n -i for set ip address (default: localhost)\n -p for set port (defualt: 9192)\n");

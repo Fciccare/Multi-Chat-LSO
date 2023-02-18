@@ -6,22 +6,32 @@
 #include "room.h"
 #include "client.h"
 
+#include "../library/log.h"
+
 //Constructor and Drestory
 
 Room* room_create(unsigned int id, const char* name, Client* master_client) {
   Room* r = (Room*)malloc(sizeof(Room));
+  log_debug("Room malloc successful");
   r->id = id;
   strcpy(r->name, name);
   r->clients_counter = 0;
   r->master_client = master_client;
+  log_debug("Setted id, name, client_counter=0, master_client");
 
-  if(id == 0) //Starting room
+  if(id == 0){ //Starting room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);
-  else //Regular room
+    log_debug("Created dinamic array %d size", MAX_CLIENTS_ZERO);
+  }
+  else{ //Regular room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS);
+    log_debug("Created dinamic array %d size", MAX_CLIENTS);
+  }
 
-  if(master_client != NULL)
+  if(master_client != NULL){
+    log_debug("Master client NULL");
     room_add_client(r, master_client);
+  }
   return r;
 }
 

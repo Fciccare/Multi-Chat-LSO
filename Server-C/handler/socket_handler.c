@@ -5,6 +5,7 @@
 
 #include "rooms_handler.h"
 #include "socket_handler.h"
+#include "../library/log.h"
 
 void socketDispatcher(int *client_socket_id, char *buffer) {
   char tag[5] = {0};
@@ -19,6 +20,7 @@ void socketDispatcher(int *client_socket_id, char *buffer) {
   } else if (strncmp(tag, "[RGT]", 5) == 0) { // Register user
     registerUser(&(*message), client_socket_id);
   } else if (strncmp(tag, "[CRT]", 5) == 0) { // Create room
+    log_info("Create room actived");
     createRoom(&(*message), client_socket_id);
     print_rooms();                            // debug
   } else if (strncmp(tag, "[LST]", 5) == 0) { // Get List of room
@@ -100,15 +102,19 @@ void request_to_enter_room(char *message, int *client_socket_id) {
 
 void createRoom(char *message, int *client_socket_id) {
   Client *client = get_user_by_id(*client_socket_id);
+  log_info("Getted user id: %d", *client_socket_id);
   Room *room = NULL;
 
   if (*(message + strlen(message) - 1) == '\n') { // Remove '\n' from end of string that java puts
     *(message + strlen(message) - 1) = '\0';
+    log_info("Removed newline from message");
   }
-  printf("IL BALLO DEL GODO \n");
-  if (client != NULL)
+  
+  if (client != NULL){
     room = room_create(0, message, client); // crash   ???
-  printf("IL SECONDO BALLO DEL GODO \n");
+    log_info("Room created");
+  } 
+  
   if (add_room(room)) {
     char text[35];
     sprintf(text, "Room create successful<>%d\n", room->id);
