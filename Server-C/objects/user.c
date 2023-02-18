@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "user.h"
+#include "../library/log.h"
 
 //TODO: Gestione Propic, al momento:  u->propic=0;  sempre
 
@@ -41,5 +42,14 @@ void user_setPassword(User* u, const char* password) {
 //Other functions
 
 void user_print(User* u) { //Debug function
-  printf("USER: Nome: %s, Password: %s\n", u->name, u->password);
+  log_debug(user_to_string(u));
+}
+
+char* user_to_string(User* u) {
+  char value[512];
+  if(u != NULL){
+    sprintf(value, "User: {Nome: %s, Password: %s}", u->name, u->password);
+    return strdup(value);
+  }
+  return "User: NULL";
 }

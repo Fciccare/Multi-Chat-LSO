@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
   FD_SET(server_tcp, &master);
 
   maxfdp = server_tcp;
-  printf("server_tcp_socket id: %d\n", server_tcp);
+  log_info("MASTER SOCKET SUCCEFULL CREATED WITH ID: %d", server_tcp);
 ///SERVER INITIALIZED//////////////////////////////////////////////////
 
 
@@ -112,20 +112,21 @@ int main(int argc, char* argv[]) {
 
         if (i == server_tcp) { // If it's a New Connection
 
-          printf("[TCP SOCKET ACTIVE - NEW CONNECTION] (%d)\n", i); //Log Server
+          log_info("SOCKET ACTIVETED IS: %d", i); //Log Server
 
           len = sizeof(caddress);
           int client_socket_id;
           if ((client_socket_id = accept(server_tcp, (struct sockaddr *)&caddress, &len)) == -1)
             error_handler("Accept Error");
-
+          
           FD_SET(client_socket_id, &master);
           if (client_socket_id > maxfdp) 
             maxfdp = client_socket_id; //More clients need to be observed
+          log_info("NEW CLIENT SOCKET ADDED WITH ID: %d", client_socket_id);
 
         } else { // If it's an Existing Connetion
                  // new thread for every request
-          printf("[TCP SOCKET ACTIVE - EXISTING CONNECTION] (%d)\n", i); //Server Log
+          log_info("SOCKET EXISTING CONNECTION (%d)", i); //Server Log
 
           pthread_t thread_id;
           if (pthread_create(&thread_id, NULL, socket_handler, (void *)&i) < 0) 
@@ -145,7 +146,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
 
   pthread_detach(pthread_self()); // We detach here so that thread can be deallocated when finished
   if (byte <= 0) { //If Client Disconnects or Error occurs:
-    printf("Client disconnected [%d]\n", client_socket_id); //Server Log
+    log_info("SOCKET CLIENT DISCONNECTED ID: %d", client_socket_id); //Server Log
     close(client_socket_id);
     FD_CLR(client_socket_id, &master); 
     // TODO: controllare se si deve fare altro per la disconnessione!
@@ -153,11 +154,11 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       maxfdp--;
     //  TODO : togliere il client dalla stanza in cui stava! [Funzione ancora da implementare]
   } else {//fulfill client request
-    printf("Message received: %s\n", buffer);
+    log_info("Message received: %s", buffer);
     socketDispatcher(&client_socket_id, buffer);
   }
 
-  printf("\n\t THREAD FINISH \n");
+  log_debug("THREAD FINISH");
   pthread_exit(NULL);
 }
 

@@ -28,5 +28,7 @@ void client_setRoom_id(Client* c, unsigned int room_id);
 
 //Other Functions
 void client_print(Client* c); //Debug function
+char* client_to_string_full(Client* c); //Debug function
+char* client_to_string(Client* c); //Debug function
 
 #endif

@@ -24,5 +24,6 @@ void user_setPassword(User* user, const char* password);
 
 //Other functions
 void user_print(User* user); //Debug function
+char* user_to_string(User* user); //Debug function
 
 #endif

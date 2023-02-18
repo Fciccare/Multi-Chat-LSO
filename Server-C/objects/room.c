@@ -17,7 +17,7 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
   strcpy(r->name, name);
   r->clients_counter = 0;
   r->master_client = master_client;
-  log_debug("Setted id, name, client_counter=0, master_client");
+  log_debug("Setted id=%d, name=%s, client_counter=0, master_client", id, name);
 
   if(id == 0){ //Starting room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);
@@ -29,7 +29,7 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
   }
 
   if(master_client != NULL){
-    log_debug("Master client NULL");
+    log_debug("Master client NOT NULL");
     room_add_client(r, master_client);
   }
   return r;
@@ -74,19 +74,17 @@ Client* room_get_client_by_id(Room* r, int client_socket_id){
 //Other funcions
 
 void room_print(Room* r) { //Debug funcion
-  printf("---\nid = %d\nname = %s\nclients_counter = %d\nmaster_client:\n", r->id, r->name,r->clients_counter);
-  if(r->master_client!=NULL)
-    client_print(r->master_client);
-
+  log_debug("Room: {id: %d, name: %s, clients_counter: %d, Master%s}", r->id, r->name,r->clients_counter, client_to_string_full(r->master_client));
+  /*
   for(int i = 0; i < r->clients_counter; ++i){
-    printf("(%d) : ", i);
+    //printf("(%d): ", i);
     if(r->clients[i] == NULL)
-      printf("NULL\n");
+      ;//printf("NULL\n");
     else 
-      printf("NOT NULL\n");
-  }
+      log_debug("%d: NOT NULL", i);
+  }*/
   //TODO: stampa lista client
-  printf("Per ora ometto la stampa della lista dei client\n---\n");
+  //printf("Per ora ometto la stampa della lista dei client\n---\n");
 }
 
 bool room_add_client(Room* r, Client* client) { //Non cicla, please fix it ❤

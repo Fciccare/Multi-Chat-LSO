@@ -81,8 +81,6 @@ void errorHandler(char text[]){
 }
 
 bool isExistingUser(char username[], char password[]) {
-    log_debug("Checking: %s (%ld)", username, strlen(username));
-    log_debug("Checking: %s (%ld)", password, strlen(password));
     sqlite3_stmt* stmt;
     char query[] =
         "SELECT * FROM Users WHERE username = ? and password = ?;";
@@ -96,7 +94,7 @@ bool isExistingUser(char username[], char password[]) {
     sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_STATIC);
 
     if (sqlite3_step(stmt) == SQLITE_ROW) {
-        printf("User exists \n");
+        log_debug("User exists in database");
     } else {
         errorHandler("User doesn't exists");
         sqlite3_finalize(stmt);

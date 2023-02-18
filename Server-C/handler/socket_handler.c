@@ -20,9 +20,8 @@ void socketDispatcher(int *client_socket_id, char *buffer) {
   } else if (strncmp(tag, "[RGT]", 5) == 0) { // Register user
     registerUser(&(*message), client_socket_id);
   } else if (strncmp(tag, "[CRT]", 5) == 0) { // Create room
-    log_info("Create room actived");
     createRoom(&(*message), client_socket_id);
-    print_rooms();                            // debug
+    //print_rooms();                            // debug
   } else if (strncmp(tag, "[LST]", 5) == 0) { // Get List of room
     getList(client_socket_id);
   } else if (strncmp(tag, "[RQT]", 5) == 0) { // Request from client to enter in a room
@@ -64,7 +63,7 @@ void accept_request(char *message) { // Accept user in a room
   // Send to Client it has been accepted
   char text[25];
   sprintf(text, "Access accept<>%d\n", room->id);
-  printf("Server is sending: '%s'(%ld)", text, strlen(text)); // Debug print
+  log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
   write(socket_id_client, text, strlen(text));
 }
 
@@ -72,7 +71,7 @@ void not_accept_request(char *message) { // Don't accept a Client in a room
   // Send to Client it has not been accepted
   unsigned int client_socket_id = atoi(message);
   char text[] = "Access denied\n";
-  printf("Server is sending: '%s'(%ld)", text, strlen(text)); // Debug print
+  log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
   write(client_socket_id, text, strlen(text));
 }
 
@@ -96,13 +95,22 @@ void request_to_enter_room(char *message, int *client_socket_id) {
   char buffer[50];
   sprintf(buffer, "[RQT]%d<>%s<>%d\n", *client_socket_id, client->user->name, room_id);
   //[RQT]client_requesting_to_enter_socket_id<>user_name<>room_id
-  printf("Server is sending: '%s'(%ld)", buffer, strlen(buffer)); // Debug print
+  log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
   write(master_client_socket_id, buffer, strlen(buffer));
 }
 
 void createRoom(char *message, int *client_socket_id) {
   Client *client = get_user_by_id(*client_socket_id);
-  log_info("Getted user with id: %d", *client_socket_id);
+  if(client != NULL) {
+    log_info("Getted user from room_zero with id: %d", *client_socket_id);
+  }else{
+    log_error("No user in room_zero with id: %d", *client_socket_id);
+    char* text = "Error creation of room\n";
+    log_warn("Server is sending(%ld): %s", strlen(text), text);
+    write(*client_socket_id, text, strlen(text)); 
+    return;
+  } 
+  
   Room *room = NULL;
 
   if (*(message + strlen(message) - 1) == '\n') { // Remove '\n' from end of string that java puts
@@ -117,11 +125,11 @@ void createRoom(char *message, int *client_socket_id) {
   
   if (add_room(room)) {
     log_debug("Room added");
+    room_print(room);//TODO: Change with room_to_string for prevent spam room null
     char text[35];
     sprintf(text, "Room create successful<>%d\n", room->id);
-    log_info("Server is sending: '%s'(%ld)", text, strlen(text)); // Debug print
+    log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
     write(*client_socket_id, text, strlen(text));               // Remember: Java recv need string end with EOF
-    log_info("Room created successful");
     remove_from_zero(client->socket_id); // TODO: Ritorna un boolean, forse lo vogliamo gestire?
     return;
   }
@@ -156,7 +164,7 @@ void broadcastMessageRoom(char *message, int *client_socket_id) {
         
         sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id);
         //[MSG]message_to_send<>sender_socket_id
-        printf("Server is sending: '%s'(%ld)", text, strlen(text)); // Debug print
+        log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
         write(client_id, text, strlen(text));
 
         count++;
@@ -176,22 +184,20 @@ void login(char *message, int *client_socket_id) {
       char buffer[20] = {0};
     if (log_user(user_create(username, password), *client_socket_id)) { //put user in starting room
       strcpy(buffer, "Login successful\n");
-      printf("Server is sending: '%s'(%ld)", buffer, strlen(buffer)); // Debug print
+      log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
       write(*client_socket_id, buffer, strlen(buffer));               // Java recv needs string end with EOF
-      printf("Login successful\n");
-
     } else { //unable to put it in starting room 
       strcpy(buffer, "Starting room full\n");
       write(*client_socket_id, buffer, strlen(buffer)); // Java recv need string end with EOF
-      printf("Starting room full\n");
+      log_warn("Starting room full");
     }
 
   } else { //if user doesn't exist
     char buffer[20] = {0};
     strcpy(buffer, "Login failed\n");
-    printf("Server is sending: '%s'(%ld)", buffer, strlen(buffer)); // Debug print
+    log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
     write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
-    printf("Login failed\n");                                       // Server Log
+    log_warn("Login failed");                                       // Server Log
   }
 
   free(text);
@@ -216,15 +222,14 @@ void registerUser(char *message, int *client_socket_id) {
   if (insertUser(username, password)) {
     char buffer[25] = {0};
     strcpy(buffer, "Register successful\n");
-    printf("Server is sending: '%s'(%ld)", buffer, strlen(buffer)); // Debug print
+    log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
     write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
-    printf("Register successful\n");
   } else {
     char buffer[25] = {0};
     strcpy(buffer, "Register failed\n");
-    printf("Server is sending: '%s'(%ld)", buffer, strlen(buffer)); // Debug print
+    log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
     write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
-    printf("Register failed\n");                                    // Server Log
+    log_warn("Register failed");                                    // Server Log
   }
 
   free(text);
@@ -246,7 +251,7 @@ void getList(int *client_socket_id) {
   char buff[42] = {0}; // formatted room buffer
 
   sprintf(start, "[LST]%d\n", MAX_CLIENTS);
-  printf("Server is sending: '%s'(%ld)", start, strlen(start)); // Debug print
+  log_info("Server is sending(%ld): %s", strlen(start), start); // Debug print
   write(*client_socket_id, start, strlen(start));
 
   int tmpFound = 0;                                  // how many rooms already found
@@ -257,14 +262,14 @@ void getList(int *client_socket_id) {
     }
     get_formatted_room(i, buff); // it gets roomID<>roomNAME<>clientsConnected\n, if rooom is unactive termination character
     if (buff[0] != '\0') {
-      printf("Server is sending: '%s'(%ld)", buff, strlen(buff)); // Debug print
+      log_info("Server is sending(%ld): %s", strlen(buff), buff); // Debug print
       write(*client_socket_id, buff, strlen(buff));
       bzero(buff, 42);
       tmpFound++;
     } //if buff == '\0' room is unactive so we don't send it to client
     i++;
   }
-  printf("Server is sending: '%s'(%ld)", end, strlen(end)); // Debug print
+  log_info("Server is sending(%ld): %s", strlen(end), end); // Debug print
   write(*client_socket_id, end, strlen(end));
   printf("Room List sent successfully"); //Server Log
 }
