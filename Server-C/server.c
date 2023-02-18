@@ -24,6 +24,8 @@
 
 #include "objects/room.h" //room includes the other objects
 
+#include "library/log.h"
+
 void error_handler(char[]);
 void *socket_handler(void *);
 void signal_handler(int);
@@ -41,12 +43,13 @@ int main(int argc, char* argv[]) {
   char buffer[256] = {0};
   int opt, port = 9192;
   char ipaddr[16] = "127.0.0.1";
+  log_set_quiet(true);
 
   //get arguments from command line
   while ((opt = getopt (argc, argv, "i:p:dh")) != -1){ //i need argument , p need argument, d no arg, h no arg
     switch(opt){
       case 'd':
-        //enable logging
+        log_set_quiet(false);
       break;
       case 'h':
         printf("Command line arguments:\n -h for show this\n -d for logging to stdout \n -i for set ip address (default: localhost)\n -p for set port (defualt: 9192)\n");
@@ -62,9 +65,13 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  log_info("Server address: %s", ipaddr);
+  log_info("Port : %d", port);
   //Init database and structure
   initDatabase();
+  log_info("Init Database");
   init_starting_room();
+  log_info("Init Room");
 
   //Setup socket
   struct sockaddr_in saddress, caddress;

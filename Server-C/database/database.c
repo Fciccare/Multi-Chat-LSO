@@ -23,7 +23,7 @@ void traceCallback( void* udp, const char* sql ) {
 void initDatabase(){
     printf("Starting database...\n");
     sqlite3_open("database/database.db", &db);
-    sqlite3_trace(db, traceCallback, NULL);
+    //sqlite3_trace(db, traceCallback, NULL);
     createTable();
 }
 
