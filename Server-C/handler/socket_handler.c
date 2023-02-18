@@ -102,7 +102,7 @@ void request_to_enter_room(char *message, int *client_socket_id) {
 
 void createRoom(char *message, int *client_socket_id) {
   Client *client = get_user_by_id(*client_socket_id);
-  log_info("Getted user id: %d", *client_socket_id);
+  log_info("Getted user with id: %d", *client_socket_id);
   Room *room = NULL;
 
   if (*(message + strlen(message) - 1) == '\n') { // Remove '\n' from end of string that java puts
@@ -110,17 +110,18 @@ void createRoom(char *message, int *client_socket_id) {
     log_info("Removed newline from message");
   }
   
-  if (client != NULL){
+  //if (client != NULL){
     room = room_create(0, message, client); // crash   ???
     log_info("Room created");
-  } 
+  //} else log_info("Room Zero alredy created");
   
   if (add_room(room)) {
+    log_debug("Room added");
     char text[35];
     sprintf(text, "Room create successful<>%d\n", room->id);
-    printf("Server is sending: '%s'(%ld)", text, strlen(text)); // Debug print
+    log_info("Server is sending: '%s'(%ld)", text, strlen(text)); // Debug print
     write(*client_socket_id, text, strlen(text));               // Remember: Java recv need string end with EOF
-    printf("Room created successful\n");
+    log_info("Room created successful");
     remove_from_zero(client->socket_id); // TODO: Ritorna un boolean, forse lo vogliamo gestire?
     return;
   }
