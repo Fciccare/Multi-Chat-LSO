@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "rooms_handler.h"
+#include "../library/log.h"
 
 Room* rooms[MAX_ROOMS] = {0};
 unsigned int rooms_active = 1; //room 0 is always active
@@ -24,15 +25,20 @@ Client* get_user_by_id(int client_socket_id){
 }
 
 bool add_room(Room* new_room) {
-  if (rooms_active == MAX_ROOMS) //if there is no space for a new room
+  if (rooms_active == MAX_ROOMS){ //if there is no space for a new room
+    log_debug("Max Room reached");
     return false;
-  
+  }
   next_unactive_room_index = find_next_unactive_room_index();
-  // printf("Next_unactive_room_index: %d\n", next_unactive_room_index); //debug print
+  log_debug("Next unactive room index: %d", next_unactive_room_index);
   rooms[next_unactive_room_index] = new_room;
+  log_debug("Room assegned to array");
 
-  new_room->id=next_unactive_room_index;
-  rooms_active++;
+  if(new_room != NULL){
+    new_room->id=next_unactive_room_index;
+    rooms_active++;
+  }
+  log_debug("Set room add id, and increment rooms counter");
   
   return true;
 }

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include <fcntl.h>
 #include <pthread.h>
@@ -15,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
+
 #include "database/database.h"
 
 #include "handler/rooms_handler.h"
@@ -22,7 +24,7 @@
 
 #include "objects/room.h" //room includes the other objects
 
-#define PORT 9192
+#include "library/log.h"
 
 void error_handler(char[]);
 void *socket_handler(void *);
@@ -33,14 +35,43 @@ fd_set readfds, master;
 
 int maxfdp;
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char* argv[]) {
 
 ////INITIALIZATION SERVER////////////////////////////////////////////////
   signal(SIGINT, signal_handler); //Close database when server is stopped
 
-  initDatabase();
-  init_starting_room();
   char buffer[256] = {0};
+  int opt, port = 9192;
+  char ipaddr[16] = "127.0.0.1";
+  bool debug = false;
+  log_set_level(2);
+
+  //get arguments from command line
+  while ((opt = getopt (argc, argv, "i:p:dh")) != -1){ //i need argument , p need argument, d no arg, h no arg
+    switch(opt){
+      case 'd':
+        log_set_level(1);
+        debug = true;
+      break;
+      case 'h':
+        printf("Command line arguments:\n -h for show this\n -d for logging to stdout \n -i for set ip address (default: localhost)\n -p for set port (defualt: 9192)\n");
+        exit(EXIT_SUCCESS);
+      case 'p':
+        port = atoi(optarg);
+      break;
+      case 'i':
+        strcpy(ipaddr, optarg);
+      break;
+      case '?': //when i or p don't have arguments
+        exit(EXIT_FAILURE);
+    }
+  }
+
+  log_info("Server address: %s, Port: %d", ipaddr, port);
+  //Init database and structure
+  initDatabase(debug);
+  init_starting_room();
+  log_debug("Room initiated");
 
   //Setup socket
   struct sockaddr_in saddress, caddress;
@@ -49,7 +80,7 @@ int main(int argc, char const *argv[]) {
   // Setup socket TCP SERVER
   saddress.sin_family = AF_INET;
   saddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-  saddress.sin_port = htons(PORT);
+  saddress.sin_port = htons(port);
 
   // Creation socket TCP SERVER
   if ((server_tcp = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -67,7 +98,7 @@ int main(int argc, char const *argv[]) {
   FD_SET(server_tcp, &master);
 
   maxfdp = server_tcp;
-  printf("server_tcp_socket id: %d\n", server_tcp);
+  log_info("MASTER SOCKET SUCCEFULL CREATED WITH ID: %d", server_tcp);
 ///SERVER INITIALIZED//////////////////////////////////////////////////
 
 
@@ -81,20 +112,21 @@ int main(int argc, char const *argv[]) {
 
         if (i == server_tcp) { // If it's a New Connection
 
-          printf("[TCP SOCKET ACTIVE - NEW CONNECTION] (%d)\n", i); //Log Server
+          log_info("SOCKET ACTIVETED IS: %d", i); //Log Server
 
           len = sizeof(caddress);
           int client_socket_id;
           if ((client_socket_id = accept(server_tcp, (struct sockaddr *)&caddress, &len)) == -1)
             error_handler("Accept Error");
-
+          
           FD_SET(client_socket_id, &master);
           if (client_socket_id > maxfdp) 
             maxfdp = client_socket_id; //More clients need to be observed
+          log_info("NEW CLIENT SOCKET ADDED WITH ID: %d", client_socket_id);
 
         } else { // If it's an Existing Connetion
                  // new thread for every request
-          printf("[TCP SOCKET ACTIVE - EXISTING CONNECTION] (%d)\n", i); //Server Log
+          log_info("SOCKET EXISTING CONNECTION (%d)", i); //Server Log
 
           pthread_t thread_id;
           if (pthread_create(&thread_id, NULL, socket_handler, (void *)&i) < 0) 
@@ -114,7 +146,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
 
   pthread_detach(pthread_self()); // We detach here so that thread can be deallocated when finished
   if (byte <= 0) { //If Client Disconnects or Error occurs:
-    printf("Client disconnected [%d]\n", client_socket_id); //Server Log
+    log_info("SOCKET CLIENT DISCONNECTED ID: %d", client_socket_id); //Server Log
     close(client_socket_id);
     FD_CLR(client_socket_id, &master); 
     // TODO: controllare se si deve fare altro per la disconnessione!
@@ -122,11 +154,11 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       maxfdp--;
     //  TODO : togliere il client dalla stanza in cui stava! [Funzione ancora da implementare]
   } else {//fulfill client request
-    printf("Message received: %s\n", buffer);
+    log_info("Message received: %s", buffer);
     socketDispatcher(&client_socket_id, buffer);
   }
 
-  printf("\n\t THREAD FINISH \n");
+  log_debug("THREAD FINISH");
   pthread_exit(NULL);
 }
 

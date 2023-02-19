@@ -6,7 +6,7 @@
 void createTable();
 bool isExistingUser(char[], char[]);
 bool insertUser(char[], char[]);
-void initDatabase();
+void initDatabase(bool);
 void closeDatabase();
 
 #endif

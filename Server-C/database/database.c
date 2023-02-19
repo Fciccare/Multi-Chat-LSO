@@ -3,6 +3,8 @@
 #include "database.h"
 #include <string.h>
 
+#include "../library/log.h"
+
 void errorHandler(char[]);
 
 sqlite3* db;
@@ -17,13 +19,14 @@ sqlite3* db;
 // }
 
 void traceCallback( void* udp, const char* sql ) { 
-    printf("{SQL} %s\n", sql); 
+    log_debug("SQL: {%s}", sql); 
 } 
 
-void initDatabase(){
-    printf("Starting database...\n");
+void initDatabase(bool debug){
+    log_debug("Starting database...");
     sqlite3_open("database/database.db", &db);
-    sqlite3_trace(db, traceCallback, NULL);
+    if(debug)
+        sqlite3_trace(db, traceCallback, NULL);
     createTable();
 }
 
@@ -42,7 +45,7 @@ void createTable(){
         "image BLOB);";
 
     if(sqlite3_exec(db, query, NULL, NULL, &error) == SQLITE_OK){
-        printf("Table created or alreary created\n");
+        log_debug("Table created or alreary created");
     } else {
         errorHandler(error);
         sqlite3_free(error);
@@ -63,7 +66,7 @@ bool insertUser(char username[], char password[]){
     sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_TRANSIENT);
 
     if(sqlite3_step(stmt) == SQLITE_DONE){
-        printf("Insert successful\n");
+        log_debug("Insert successful");
     } else {
         errorHandler("Insert failed");
         return false;
@@ -79,8 +82,6 @@ void errorHandler(char text[]){
 }
 
 bool isExistingUser(char username[], char password[]) {
-    printf("Checking: %s (%ld)\n", username, strlen(username));
-    printf("Checking: %s (%ld)\n", password, strlen(password));
     sqlite3_stmt* stmt;
     char query[] =
         "SELECT * FROM Users WHERE username = ? and password = ?;";
@@ -94,7 +95,7 @@ bool isExistingUser(char username[], char password[]) {
     sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_STATIC);
 
     if (sqlite3_step(stmt) == SQLITE_ROW) {
-        printf("User exists \n");
+        log_debug("User exists in database");
     } else {
         errorHandler("User doesn't exists");
         sqlite3_finalize(stmt);

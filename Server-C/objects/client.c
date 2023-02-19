@@ -4,6 +4,7 @@
 
 #include "user.h"
 #include "client.h"
+#include "../library/log.h"
 
 //Constructor and Destroy
 
@@ -36,7 +37,26 @@ void client_setRoom_id(Client* c, unsigned int room_id) {
 //Other Functions
 
 void client_print(Client* c) { //Debug Funcion
-  printf("CLIENT:\n");
-  user_print(c->user);
-  printf("Socket_id: %d\nRoom_id: %d\n", c->socket_id, c->room_id);
+  char* value = NULL;
+  sprintf(value, "%s", client_to_string_full(c));
+  log_debug(value);
 }  
+
+char* client_to_string_full(Client* c) {
+  char value[512];
+  if(c != NULL) {
+    sprintf(value, "Client: {Socket_id: %d, Room_id: %d, %s}", c->socket_id, c->room_id, user_to_string(c->user));
+    return strdup(value);
+  }
+  return "Client: NULL";
+}
+
+char* client_to_string(Client* c) {
+  char value[512];
+  if(c != NULL){
+    sprintf(value, "Client: {Socket_id: %d\tRoom_id: %d}", c->socket_id, c->room_id);
+    return strdup(value);
+  } 
+    
+  return "Client: NULL";
+}
