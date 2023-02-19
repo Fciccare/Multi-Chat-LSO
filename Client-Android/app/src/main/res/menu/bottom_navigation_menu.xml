@@ -8,8 +8,16 @@
     </item>
 
     <item
+        android:id="@+id/home_add"
+        android:title=""
+        android:icon="@drawable/ic_round_add_24">
+    </item>
+
+    <item
         android:id="@+id/home_profile"
         android:title=""
         android:icon="@drawable/ic_round_person_64">
     </item>
+
+
 </menu>

@@ -61,7 +61,11 @@ public class ProfileFragment extends Fragment {
             String result = "";
             result = Server.getInstance().read();
 
-            Toasty.info(requireContext(), result).show();
+
+            if(result.contains("Error"))
+                Toasty.error(requireContext(), result).show();
+            else
+                Toasty.info(requireContext(), result).show();
             txtSocket.setText("");
         });
     }

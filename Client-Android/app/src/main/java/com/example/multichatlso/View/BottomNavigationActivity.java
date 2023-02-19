@@ -2,6 +2,7 @@ package com.example.multichatlso.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.content.Intent;
@@ -28,19 +29,25 @@ public class BottomNavigationActivity extends AppCompatActivity {
 
         bottomNavigationView = findViewById(R.id.bottom_navigation_view);
 
-        fragmentManager.beginTransaction().add(R.id.frameLayout, ProfileFragment.getInstance(), "2").hide(ProfileFragment.getInstance()).commit();
+        //fragmentManager.beginTransaction().add(R.id.frameLayout, InsertRoomFragment.getInstance(), "3").hide(InsertRoomFragment.getInstance()).commit();
+        //fragmentManager.beginTransaction().add(R.id.frameLayout, ProfileFragment.getInstance(), "2").hide(ProfileFragment.getInstance()).commit();
         fragmentManager.beginTransaction().add(R.id.frameLayout, HomepageFragment.getInstance(), "1").commit();
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             switch (item.getItemId()){
                 case R.id.home_menu:
                     Log.d(TAG, "Click home");
-                    fragmentManager.beginTransaction().hide(ProfileFragment.getInstance()).show(HomepageFragment.getInstance()).commit();
+                    fragmentManager.beginTransaction().replace(R.id.frameLayout,HomepageFragment.getInstance()).commit();
                 break;
 
                 case R.id.home_profile:
                     Log.d(TAG, "Click profile");
-                    fragmentManager.beginTransaction().hide(HomepageFragment.getInstance()).show(ProfileFragment.getInstance()).commit();
+                    fragmentManager.beginTransaction().replace(R.id.frameLayout,ProfileFragment.getInstance()).commit();
+                break;
+
+                case R.id.home_add:
+                    Log.d(TAG, "Click add");
+                    fragmentManager.beginTransaction().replace(R.id.frameLayout,InsertRoomFragment.getInstance()).commit();
                 break;
 
             }

@@ -96,10 +96,12 @@ public class HomepageFragment extends Fragment {
         recyclerView.addOnItemTouchListener(
             new RecyclerItemClickListener(getContext(), recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
                 @Override public void onItemClick(View view, int position) {
-                    Toasty.success(getContext(), rooms.get(position).toString(), 1).show();
+                    Intent i = new Intent(getActivity(), RoomActivity.class);
+                    i.putExtra("Room", rooms.get(position));
+                    startActivity(i);
                 }
 
-                @Override public void onLongItemClick(View view, int position) {Toasty.info(getContext(), "Easter egg").show();}
+                @Override public void onLongItemClick(View view, int position) {Toasty.info(requireContext(), "Easter egg").show();}
             })
         );
 
