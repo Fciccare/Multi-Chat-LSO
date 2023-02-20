@@ -118,13 +118,12 @@ void createRoom(char *message, int *client_socket_id) {
     //log_debug("Removed newline from message");
   }
   
-  //if (client != NULL){
-    room = room_create(0, message, client); // crash   ???
-    log_info("Room created");
-  //} else log_info("Room Zero alredy created");
+  room = room_create(0, message, client); //Create new room, id is set to 0 but will be changed
+  log_info("Room created");
   
   if (add_room(room)) {
     log_debug("Room added");
+    
     room_print(room);//TODO: Change with room_to_string for prevent spam room null
     char text[35];
     sprintf(text, "Room create successful<>%d\n", room->id);
