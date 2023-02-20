@@ -39,7 +39,7 @@
 ## API :books:
 
 |Tag                  | Server                     | Client
-|:---:                | :---:                      | :---:
+|:---                 | :---:                      | :---:
 |\[MSG\]data<>room_id | Send message brodcast room | :boom:
 |\[LGN\]user<>pass    | Send "Login succeful"      | :boom:
 |\[RGT\]user<>pass    | Send "Register successful" | :boom:
