@@ -38,8 +38,14 @@
  
 ## API :books:
 
-|Tag    | Success                   | Failed
-|:---:  | :---:                     | :---:
-|\[MSG\]| Send message brodcast room| :boom:
-|\[LGN\]| Send "Login succeful"     | :boom:
+|Tag                  | Server                     | Client
+|:---:                | :---:                      | :---:
+|\[MSG\]data<>room_id | Send message brodcast room | :boom:
+|\[LGN\]user<>pass    | Send "Login succeful"      | :boom:
+|\[RGT\]user<>pass    | Send "Register successful" | :boom:
+|\[CRT\]RoomName      | Send "Register successful" | :boom:
+|\[ACC\]sock<>room_id | Send "Register successful" | :boom:
+|\[NAC\]sock_client   | Send "Register successful" | :boom:
+|\[RQT\]room_id       | Send "Register successful" | :boom:
+
 
