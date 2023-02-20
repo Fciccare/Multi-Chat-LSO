@@ -25,20 +25,24 @@ Client* get_user_by_id(int client_socket_id){
 }
 
 bool add_room(Room* new_room) {
+
   if (rooms_active == MAX_ROOMS){ //if there is no space for a new room
-    log_debug("Max Room reached");
+    log_warn("Max Room reached, unable to create new room");
     return false;
   }
+  if(new_room == NULL){ //unexpected behaviour
+    log_error("Trying to add null room to rooms array");
+    return false;
+  }
+
   next_unactive_room_index = find_next_unactive_room_index();
   log_debug("Next unactive room index: %d", next_unactive_room_index);
+  
   rooms[next_unactive_room_index] = new_room;
-  log_debug("Room assegned to array");
-
-  if(new_room != NULL){
-    new_room->id=next_unactive_room_index;
-    rooms_active++;
-  }
-  log_debug("Set room add id, and increment rooms counter");
+  rooms_active++;
+  new_room->id=next_unactive_room_index;
+  new_room->master_client->room_id=next_unactive_room_index;
+  log_debug("New room assegned to array, set new room id, set master client room id, increment rooms_active counter");
   
   return true;
 }
