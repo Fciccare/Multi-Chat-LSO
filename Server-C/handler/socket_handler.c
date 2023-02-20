@@ -46,7 +46,7 @@ void accept_request(char *message) { // Accept user in a room
   // DOMANDA: questo socket id è il master client o il client che è stato accettato? controllare, io su client java non capisco niente )=
 
   int socket_id_client = atoi(string_socket_id_client);
-  int room_id = atoi(string_room_id);
+  unsigned int room_id = atoi(string_room_id);
 
   // Insert client into room
   Room *room = get_room_by_id(room_id);
@@ -135,7 +135,7 @@ void createRoom(char *message, int *client_socket_id) {
 
   // else: failed to create room
   write(*client_socket_id, "Room create failed\n", 20); // Java recv need string end with EOF
-  printf("Room create failed\n");
+  log_warn("Room create failed");
 }
 
 void broadcastMessageRoom(char *message, int *client_socket_id) {

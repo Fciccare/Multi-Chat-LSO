@@ -15,8 +15,13 @@ void init_starting_room(){
   rooms[0] = room_create(0, "Defualt Room", NULL);
 }
 
-Room* get_room_by_id(int room_id){
-  //TODO: Aggiungere controlli (forse)
+Room* get_room_by_id(unsigned int room_id){
+
+  if(room_id >= MAX_ROOMS){
+    log_error("Error: get_room_by_id, out of bounds array index");
+    return NULL;
+  }
+
   return rooms[room_id];
 }
 
@@ -31,13 +36,13 @@ bool add_room(Room* new_room) {
     return false;
   }
   if(new_room == NULL){ //unexpected behaviour
-    log_error("Trying to add null room to rooms array");
+    log_error("Error: Trying to add null room to rooms array");
     return false;
   }
 
   next_unactive_room_index = find_next_unactive_room_index();
-  log_debug("Next unactive room index: %d", next_unactive_room_index);
   
+  log_debug("Next unactive room index: %d", next_unactive_room_index);
   rooms[next_unactive_room_index] = new_room;
   rooms_active++;
   new_room->id=next_unactive_room_index;
