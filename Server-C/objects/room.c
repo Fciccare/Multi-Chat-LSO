@@ -36,6 +36,7 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
 }
 
 void room_destroy(Room* r) {
+  log_debug("destroying room");
   free(r);
 }
 
@@ -57,37 +58,37 @@ void room_setMaster_client(Room* r, Client* master_client) {
   r->master_client = master_client;
 }
 
+//Other funcions
+
 Client* room_get_client_by_id(Room* r, int client_socket_id){
   int online_client = r->clients_counter;
   int count = 0;
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if(r->clients[i] != NULL){
       count++;
-      if(r->clients[i]->socket_id == client_socket_id)
+      if(r->clients[i]->socket_id == client_socket_id){
+        log_debug("found client with id:%d in room with id:%d", client_socket_id, r->id);
         return r->clients[i];
+      }
     }
-    if(count == online_client)
+    if(count == online_client) {
+      log_debug("can't find client with id:%d in room with id:%d", client_socket_id, r->id);
       return NULL;
+    }
   }
 }
 
-//Other funcions
-
 void room_print(Room* r) { //Debug funcion
   log_debug("Room: {id: %d, name: %s, clients_counter: %d, Master%s}", r->id, r->name,r->clients_counter, client_to_string_full(r->master_client));
-  /*
-  for(int i = 0; i < r->clients_counter; ++i){
-    //printf("(%d): ", i);
-    if(r->clients[i] == NULL)
-      ;//printf("NULL\n");
-    else 
-      log_debug("%d: NOT NULL", i);
-  }*/
-  //TODO: stampa lista client
-  //printf("Per ora ometto la stampa della lista dei client\n---\n");
+}
+
+char* room_to_string(Room* r){
+  //TODO: DA SCRIVER!
+  return NULL;
 }
 
 bool room_add_client(Room* r, Client* client) { //Non cicla, please fix it ❤
+  //TODO: RICONTROLLAREEEEEEEEEEEEEEEEE
   if (r->id != 0 && r->clients_counter == MAX_CLIENTS) {
     return false;
   } else if (r->id == 0 && r->clients_counter == MAX_CLIENTS_ZERO ){
@@ -125,6 +126,6 @@ bool room_remove_client(Room* r, int socket_id) {
     }
     if (count == online_client) return false;
   }
-
+  //BUGIA
   printf("\nHo cancellato (per finta, ho solo derementato il contatore) il client\n");
 }

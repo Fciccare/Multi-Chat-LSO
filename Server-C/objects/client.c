@@ -13,10 +13,12 @@ Client* client_create(User* user, int socket_id, unsigned int room_id) {
   c->user = user;
   c->socket_id = socket_id;
   c->room_id = room_id;
+  log_debug("client created: %s", client_to_string_full(c));
   return c;
 }
 
 void client_destory(Client* c) {
+  log_debug("destroying client: %s", client_to_string_full(c));
   free(c);
 }
 

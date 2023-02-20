@@ -30,9 +30,11 @@ void room_setClients_counter(Room* r, unsigned int clients_counter);
 void room_setMaster_client(Room* r, Client* master_client);
 
 //Other functions
+Client* room_get_client_by_id(Room* r, int client_socket_id);
+//TODO: DA SCRVERE ANCORA
 void room_print(Room* r); //Debug function
+char* room_to_string(Room* r);
 bool room_add_client(Room* r, Client* client);
 bool room_remove_client(Room* r, int socket_id); 
-Client* room_get_client_by_id(Room* r, int client_socket_id);
 
 #endif

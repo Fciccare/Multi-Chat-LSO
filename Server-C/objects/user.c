@@ -6,7 +6,7 @@
 #include "user.h"
 #include "../library/log.h"
 
-//TODO: Gestione Propic, al momento:  u->propic=0;  sempre
+//TODO: [POCO IMPORTANTE] Gestione Propic, al momento:  u->propic=0;  sempre
 
 //Constructors and Destory
 User* user_create_default() {
@@ -14,6 +14,7 @@ User* user_create_default() {
   strcpy(u->name, "defaultName");
   strcpy(u->password, "change your password!");
   u->propic=0;
+  log_debug("default user created: %s", user_to_string(u));
   return u;
 }
 
@@ -22,10 +23,12 @@ User* user_create(const char* name, const char* password) {
   strcpy(u->name, name);
   strcpy(u->password, password);
   u->propic=0;
+  log_debug("user created: %s", user_to_string(u));
   return u;
 }
 
 void user_destroy(User* u){
+  log_debug("destroying user: %s", user_to_string(u));
   free(u);
 }
 
