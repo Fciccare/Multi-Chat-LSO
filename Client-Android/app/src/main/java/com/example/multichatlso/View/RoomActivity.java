@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 
@@ -78,10 +79,12 @@ public class RoomActivity extends AppCompatActivity {
             while(true){
                 String result = Server.getInstance().read();
                 Log.d(TAG, "Server sended: " + result);
-                String[] splitted = result.trim().split("<>");
-                Message m = new Message(splitted[0].replace("[MSG]", ""), splitted[1]);
-                messages.add(m);
-                adapter.notifyDataSetChanged();
+                if (result.contains("[MSG]")){
+                    String[] splitted = result.trim().split("<>");
+                    Message m = new Message(splitted[0].replace("[MSG]", ""), splitted[1]);
+                    messages.add(m);
+                    adapter.notifyDataSetChanged();
+                }
             }
         }).start();
     }
