@@ -23,7 +23,7 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerMessage
     @NonNull
     @Override
     public RecyclerMessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.card,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_layout,parent,false);
         return new RecyclerMessageAdapter.ViewHolder(view);
     }
 
@@ -41,19 +41,19 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerMessage
     public class ViewHolder extends RecyclerView.ViewHolder{
 
         private TextView textMessage;
-        private TextView senderName;
+        //private TextView senderName;
 
         public ViewHolder(final View view) {
             super(view);
-            textMessage = view.findViewById(R.id.txtRoomCardName);
-            senderName = view.findViewById(R.id.txtRoomCardCounter);
+            textMessage = view.findViewById(R.id.textMessage);
+            //senderName = view.findViewById(R.id.txtRoomCardCounter);
         }
 
         public void setDetail(Message message) {
             textMessage.setText(message.getText());
-            String messageResult = "Sended: " + message.getUser();
-            senderName.setText(messageResult);
-            senderName.setCompoundDrawables(null, null, null, null);
+            //String messageResult = "Sended: " + message.getUser();
+            //senderName.setText(messageResult);
+            //senderName.setCompoundDrawables(null, null, null, null);
         }
     }
 }
