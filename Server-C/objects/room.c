@@ -104,7 +104,6 @@ char* room_to_string(Room* r){
 }
 
 bool room_add_client(Room* r, Client* client) {
-  //NON SO SE FUNZIONA, E' DA TESTARE
   if (r->id != 0 && r->clients_counter == MAX_CLIENTS) {
     log_warn("Room %d full, can't add Client %s", r->id, client_to_string(client));
     return false;

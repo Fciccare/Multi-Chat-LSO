@@ -16,7 +16,6 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
-
 #include "database/database.h"
 
 #include "handler/rooms_handler.h"
@@ -81,7 +80,7 @@ int main(int argc, char* argv[]) {
 
   // Setup socket TCP SERVER
   saddress.sin_family = AF_INET;
-  saddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+  saddress.sin_addr.s_addr = inet_addr(ipaddr);
   saddress.sin_port = htons(port);
 
   // Creation socket TCP SERVER
@@ -156,6 +155,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
     if(client_socket_id == maxfdp)
       maxfdp--;
     //  TODO : togliere il client dalla stanza in cui stava! [Funzione ancora da implementare]
+
   } else {//fulfill client request
     log_info("Message received: %s", buffer);
     socketDispatcher(&client_socket_id, buffer);
@@ -172,6 +172,7 @@ void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/w
 
 void signal_handler(int sig) {
   closeDatabase();
+  //TODO: rooms_destroy();
   exit(EXIT_SUCCESS);
 }
 

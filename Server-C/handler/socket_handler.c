@@ -8,6 +8,10 @@
 #include "../library/log.h"
 
 void socketDispatcher(int *client_socket_id, char *buffer) {
+
+  //if buffer vuoto
+  //togli dalla stanza quello con socket_id
+
   char tag[5] = {0};
   strncpy(tag, buffer, 5);    // get the tag
   char *message = buffer + 5; // point to buffer without tag
@@ -30,7 +34,7 @@ void socketDispatcher(int *client_socket_id, char *buffer) {
     accept_request(&(*message));
   } else if (strncmp(tag, "[NAC]", 5) == 0) { // Denied access in a room
     not_accept_request(&(*message));
-  } else if (strncmp(tag, "[EXT]", 5) == 0) { // Exit room WIP NOT TESTED
+  } else if (strncmp(tag, "[EXT]", 5) == 0) {
     exit_room(&(*message), client_socket_id);
   } else {
     char text[] = "Message recieved doesn't contain valid tag\n";
