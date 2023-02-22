@@ -21,6 +21,7 @@ typedef struct {
 
 //Constructor and Drestory
 Room* room_create(unsigned int id, const char* name, Client* master_client);
+void room_delete(Room* r);
 void room_destroy(Room* r);
 
 //set

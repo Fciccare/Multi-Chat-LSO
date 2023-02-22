@@ -14,26 +14,28 @@ void socketDispatcher(int *client_socket_id, char *buffer) {
   message = strdup(message);  // get rid of tag
 
   if (strncmp(tag, "[MSG]", 5) == 0) { // Message sent in room
-    broadcastMessageRoom(&(*message), client_socket_id);
+    broadcast_message_into_room(&(*message), client_socket_id);
   } else if (strncmp(tag, "[LGN]", 5) == 0) { // Login user
     login(&(*message), client_socket_id);
   } else if (strncmp(tag, "[RGT]", 5) == 0) { // Register user
-    registerUser(&(*message), client_socket_id);
+    register_user(&(*message), client_socket_id);
   } else if (strncmp(tag, "[CRT]", 5) == 0) { // Create room
-    createRoom(&(*message), client_socket_id);
+    create_room(&(*message), client_socket_id);
     //print_rooms();                            // debug
   } else if (strncmp(tag, "[LST]", 5) == 0) { // Get List of room
-    getList(client_socket_id);
+    get_list(client_socket_id);
   } else if (strncmp(tag, "[RQT]", 5) == 0) { // Request from client to enter in a room
     request_to_enter_room(&(*message), client_socket_id);
   } else if (strncmp(tag, "[ACC]", 5) == 0) { // Accept user in a room
     accept_request(&(*message));
   } else if (strncmp(tag, "[NAC]", 5) == 0) { // Denied access in a room
     not_accept_request(&(*message));
+  } else if (strncmp(tag, "[EXT]", 5) == 0) { // Exit room WIP NOT TESTED
+    exit_room(&(*message), client_socket_id);
   } else {
-    // TODO: Implemeti managing of errors
-    write(*client_socket_id, "Please send data with this tag: \n[MSG] SEND MESSAGE IN BROADCAST\n[LGN] LOGIN WITH EMAIL AND PASSWORD\n", 102);
-    printf("Send instruction\n");
+    char text[] = "Message recieved doesn't contain valid tag\n";
+    log_error("%s. Tag: %s, Message: %s",text, tag, message);
+    write(*client_socket_id, text, strlen(text));
   }
 }
 
@@ -43,26 +45,25 @@ void accept_request(char *message) { // Accept user in a room
   char *string_socket_id_client = strtok(message, "<>");
   char *string_room_id = strtok(NULL, "<>");
 
-  // DOMANDA: questo socket id è il master client o il client che è stato accettato? controllare, io su client java non capisco niente )=
+  // Questo socket id è il client che è stato accettato
 
   int socket_id_client = atoi(string_socket_id_client);
   unsigned int room_id = atoi(string_room_id);
 
   // Insert client into room
-  Room *room = get_room_by_id(room_id);
-  Client *client = get_user_by_id(socket_id_client);
+  Room *room = rooms_get_room_by_id(room_id);
+  Client *client = rooms_get_client_by_id(0, socket_id_client);
   room_add_client(room, client);
-  remove_from_zero(client->socket_id); // TODO: questo ritorna un boolean, vedere se lo vogliamo gestire
+  rooms_remove_from_zero(client->socket_id); // TODO: questo ritorna un boolean, vedere se lo vogliamo gestire
 
   // Debug prints: current and starting room
   room_print(room);
-  room_print(get_room_by_id(0));
+  room_print(rooms_get_room_by_id(0));
 
   // printf("Socket id client: %d \nRoom id: %d\n", socket_id_client, room_id);//Debug print
 
   // Send to Client it has been accepted
-  char text[25];
-  sprintf(text, "Access accept<>%d\n", room->id);
+  char text[] = "Access accept\n";
   log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
   write(socket_id_client, text, strlen(text));
 }
@@ -82,8 +83,8 @@ void request_to_enter_room(char *message, int *client_socket_id) {
   // client_socket_id is client requesting to enter room
   unsigned int room_id = atoi(message);
   printf("Room id chosen from client is: %d\n", room_id); // Debug print
-  Room *room = get_room_by_id(room_id);
-  Client *client = get_user_by_id(*client_socket_id);
+  Room *room = rooms_get_room_by_id(room_id);
+  Client *client = rooms_get_client_by_id(0, *client_socket_id);
 
   int master_client_socket_id = 0;
 
@@ -99,8 +100,8 @@ void request_to_enter_room(char *message, int *client_socket_id) {
   write(master_client_socket_id, buffer, strlen(buffer));
 }
 
-void createRoom(char *message, int *client_socket_id) {
-  Client *client = get_user_by_id(*client_socket_id);
+void create_room(char *message, int *client_socket_id) {
+  Client *client = rooms_get_client_by_id(0, *client_socket_id);
   if(client != NULL) {
     log_info("Getted user from room_zero with id: %d", *client_socket_id);
   }else{
@@ -121,7 +122,7 @@ void createRoom(char *message, int *client_socket_id) {
   room = room_create(0, message, client); //Create new room, id is set to 0 but will be changed
   log_info("Room created");
   
-  if (add_room(room)) {
+  if (rooms_add_room(room)) {
     log_debug("Room added");
     
     room_print(room);//TODO: Change with room_to_string for prevent spam room null
@@ -129,7 +130,7 @@ void createRoom(char *message, int *client_socket_id) {
     sprintf(text, "Room create successful<>%d\n", room->id);
     log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
     write(*client_socket_id, text, strlen(text));               // Remember: Java recv need string end with EOF
-    remove_from_zero(client->socket_id); // TODO: Ritorna un boolean, forse lo vogliamo gestire?
+    rooms_remove_from_zero(client->socket_id); // TODO: Ritorna un boolean, forse lo vogliamo gestire?
     return;
   }
 
@@ -138,7 +139,7 @@ void createRoom(char *message, int *client_socket_id) {
   log_warn("Room create failed");
 }
 
-void broadcastMessageRoom(char *message, int *client_socket_id) {
+void broadcast_message_into_room(char *message, int *client_socket_id) {
   // Send message to every client in room
 
   char *message_to_send = strtok(message, "<>");
@@ -149,7 +150,7 @@ void broadcastMessageRoom(char *message, int *client_socket_id) {
   int length = strlen(message_to_send) + 1;
   char text[length + 15];
 
-  Room *room = get_room_by_id(room_id);
+  Room *room = rooms_get_room_by_id(room_id);
   Client **clients = room->clients;
   int online_client = room->clients_counter;
 
@@ -202,16 +203,15 @@ void login(char *message, int *client_socket_id) {
   free(text);
 }
 
-
 bool log_user(User *u, int client_socket_id) {
   //Log user into Starting room
   Client *client = client_create(u, client_socket_id, 0);
-  Room *room_zero = get_room_by_id(0);
+  Room *room_zero = rooms_get_room_by_id(0);
   bool status = room_add_client(room_zero, client); //room_add_client fails if room is full
   return status; 
 }
 
-void registerUser(char *message, int *client_socket_id) {
+void register_user(char *message, int *client_socket_id) {
   char *text = strdup(message);
 
   char *username = strtok(text, "<>");
@@ -234,7 +234,7 @@ void registerUser(char *message, int *client_socket_id) {
   free(text);
 }
 
-void getList(int *client_socket_id) {
+void get_list(int *client_socket_id) {
   //Send list of current rooms 
   //To make sure client recieves entire list, we format the string sent this way:
   /*
@@ -259,7 +259,7 @@ void getList(int *client_socket_id) {
     if (i > MAX_ROOMS) {                             // check to avoid seg fault
       perror("Qualcosa non va con l'array delle stanze");
     }
-    get_formatted_room(i, buff); // it gets roomID<>roomNAME<>clientsConnected\n, if rooom is unactive termination character
+    rooms_get_formatted_room(i, buff); // it gets roomID<>roomNAME<>clientsConnected\n, if rooom is unactive termination character
     if (buff[0] != '\0') {
       log_info("Server is sending(%ld): %s", strlen(buff), buff); // Debug print
       write(*client_socket_id, buff, strlen(buff));
@@ -271,4 +271,22 @@ void getList(int *client_socket_id) {
   log_info("Server is sending(%ld): %s", strlen(end), end); // Debug print
   write(*client_socket_id, end, strlen(end));
   printf("Room List sent successfully"); //Server Log
+}
+
+void exit_room(char* message, int *client_socket_id) { //Exit room
+  int room_id = atoi(message);
+
+  Client* client = rooms_get_client_by_id(room_id, *client_socket_id);
+  if(client == NULL){
+    log_error("Exit from client_socket_id:%d not found in room:%d", client_socket_id, room_id);
+    //TODO: write di "si è verificato un errore?" per il Client?
+    return;
+
+  } //else
+
+  if (!rooms_move_to_zero(client, room_id)){
+    log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
+    //TODO: write di "si è verificato un errore?" per il Client?
+  }
+
 }

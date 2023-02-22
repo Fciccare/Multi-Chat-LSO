@@ -47,5 +47,6 @@
 |\[ACC\]sock<>room_id | Send "Register successful" | :boom:
 |\[NAC\]sock_client   | Send "Register successful" | :boom:
 |\[RQT\]room_id       | Send "Register successful" | :boom:
+|\[EXT\]room_id       | TODO: Send "[EXT]"         | :boom:
 
 

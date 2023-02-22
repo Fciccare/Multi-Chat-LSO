@@ -8,18 +8,20 @@
 
 void socketDispatcher(int* client, char* buffer);
 
-void broadcastMessageRoom(char* message, int* clients);
+void broadcast_message_into_room(char* message, int* clients);
 
 void login(char* message, int* client);
-void registerUser(char* message, int* client);
+void register_user(char* message, int* client);
 bool log_user(User* u, int client_socket_id);
 
-void createRoom(char* message, int* client_socket_id);
+void create_room(char* message, int* client_socket_id);
 
-void getList(int* client_socket_id);
+void get_list(int* client_socket_id);
 
 void request_to_enter_room(char* message, int* client_socket_id);
 void not_accept_request(char* message);
 void accept_request(char* message);
+
+void exit_room(char* message, int* client_socket_id);
 
 #endif

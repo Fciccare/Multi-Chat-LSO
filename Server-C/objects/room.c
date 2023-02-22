@@ -35,6 +35,13 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
   return r;
 }
 
+void room_delete(Room* r ){
+  log_debug("deleting room");
+  r->master_client = NULL;
+  r->clients = NULL;
+  room_destroy(r);
+}
+
 void room_destroy(Room* r) {
   log_debug("destroying room");
   free(r);
@@ -63,6 +70,10 @@ void room_setMaster_client(Room* r, Client* master_client) {
 Client* room_get_client_by_id(Room* r, int client_socket_id){
   int online_client = r->clients_counter;
   int count = 0;
+
+  int max = MAX_CLIENTS;
+  if (r->id == 0)
+    max = MAX_CLIENTS_ZERO;
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if(r->clients[i] != NULL){
       count++;
@@ -79,53 +90,74 @@ Client* room_get_client_by_id(Room* r, int client_socket_id){
 }
 
 void room_print(Room* r) { //Debug funcion
-  log_debug("Room: {id: %d, name: %s, clients_counter: %d, Master%s}", r->id, r->name,r->clients_counter, client_to_string_full(r->master_client));
+  log_debug(room_to_string(r));
 }
 
 char* room_to_string(Room* r){
-  //TODO: DA SCRIVER!
-  return NULL;
+  if(r != NULL){
+    char value[512];
+    sprintf(value, "Room: {id: %d, name: %s, clients_counter: %d, Master%s}", r->id, r->name,r->clients_counter, client_to_string_full(r->master_client));
+    return strdup(value);
+  } 
+    
+  return "Client: NULL";
 }
 
-bool room_add_client(Room* r, Client* client) { //Non cicla, please fix it ❤
-  //TODO: RICONTROLLAREEEEEEEEEEEEEEEEE
+bool room_add_client(Room* r, Client* client) {
+  //NON SO SE FUNZIONA, E' DA TESTARE
   if (r->id != 0 && r->clients_counter == MAX_CLIENTS) {
+    log_warn("Room %d full, can't add Client %s", r->id, client_to_string(client));
     return false;
   } else if (r->id == 0 && r->clients_counter == MAX_CLIENTS_ZERO ){
+    log_warn("Room zero full, can't add Client %s", client_to_string(client));
     return false;
   }
-  int index = r->clients_counter;
-  r->clients[index] = client; 
-  r->clients_counter = index+1;
 
-  //Remove from room zero
-  client->room_id = r->id;
-  return true;
+  Client** clients = r->clients;
+
+  for(int i=0; i<MAX_CLIENTS; i++){
+    if (*(clients+i) == NULL) { //found empty spot
+      log_debug("Adding client %s to room: %d", client_to_string(client), r->id);
+
+      r->clients[i] = client;
+      r->clients_counter++;
+      client->room_id = r->id;
+      
+      return true;
+    }
+  }
+  //unexpected behaviour
+  log_error("Could not find place in room for client"); 
+  return false;
 }
 
 bool room_remove_client(Room* r, int socket_id) {
-  //TODO: ricerca lineare del Client e rimozione dall'Array Clients
-  if(r== NULL || r->clients_counter<=0){
-    printf("Room null or Client count <=0 in room id: %d\n", r->id);
+  //TODO: ricerca lineare del Client e rimozione dall'Array Clients (?)
+
+  if(r == NULL || r->clients_counter <= 0){ //unexpected behaviour
+    log_error("Room null or Client count <=0 in room id: %d", r->id);
     return false;
   }
+
   Client** clients = r->clients;
   int online_client = r->clients_counter;
+
   int max = MAX_CLIENTS;
   if(r->id==0)
     max = MAX_CLIENTS_ZERO;
+
+  //non capisco un cazzzzo, vediamo se funzona ancora, se si non lo tocco
   int count = 0;
   for (int i = 0; i < max; i++) {
-    if (*(clients+i) != NULL) {
+    if (*(clients+i) != NULL) { 
       count++;
       if ((*(clients+i))->socket_id == socket_id){
         r->clients_counter = r->clients_counter-1;
         *(clients+i) = NULL;
+        log_debug("Client with socket_id:%d removed from room:%d", socket_id, r->id);
         return true;
       }    
     }
     if (count == online_client) return false;
   }
-  //BUGIA
-  printf("\nHo cancellato (per finta, ho solo derementato il contatore) il client\n");
 }

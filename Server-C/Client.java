@@ -273,25 +273,33 @@ public class Client{
     public static void main(String argv[]){
         Client c = new Client("127.0.0.1", 9192);
         boolean status = false;
-        while(status == false){
-            status = c.accessMenu();
-        }
+        // while(status == false){
+        //     status = c.accessMenu();
+        // }
         
-        boolean status1 = false;
-        while (status1 == false) {
-            status1 = c.roomMenu();
-        }
+        // boolean status1 = false;
+        // while (status1 == false) {
+        //     status1 = c.roomMenu();
+        // }
         
-        c.chatRoom();
+        // c.chatRoom();
 
-        try{
-            c.scanner.close();
-            c.input.close();
-            c.out.close();
-            c.socket.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        } 
+        while(true){
+            System.out.println("Inserisci valore:");
+            String value = c.scanner.nextLine();
+            c.out.println(value);
+
+            
+        }
+
+    //     try{
+    //         c.scanner.close();
+    //         c.input.close();
+    //         c.out.close();
+    //         c.socket.close();
+    //     }catch (Exception e){
+    //         e.printStackTrace();
+    //     } 
     }
 
 }
