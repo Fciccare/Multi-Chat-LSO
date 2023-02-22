@@ -35,7 +35,7 @@ public class Server {
         new Thread(() -> {
             socket = new Socket();
             try {
-                socket.connect(new InetSocketAddress("10.0.2.2", 9192), 15000); //Timeout 15 sec for to avoid stuck
+                socket.connect(new InetSocketAddress("natour.ddns.net", 9192), 15000); //Timeout 15 sec for to avoid stuck
                 Log.d(TAG, "Socket connected");
             } catch (IOException e) {
                 Log.e(TAG, e.toString());

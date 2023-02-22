@@ -30,7 +30,7 @@ public class InsertRoomFragment extends Fragment {
     private EditText txtNameRoom;
     private ExtendedFloatingActionButton button;
 
-    private InsertRoomFragment() {
+    public InsertRoomFragment() {
         // Required empty public constructor
     }
 

@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +29,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import es.dmoral.toasty.Toasty;
 
@@ -96,27 +100,51 @@ public class HomepageFragment extends Fragment {
         recyclerView.addOnItemTouchListener(
             new RecyclerItemClickListener(getContext(), recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
                 @Override public void onItemClick(View view, int position) {
-                    Intent i = new Intent(getActivity(), RoomActivity.class);
-                    i.putExtra("Room", rooms.get(position));
-                    startActivity(i);
+                    requestToEnterRoom(position);
                 }
 
                 @Override public void onLongItemClick(View view, int position) {Toasty.info(requireContext(), "Easter egg").show();}
             })
         );
+    }
 
+    private void requestToEnterRoom(int position){
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        //Handler h = new Handler(Looper.getMainLooper());
+        executor.execute(() -> {
+            new Thread(() -> {
+                Room room = rooms.get(position);
+                String message = "[RQT]" + String.valueOf(room.getId());//[RQT]2
+                Server.getInstance().write(message);
+                String value = Server.getInstance().read();
+                getActivity().runOnUiThread(() -> {
+                    if (value.toLowerCase().contains("accept")) {
+                        Intent i = new Intent(getActivity(), RoomActivity.class);
+                        i.putExtra("Room", room);
+                        startActivity(i);
+                    } else {
+                        Toasty.error(requireContext(), "Non sei stato accettato nella stanza").show();
+                    }
+                });
+            }).start();
+        });
 
-/*
-        buttonSKT.setOnClickListener(view1 -> {
-            String message = txtSocket.getText().toString();
-
+        /*
+        new Thread(() -> {
+            Room room = rooms.get(position);
+            String message = "[RQT]" + String.valueOf(room.getId());//[RQT]2
             Server.getInstance().write(message);
-            String result = Server.getInstance().read();
+            String value = Server.getInstance().read();
 
-            Log.d(TAG, "Risposta della socket: " + result);
-            Toasty.success(getContext(), result, Toasty.LENGTH_LONG, true).show();
-            txtSocket.setText("");
-        });*/
+            if(value.toLowerCase().contains("accept")){
+                Intent i = new Intent(getActivity(), RoomActivity.class);
+                i.putExtra("Room", room);
+                startActivity(i);
+            }else{
+                Toasty.error(requireContext(), "Non sei stato accettato nella stanza").show();
+            }
+        }).start();*/
+
     }
 
     private void listRoom(){
