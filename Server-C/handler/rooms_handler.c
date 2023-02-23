@@ -196,7 +196,7 @@ void rooms_delete_client_from_room(int socket_id, int room_id) {
   }
 
   Client* c = NULL;
-  if(c = room_get_client_by_id(rooms[room_id], socket_id) != NULL){
+  if((c = room_get_client_by_id(rooms[room_id], socket_id)) != NULL){
     rooms_remove_from_and_destory(rooms[room_id], c);
   } else { //unexpected behaviour
     log_error("Trying to delete client n.%d from room n.%d, but it is not there!", socket_id, room_id);

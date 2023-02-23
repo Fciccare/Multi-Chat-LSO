@@ -6,6 +6,7 @@
 #include "../objects/room.h"
 
 #define MAX_ROOMS 64 //Max rooms that can exist + 1 (room 0 is th starting room)
+extern unsigned int rooms_active;
 
 void init_starting_room();
 //TODO: rooms_destroy();

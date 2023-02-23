@@ -259,7 +259,7 @@ void get_list(int *client_socket_id) {
 
   int tmpFound = 0;                                  // how many rooms already found
   int i = 1;                                         // index to visit array (0 is tarting room so we exclude it)
-  while (tmpFound < (rooms_getActive_rooms() - 1)) { // if all active rooms have been visited, we stop searching the array
+  while (tmpFound < (rooms_active - 1)) { // if all active rooms have been visited, we stop searching the array
     if (i > MAX_ROOMS) {                             // check to avoid seg fault
       perror("Qualcosa non va con l'array delle stanze");
     }
