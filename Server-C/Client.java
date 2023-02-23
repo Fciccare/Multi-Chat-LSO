@@ -273,9 +273,9 @@ public class Client{
     public static void main(String argv[]){
         Client c = new Client("127.0.0.1", 9192);
         boolean status = false;
-        // while(status == false){
-        //     status = c.accessMenu();
-        // }
+        while(status == false){
+            status = c.accessMenu();
+        }
         
         // boolean status1 = false;
         // while (status1 == false) {
@@ -284,13 +284,13 @@ public class Client{
         
         // c.chatRoom();
 
-        while(true){
-            System.out.println("Inserisci valore:");
-            String value = c.scanner.nextLine();
-            c.out.println(value);
+        // while(true){
+        //     System.out.println("Inserisci valore:");
+        //     String value = c.scanner.nextLine();
+        //     c.out.println(value);
 
             
-        }
+        // }
 
     //     try{
     //         c.scanner.close();

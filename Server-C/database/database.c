@@ -38,11 +38,13 @@ void closeDatabase() {
 void createTable(){
     char* error = 0;
     char query[] =
-        //"DROP TABLE IF EXISTS Users;"
+        //"DROP TABLE IF EXISTS Users;";
         "CREATE TABLE IF NOT EXISTS Users("
         "username VARCHAR(25) PRIMARY KEY, "
         "password VARCHAR(20) NOT NULL, "
-        "image BLOB);";
+        "image BLOB,"
+        "online_status BOOL NOT NULL);"
+        "UPDATE Users SET online_status = 0;";
 
     if(sqlite3_exec(db, query, NULL, NULL, &error) == SQLITE_OK){
         log_debug("Table created or alreary created");
@@ -55,7 +57,7 @@ void createTable(){
 bool insertUser(char username[], char password[]){
     char* error = 0;
     sqlite3_stmt* stmt;
-    char query[] = "INSERT INTO Users (username, password) VALUES(?, ?);";
+    char query[] = "INSERT INTO Users (username, password, online_status) VALUES(?, ?, 0);";
 
     sqlite3_prepare_v2(db,query,strlen(query), &stmt, NULL);
     if (stmt == NULL) {
@@ -83,8 +85,7 @@ void errorHandler(char text[]){
 
 bool isExistingUser(char username[], char password[]) {
     sqlite3_stmt* stmt;
-    char query[] =
-        "SELECT * FROM Users WHERE username = ? and password = ?;";
+    char query[] = "SELECT * FROM Users WHERE username = ? and password = ?;";
     
     sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
     if (stmt == NULL) {
@@ -93,9 +94,14 @@ bool isExistingUser(char username[], char password[]) {
     }
     sqlite3_bind_text(stmt, 1, username, strlen(username), SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_STATIC);
+        
+    char query2[] = "UPDATE Users SET online_status = 1 WHERE username = ?;";
+    sqlite3_prepare_v2(db, query2, strlen(query2), &stmt, NULL);
+    sqlite3_bind_text(stmt, 1, username, strlen(username), SQLITE_STATIC);
 
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
-        log_debug("User exists in database");
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            log_debug("User exists in database");
+
     } else {
         errorHandler("User doesn't exists");
         sqlite3_finalize(stmt);
