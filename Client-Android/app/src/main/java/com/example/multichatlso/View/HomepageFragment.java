@@ -6,26 +6,19 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 
 import com.example.multichatlso.Model.RecyclerRoomAdapter;
 import com.example.multichatlso.Model.Room;
 import com.example.multichatlso.Model.Server;
 import com.example.multichatlso.R;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import es.dmoral.toasty.Toasty;
+import taimoor.sultani.sweetalert2.Sweetalert;
 
 
 public class HomepageFragment extends Fragment {
@@ -42,6 +36,7 @@ public class HomepageFragment extends Fragment {
     private ArrayList<Room> rooms;
     private RecyclerView recyclerView;
     private RecyclerRoomAdapter adapter;
+    private Sweetalert pDialog;
 
     private static final String TAG = "HomepageFragment";
 
@@ -116,6 +111,7 @@ public class HomepageFragment extends Fragment {
                 Room room = rooms.get(position);
                 String message = "[RQT]" + String.valueOf(room.getId());//[RQT]2
                 Server.getInstance().write(message);
+                startLoading();
                 String value = Server.getInstance().read();
                 getActivity().runOnUiThread(() -> {
                     if (value.toLowerCase().contains("accept")) {
@@ -123,6 +119,7 @@ public class HomepageFragment extends Fragment {
                         i.putExtra("Room", room);
                         startActivity(i);
                     } else {
+                        stopLoading();
                         Toasty.error(requireContext(), "Non sei stato accettato nella stanza").show();
                     }
                 });
@@ -151,18 +148,21 @@ public class HomepageFragment extends Fragment {
         String message = "[LST]";
         Server.getInstance().write(message);
 
-        String result = "";
+        new Thread(() -> {
+            getActivity().runOnUiThread(() -> {
+                String result = "";
+                do {
+                    result += Server.getInstance().read() + "\n";
+                }while (!result.contains("[/LST]"));
 
-        do {
-            result += Server.getInstance().read() + "\n";
-        }while (!result.contains("[/LST]"));
-
-        Log.d(TAG, "Lista di stanza: " + result);
-        List<Room> roomArrayList = castListToRoom(result);
-        rooms.clear();
-        rooms.addAll(roomArrayList);
-        Log.d(TAG, "Lista Room: " + rooms);
-        adapter.notifyDataSetChanged();
+                Log.d(TAG, "Lista di stanza: " + result);
+                List<Room> roomArrayList = castListToRoom(result);
+                rooms.clear();
+                rooms.addAll(roomArrayList);
+                Log.d(TAG, "Lista Room: " + rooms);
+                adapter.notifyDataSetChanged();
+            });
+        }).start();
     }
 
     private List<Room> castListToRoom(String list){
@@ -185,6 +185,26 @@ public class HomepageFragment extends Fragment {
 
         return rooms;
 
+    }
+
+    private void startLoading(){
+        getActivity().runOnUiThread(() -> {
+            if(pDialog ==null)
+                pDialog = new Sweetalert(requireContext(), Sweetalert.PROGRESS_TYPE);;
+            pDialog.setTitleText("Aspetta che il master ti accetti nella stanza");
+            pDialog.setCancelable(false);
+            pDialog.show();
+        });
+    }
+
+    private void stopLoading(){
+        //getActivity().runOnUiThread(() -> {
+            if(pDialog!=null){
+                pDialog.dismissWithAnimation();
+                pDialog = null;
+            }
+
+        //});
     }
 
 
