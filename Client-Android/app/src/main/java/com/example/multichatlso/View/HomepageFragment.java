@@ -117,6 +117,7 @@ public class HomepageFragment extends Fragment {
                     if (value.toLowerCase().contains("accept")) {
                         Intent i = new Intent(getActivity(), RoomActivity.class);
                         i.putExtra("Room", room);
+                        stopLoading();
                         startActivity(i);
                     } else {
                         stopLoading();
