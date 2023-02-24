@@ -27,6 +27,7 @@
 
 void error_handler(char[]);
 void *socket_handler(void *);
+void socket_close(int);
 void signal_handler(int);
 void remove_client(int);
 
@@ -163,7 +164,10 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
 
   } else {//fulfill client request
     log_info("Message received: %s", buffer);
-    socketDispatcher(&client_socket_id, buffer);
+    if (!socketDispatcher(&client_socket_id, buffer)){
+      //if oscketDispatcher returns false, close socket
+      socket_close(client_socket_id);
+    }
   }
 
   log_debug("THREAD FINISH");

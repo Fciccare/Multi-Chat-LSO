@@ -6,7 +6,7 @@
 #include "../database/database.h"
 #include "rooms_handler.h"
 
-void socketDispatcher(int* client, char* buffer);
+bool socketDispatcher(int* client, char* buffer);
 
 void broadcast_message_into_room(char* message, int* clients);
 
@@ -22,6 +22,6 @@ void request_to_enter_room(char* message, int* client_socket_id);
 void not_accept_request(char* message);
 void accept_request(char* message);
 
-void exit_room(char* message, int* client_socket_id);
+bool exit_room(char* message, int* client_socket_id);
 
 #endif
