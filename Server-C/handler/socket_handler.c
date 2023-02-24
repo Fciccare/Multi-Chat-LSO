@@ -58,7 +58,7 @@ void accept_request(char *message) { // Accept user in a room
 
   // Insert client into room
   Room *room = rooms_get_room_by_id(room_id);
-  Client *client = rooms_get_client_by_id(0, socket_id_client);
+  Client *client = rooms_get_client_from_room_by_id(0, socket_id_client);
   room_add_client(room, client);
   rooms_remove_from_zero(client->socket_id); // TODO: questo ritorna un boolean, vedere se lo vogliamo gestire
 
@@ -90,7 +90,7 @@ void request_to_enter_room(char *message, int *client_socket_id) {
   unsigned int room_id = atoi(message);
   printf("Room id chosen from client is: %d\n", room_id); // Debug print
   Room *room = rooms_get_room_by_id(room_id);
-  Client *client = rooms_get_client_by_id(0, *client_socket_id);
+  Client *client = rooms_get_client_from_room_by_id(0, *client_socket_id);
 
   int master_client_socket_id = 0;
 
@@ -107,7 +107,7 @@ void request_to_enter_room(char *message, int *client_socket_id) {
 }
 
 void create_room(char *message, int *client_socket_id) {
-  Client *client = rooms_get_client_by_id(0, *client_socket_id);
+  Client *client = rooms_get_client_from_room_by_id(0, *client_socket_id);
   if(client != NULL) {
     log_info("Getted user from room_zero with id: %d", *client_socket_id);
   }else{
@@ -282,7 +282,7 @@ void get_list(int *client_socket_id) {
 bool exit_room(char* message, int *client_socket_id) { //Exit room
   int room_id = atoi(message);
 
-  Client* client = rooms_get_client_by_id(room_id, *client_socket_id);
+  Client* client = rooms_get_client_from_room_by_id(room_id, *client_socket_id);
   if(client == NULL){
     log_error("Exit from client_socket_id:%d not found in room:%d", *client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?

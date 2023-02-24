@@ -13,7 +13,8 @@ void init_starting_room();
 
 //getters
 Room* rooms_get_room_by_id(unsigned int room_id);
-Client* rooms_get_client_by_id(int room_id, int client_socket_id);
+Client* rooms_get_client_from_room_by_id(int room_id, int client_socket_id);
+Client* rooms_get_client_by_id(int client_socket_id);
 void rooms_get_formatted_room(int i, char* buff);
 bool is_valid_room_id(int id); //return (0 <= id < MAX_ROOMS);
 

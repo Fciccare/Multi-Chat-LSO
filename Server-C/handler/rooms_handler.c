@@ -51,8 +51,23 @@ Room* rooms_get_room_by_id(unsigned int room_id){
   return rooms[room_id];
 }
 
-Client* rooms_get_client_by_id(int room_id, int client_socket_id){
+
+Client* rooms_get_client_from_room_by_id(int room_id, int client_socket_id){
   return room_get_client_by_id(rooms[room_id], client_socket_id);
+}
+
+Client* rooms_get_client_by_id(int socket_id){
+  Client* c = NULL;
+  int max = rooms_active;
+  for (int i = 0; i < MAX_ROOMS; i++){
+    if (rooms[i] != NULL) {
+      if ((c = rooms_get_client_from_room_by_id(i, socket_id)) != NULL)
+        break;
+    }
+    if (i == max) 
+      break;
+  }
+  return c;
 }
 
 void rooms_get_formatted_room(int i, char* buff) { //Get a specific room in a formatted manner 
@@ -173,19 +188,12 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //removes from current
 
   //NEED TO TEST!!
 void rooms_delete_client(int socket_id) { 
-  //socket_id is supposed to be a valid socket_id
   int max = rooms_active;
-  Client* c = NULL;
-  for (int i = 0; i < MAX_ROOMS; i++){
-    if (rooms[i] != NULL) {
-      if ((c = rooms_get_client_by_id(i, socket_id)) != NULL) {
-        rooms_remove_from_and_destory(rooms[i], c);
-      }
-    }
-    if (i == max) break;
-  }
-  //unexpected behaviour
-  log_error("Did not find socket_id %d", socket_id);
+  Client* c = rooms_get_client_by_id(socket_id);
+  if(c != NULL)
+    rooms_remove_from_and_destory(rooms[c->room_id], c);
+  else //unexpected behaviour
+    log_error("Did not find socket_id %d", socket_id);
 }
 
   //NEED TO TEST!!
