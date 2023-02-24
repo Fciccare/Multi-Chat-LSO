@@ -277,20 +277,20 @@ public class Client{
             status = c.accessMenu();
         }
         
-        // boolean status1 = false;
-        // while (status1 == false) {
-        //     status1 = c.roomMenu();
-        // }
+        boolean status1 = false;
+        while (status1 == false) {
+            status1 = c.roomMenu();
+        }
         
-        // c.chatRoom();
+        c.chatRoom();
 
-        // while(true){
-        //     System.out.println("Inserisci valore:");
-        //     String value = c.scanner.nextLine();
-        //     c.out.println(value);
+        while(true){
+            System.out.println("Inserisci valore:");
+            String value = c.scanner.nextLine();
+            c.out.println(value);
 
             
-        // }
+        }
 
     //     try{
     //         c.scanner.close();

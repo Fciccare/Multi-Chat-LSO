@@ -155,12 +155,17 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
     //Socket logic
     socket_close(client_socket_id);
   
-    //Rooms and Client logic
-    rooms_delete_client(client_socket_id);
-    //TODO: Dire al DB che si è disconnesso (vdere con stefano come fare)
-   
-    //TODO: controllare se si deve fare altro per la disconnessione!
-    //Risposta di VAle: non credo
+    //DB logic
+    Client* client = rooms_get_client_by_id(client_socket_id);
+    if(client == NULL){
+      log_error("Trying to delete non existing Client! Socket id:%d", client_socket_id);
+      return NULL;
+    }
+    dbUpdateStatus(client->user->name, "0");  
+
+    //Rooms and B logic
+    rooms_delete_client(client);
+
 
   } else {//fulfill client request
     log_info("Message received: %s", buffer);

@@ -187,13 +187,11 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //removes from current
 }
 
   //NEED TO TEST!!
-void rooms_delete_client(int socket_id) { 
-  int max = rooms_active;
-  Client* c = rooms_get_client_by_id(socket_id);
-  if(c != NULL)
-    rooms_remove_from_and_destory(rooms[c->room_id], c);
+void rooms_delete_client(Client* client) { 
+  if(client != NULL)
+    rooms_remove_from_and_destory(rooms[client->room_id], client);
   else //unexpected behaviour
-    log_error("Did not find socket_id %d", socket_id);
+    log_error("Trying to delete NULL client");
 }
 
   //NEED TO TEST!!
@@ -216,8 +214,7 @@ void rooms_remove_from_and_destory(Room* r, Client* c){
   //check if r and c NOT NULL before calling this function!
   int socket_id = c->socket_id;
   room_remove_client(r, c->socket_id);
-  log_debug("Destroying %s found in room %d", client_to_string(c), r->id);
-  client_destory(c);
+  client_destory(c); 
 }
 
 void print_rooms() { //debug function

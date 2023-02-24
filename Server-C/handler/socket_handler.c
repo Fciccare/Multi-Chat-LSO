@@ -202,7 +202,10 @@ void login(char *message, int *client_socket_id) {
         write(*client_socket_id, buffer, strlen(buffer)); // Java recv need string end with EOF
         log_warn("Starting room full");
       }
-    } // TODO: else if user is already logged
+    } else {
+      //TODO: write "utente già loggato"
+      log_info("User %s already logged", username);
+    }
   } else { //if user doesn't exist
     char buffer[20] = {0};
     strcpy(buffer, "Login failed\n");

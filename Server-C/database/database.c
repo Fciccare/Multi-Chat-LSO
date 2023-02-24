@@ -18,6 +18,8 @@ sqlite3* db;
 //     return 0;
 // }
 
+//TODO: capire come gestire gli errori
+
 void traceCallback( void* udp, const char* sql ) { 
     log_debug("SQL: {%s}", sql); 
 } 
@@ -79,10 +81,10 @@ bool insertUser(char username[], char password[]){
 }
 
 void errorHandler(char text[]){
-    perror(text);
+    log_error("%s", text);
     sqlite3_close(db);
 }
-
+//TODO: cambiare printf con log
 bool isExistingUser(char username[], char password[]) {
     sqlite3_stmt* stmt;
     char query[] =

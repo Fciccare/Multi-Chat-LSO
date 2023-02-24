@@ -24,7 +24,7 @@ bool rooms_add_room(Room* room);
 void delete_room(unsigned int room_id);
 bool rooms_remove_from_zero(int socket_id);
 bool rooms_move_to_zero(Client* client, int old_room_id);
-void rooms_delete_client(int socket_id);
+void rooms_delete_client(Client* client);
 void rooms_delete_client_from_room(int socket_id, int room_id);
 void rooms_remove_from_and_destory(Room* r, Client* c);
 
