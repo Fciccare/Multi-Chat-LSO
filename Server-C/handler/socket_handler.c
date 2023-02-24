@@ -131,7 +131,7 @@ void create_room(char *message, int *client_socket_id) {
   if (rooms_add_room(room)) {
     log_debug("Room added");
     
-    room_print(room);//TODO: Change with room_to_string for prevent spam room null
+    log_debug(room_to_string(room));
     char text[35];
     sprintf(text, "Room create successful<>%d\n", room->id);
     log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
