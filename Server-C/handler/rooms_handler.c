@@ -14,16 +14,16 @@ unsigned int next_unactive_room_index = 1; //next empty spot to fill with new ro
 
 
 /*TODO: (VAI VALE U CAN DO IT (si me lo dico da sola))
-- terminare (chiamare dal main e poi dal socket_dispatcher) caso di disconnessione
-- logica per uscire normalmente dalla app (dalla room 0)
-- logica per uscire normalmente dalla app da qualsiasi stanza (dobbiamo vedere da android se si può fare facile)
 
 - Se client che esce è master, dare master a qualcun altro
 - Se però master è ultimo, cancellare stanza
 
-- rooms_destory()
+- rooms_destory() (Per quando si termina il server)
 
 
+
+- (dobbiamo vedere da android se si può fare facile)
+  Logica per uscire normalmente dalla app da qualsiasi stanza
 
 */
 

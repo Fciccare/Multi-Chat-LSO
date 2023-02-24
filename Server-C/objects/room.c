@@ -151,7 +151,7 @@ bool room_remove_client(Room* r, int socket_id) {
     if (*(clients+i) != NULL) { 
       count++;
       if ((*(clients+i))->socket_id == socket_id){
-        r->clients_counter = r->clients_counter-1;
+        r->clients_counter = r->clients_counter - 1;
         *(clients+i) = NULL;
         log_debug("Client with socket_id:%d removed from room:%d", socket_id, r->id);
         return true;

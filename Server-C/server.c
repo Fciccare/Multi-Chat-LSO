@@ -147,14 +147,19 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
   int byte = read(client_socket_id, buffer, sizeof(buffer));
 
   pthread_detach(pthread_self()); // We detach here so that thread can be deallocated when finished
-  if (byte <= 0) { //If Client Disconnects or Error occurs:
+  
+  if (byte <= 0) { //If Client Disconnects or Error occurs
     log_info("SOCKET CLIENT DISCONNECTED ID: %d", client_socket_id); //Server Log
-    close(client_socket_id);
-    FD_CLR(client_socket_id, &master); 
-    // TODO: controllare se si deve fare altro per la disconnessione!
-    if(client_socket_id == maxfdp)
-      maxfdp--;
-    //  TODO : togliere il client dalla stanza in cui stava! [Funzione ancora da implementare]
+    
+    //Socket logic
+    socket_close(client_socket_id);
+  
+    //Rooms and Client logic
+    rooms_delete_client(client_socket_id);
+    //TODO: Dire al DB che si è disconnesso (vdere con stefano come fare)
+   
+    //TODO: controllare se si deve fare altro per la disconnessione!
+    //Risposta di VAle: non credo
 
   } else {//fulfill client request
     log_info("Message received: %s", buffer);
@@ -163,6 +168,13 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
 
   log_debug("THREAD FINISH");
   pthread_exit(NULL);
+}
+
+void socket_close(int client_socket_id) {
+  close(client_socket_id);
+  FD_CLR(client_socket_id, &master);
+  if(client_socket_id == maxfdp)
+    maxfdp--;
 }
 
 void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/write

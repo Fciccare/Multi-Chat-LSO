@@ -282,13 +282,28 @@ void exit_room(char* message, int *client_socket_id) { //Exit room
 
   Client* client = rooms_get_client_by_id(room_id, *client_socket_id);
   if(client == NULL){
-    log_error("Exit from client_socket_id:%d not found in room:%d", client_socket_id, room_id);
+    log_error("Exit from client_socket_id:%d not found in room:%d", *client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
     return;
 
   } //else
 
+  if(room_id == 0){ //Disconnect from the app
+    log_info("Socket %d is disconnecting from the app", *client_socket_id);
+    
+    //Socket logic
+    char message_to_send[] = "Disconnected";
+    write(*client_socket_id, message_to_send, strlen(message_to_send));
+    socket_close(*client_socket_id);
+
+    //Room logic
+    rooms_delete_client_from_room(*client_socket_id, 0);
+
+  } //else
+
+  //Exiting from a room
   if (!rooms_move_to_zero(client, room_id)){
+    //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
   }
