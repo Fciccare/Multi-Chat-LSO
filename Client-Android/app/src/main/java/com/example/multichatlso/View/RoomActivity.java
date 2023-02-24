@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -115,5 +116,19 @@ public class RoomActivity extends AppCompatActivity {
                 }
             }).start();
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "Tasto Back premuto");
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Uscire dalla stanza?")
+                .setMessage("Vuoi uscire dalla stanza? \nPer rientrare dovrai fare di nuovo richiesta al master")
+                .setPositiveButton("Sì", (dialogInterface, i) -> {
+                    Server.getInstance().write("[EXT]"+ room.getId());
+                    super.onBackPressed();
+                })
+                .setNegativeButton("No", (dialogInterface, i) -> {})
+                .show();
     }
 }
