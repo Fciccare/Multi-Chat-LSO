@@ -108,16 +108,40 @@ bool isExistingUser(char username[], char password[]) {
     return true;
 }
 
-void updateStatus(char username[]) {
+bool isLoggedExistingUser(char username[], char password[]) {
+    sqlite3_stmt* stmt;
+    char query[] = "SELECT * FROM Users WHERE username = ? and password = ? and online_status = 0;";
+    sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
+    if (stmt == NULL) {
+        errorHandler("Error Creation Statement");
+        return false;
+    }
+    sqlite3_bind_text(stmt, 1, username, strlen(username), SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        printf("User exists \n");
+    } else {
+        errorHandler("User doesn't exists or already logged");
+        sqlite3_finalize(stmt);
+        return false;
+    }
+
+    sqlite3_finalize(stmt);
+    return true;
+}
+
+void dbUpdateStatus(char username[], char* status) {
     sqlite3_stmt* stmt;
         
-    char query[] = "UPDATE Users SET online_status = 1 WHERE username = ?;";
+    char query[] = "UPDATE Users SET online_status = ? WHERE username = ?;";
     sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
     if (stmt == NULL) {
         errorHandler("Error Creation Statement");
         return;
     }
-    sqlite3_bind_text(stmt, 1, username, strlen(username), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, status, strlen(status), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, username, strlen(username), SQLITE_STATIC);
 
     if (sqlite3_step(stmt) == SQLITE_DONE) {
         log_debug("User logged in database");

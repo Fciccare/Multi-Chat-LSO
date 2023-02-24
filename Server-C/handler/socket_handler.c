@@ -184,20 +184,25 @@ void login(char *message, int *client_socket_id) {
 
   char *username = strtok(text, "<>");
   char *password = strtok(NULL, "<>");
+  char *status = "0";
   password[strlen(password) - 1] = '\0'; // remove \n from a string
 
-  if (isExistingUser(username, password)) { //if user is in database    
+  if (isExistingUser(username, password)) { //if user is in database and isn't logged //DA REVISIONARE
+    if(isLoggedExistingUser(username, password)) {
       char buffer[20] = {0};
-    if (log_user(user_create(username, password), *client_socket_id)) { //put user in starting room
-      strcpy(buffer, "Login successful\n");
-      log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-      write(*client_socket_id, buffer, strlen(buffer));               // Java recv needs string end with EOF
-    } else { //unable to put it in starting room 
-      strcpy(buffer, "Starting room full\n");
-      write(*client_socket_id, buffer, strlen(buffer)); // Java recv need string end with EOF
-      log_warn("Starting room full");
-    }
-
+      
+      if (log_user(user_create(username, password), *client_socket_id)) { //put user in starting room
+        status = "1";
+        dbUpdateStatus(username, status);
+        strcpy(buffer, "Login successful\n");
+        log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
+        write(*client_socket_id, buffer, strlen(buffer));               // Java recv needs string end with EOF
+      } else { //unable to put it in starting room 
+        strcpy(buffer, "Starting room full\n");
+        write(*client_socket_id, buffer, strlen(buffer)); // Java recv need string end with EOF
+        log_warn("Starting room full");
+      }
+    } // TODO: else if user is already logged
   } else { //if user doesn't exist
     char buffer[20] = {0};
     strcpy(buffer, "Login failed\n");
