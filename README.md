@@ -15,26 +15,31 @@
 ## TO DO :page_with_curl:
 
 **Logica di controllo**
-  - :black_square_button: Controllo e gestione degli errori
-  - :black_square_button: Controllo se utente già loggato
+  - :black_square_button: Controllo e gestione degli errori :construction:WIP:construction:
+  - :white_check_mark: Controllo se utente già loggato
 
 **Impementazione della logica dei Client all'interno delle stanze**
   - :white_check_mark: Entrare 
-  - :black_square_button: Uscire se si disconnette
-  - :black_square_button: Uscire a comando
+  - :white_check_mark: Uscire se si disconnette
+  - :white_check_mark: Uscire a comando da una stanza
   - :white_check_mark: Scrivere nella chat a tutti i presenti
-  - :black_square_button: OPZIONALE: Passare la proprietà della stanza
+  - :black_square_button: Passare la propietà della stanza, se sei il master ed esci, ad un utente casuale
+  - :black_square_button: OPZIONALE: Passare la proprietà della stanza a un utente a scelta
+  - :black_square_button: OPZIONALE: Disconnettersi normalmente dalla app da una stanza qualsiasi
 
 **Logica di cancellazione delle stanze**
-  - :black_square_button: Cancellare la stanza se il master esce
-  - :black_square_button: Cacciare la gente quando la stanza viene cancellata
+  - :black_square_button: Cancellare la stanza se l'ultima persona esce
+  
+  - :black_square_button: OPZIONALE: Il master può cancellare la stanza
+  - :white_check_mark: Cacciare la gente quando la stanza viene cancellata
  
- **Client Android**
+ **Client Android :construction:WIP:construction:** 
   - Tutto - Login e Regiser
 
   **Funzionalià interamente opzionali da sviluppare per utlime se ci va**
   - Propic
   - Scegliere a chi passare la proprietà della stanza
+  - Master può cancellare la stanza
  
 ## API :books:
 
