@@ -7,7 +7,7 @@
 #include "socket_handler.h"
 #include "../library/log.h"
 
-void socketDispatcher(int *client_socket_id, char *buffer) {
+bool socketDispatcher(int *client_socket_id, char *buffer) {
 
   //if buffer vuoto
   //togli dalla stanza quello con socket_id
@@ -35,12 +35,14 @@ void socketDispatcher(int *client_socket_id, char *buffer) {
   } else if (strncmp(tag, "[NAC]", 5) == 0) { // Denied access in a room
     not_accept_request(&(*message));
   } else if (strncmp(tag, "[EXT]", 5) == 0) {
-    exit_room(&(*message), client_socket_id);
+    if(!exit_room(&(*message), client_socket_id))
+      return false; //if returns false, close socket
   } else {
     char text[] = "Message recieved doesn't contain valid tag\n";
     log_error("%s. Tag: %s, Message: %s",text, tag, message);
     write(*client_socket_id, text, strlen(text));
   }
+  return true;
 }
 
 void accept_request(char *message) { // Accept user in a room
@@ -277,27 +279,27 @@ void get_list(int *client_socket_id) {
   printf("Room List sent successfully"); //Server Log
 }
 
-void exit_room(char* message, int *client_socket_id) { //Exit room
+bool exit_room(char* message, int *client_socket_id) { //Exit room
   int room_id = atoi(message);
 
   Client* client = rooms_get_client_by_id(room_id, *client_socket_id);
   if(client == NULL){
     log_error("Exit from client_socket_id:%d not found in room:%d", *client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
-    return;
+    return true;
 
   } //else
 
   if(room_id == 0){ //Disconnect from the app
     log_info("Socket %d is disconnecting from the app", *client_socket_id);
     
+    //Room logic
+    rooms_delete_client_from_room(*client_socket_id, 0);
+
     //Socket logic
     char message_to_send[] = "Disconnected";
     write(*client_socket_id, message_to_send, strlen(message_to_send));
-    socket_close(*client_socket_id);
-
-    //Room logic
-    rooms_delete_client_from_room(*client_socket_id, 0);
+    return false; //when returning false, close soket
 
   } //else
 
@@ -307,5 +309,7 @@ void exit_room(char* message, int *client_socket_id) { //Exit room
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
   }
+
+  return true;
 
 }
