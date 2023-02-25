@@ -32,12 +32,7 @@ void initDatabase(bool debug){
     createTable();
 }
 
-void closeDatabase() { 
-    sqlite3_close(db); 
-}
-
-/* SQL query for creating tables */
-void createTable(){
+void createTable(){ //SQL query for creating tables
     char* error = 0;
     char query[] =
         //"DROP TABLE IF EXISTS Users;";
@@ -54,6 +49,10 @@ void createTable(){
         errorHandler(error);
         sqlite3_free(error);
     }
+}
+
+void closeDatabase() { 
+    sqlite3_close(db); 
 }
 
 bool insertUser(char username[], char password[]){
@@ -80,11 +79,7 @@ bool insertUser(char username[], char password[]){
     return true;
 }
 
-void errorHandler(char text[]){
-    log_error("%s", text);
-    sqlite3_close(db);
-}
-//TODO: cambiare printf con log
+
 bool isExistingUser(char username[], char password[]) {
     sqlite3_stmt* stmt;
     char query[] =
@@ -99,7 +94,7 @@ bool isExistingUser(char username[], char password[]) {
     sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_TRANSIENT);
 
     if (sqlite3_step(stmt) == SQLITE_ROW) {
-        printf("User exists \n");
+        log_debug("User %s with pw %s exists", username, password);
     } else {
         errorHandler("User doesn't exists");
         sqlite3_finalize(stmt);
@@ -122,7 +117,7 @@ bool isLoggedExistingUser(char username[], char password[]) {
     sqlite3_bind_text(stmt, 2, password, strlen(password), SQLITE_TRANSIENT);
 
     if (sqlite3_step(stmt) == SQLITE_ROW) {
-        printf("User exists \n");
+        log_debug("User %s with pw %s exists", username, password);
     } else {
         errorHandler("User doesn't exists or already logged");
         sqlite3_finalize(stmt);
@@ -132,6 +127,7 @@ bool isLoggedExistingUser(char username[], char password[]) {
     sqlite3_finalize(stmt);
     return true;
 }
+
 
 void dbUpdateStatus(char username[], char* status) {
     sqlite3_stmt* stmt;
@@ -151,4 +147,9 @@ void dbUpdateStatus(char username[], char* status) {
         errorHandler("User doesn't exists");
     }
     sqlite3_finalize(stmt);
+}
+
+void errorHandler(char text[]){
+    log_error("%s", text);
+    sqlite3_close(db);
 }

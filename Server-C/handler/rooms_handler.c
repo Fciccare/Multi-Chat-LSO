@@ -29,7 +29,7 @@ unsigned int next_unactive_room_index = 1; //next empty spot to fill with new ro
 
 
 
-
+//Init and Destroy
 void init_starting_room(){
   rooms[0] = room_create(0, "Defualt Room", NULL);
 }
@@ -40,7 +40,7 @@ void init_starting_room(){
 }*/
 
 
-//getters
+//Get
 Room* rooms_get_room_by_id(unsigned int room_id){
 
   if(room_id >= MAX_ROOMS){
@@ -50,7 +50,6 @@ Room* rooms_get_room_by_id(unsigned int room_id){
 
   return rooms[room_id];
 }
-
 
 Client* rooms_get_client_from_room_by_id(int room_id, int client_socket_id){
   return room_get_client_by_id(rooms[room_id], client_socket_id);
@@ -82,7 +81,7 @@ bool is_valid_room_id(int id) {
 }
 
 
-//logic
+//Rooms Logic
 void update_next_unactive_room_index() { //to be called after every rooms_add_room
 
   if(rooms_active >= MAX_ROOMS){ //unexpected behaviour
@@ -136,7 +135,7 @@ bool rooms_add_room(Room* new_room) {
   return true;
 }
 
-void delete_room(unsigned int room_id) {
+void rooms_delete_room(unsigned int room_id) {
   if(room_id == 0 || room_id >= MAX_ROOMS || rooms[room_id] == NULL) { //unexpected behaviour
     log_error("Trying to delete non-existing room (room_id:%d)", room_id);
     return;
@@ -160,6 +159,8 @@ void delete_room(unsigned int room_id) {
   log_debug("next_unactive_room_index:%d", next_unactive_room_index);
 }
 
+
+//Client Logic
 bool rooms_remove_from_zero(int socket_id){ //removes a client from starting room
   Room* room_zero = rooms_get_room_by_id(0);
   log_debug("Removing client with socket_it %d from starting room", socket_id);
@@ -186,7 +187,6 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //removes from current
   return status;
 }
 
-  //NEED TO TEST!!
 void rooms_delete_client(Client* client) { 
   if(client != NULL)
     rooms_remove_from_and_destory(rooms[client->room_id], client);
@@ -194,7 +194,6 @@ void rooms_delete_client(Client* client) {
     log_error("Trying to delete NULL client");
 }
 
-  //NEED TO TEST!!
 void rooms_delete_client_from_room(int socket_id, int room_id) {
   if((!is_valid_room_id(room_id)) || (rooms[room_id] == NULL)){ //unexpected behaviour
     log_error("Trying to delete client with socket_id %d from invalid room id %d", socket_id, room_id);
@@ -217,6 +216,8 @@ void rooms_remove_from_and_destory(Room* r, Client* c){
   client_destory(c); 
 }
 
+
+//Prints and Debug
 void print_rooms() { //debug function
   for(int i = 0; i<MAX_CLIENTS; i++) {
     if(rooms[i] != NULL)

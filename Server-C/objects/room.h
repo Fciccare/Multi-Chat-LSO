@@ -24,18 +24,21 @@ Room* room_create(unsigned int id, const char* name, Client* master_client);
 void room_delete(Room* r);
 void room_destroy(Room* r);
 
-//set
+//Set
 void room_setId(Room* r, unsigned int id);
 void room_setName(Room* r, const char* name);
 void room_setClients_counter(Room* r, unsigned int clients_counter);
 void room_setMaster_client(Room* r, Client* master_client);
 
-//Other functions
+//Get
 Client* room_get_client_by_id(Room* r, int client_socket_id);
-//TODO: DA SCRVERE ANCORA
-void room_print(Room* r); //Debug function
-char* room_to_string(Room* r);
+
+//Logic
 bool room_add_client(Room* r, Client* client);
 bool room_remove_client(Room* r, int socket_id); 
+
+//Print and Debug
+void room_print(Room* r); //Debug function
+char* room_to_string(Room* r);
 
 #endif

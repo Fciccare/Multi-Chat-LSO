@@ -14,7 +14,7 @@ User* user_create_default() {
   strcpy(u->name, "defaultName");
   strcpy(u->password, "change your password!");
   u->propic=0;
-  log_debug("default user created: %s", user_to_string(u));
+  log_debug("Created: Default %s", user_to_string(u));
   return u;
 }
 
@@ -23,7 +23,7 @@ User* user_create(const char* name, const char* password) {
   strcpy(u->name, name);
   strcpy(u->password, password);
   u->propic=0;
-  log_debug("user created: %s", user_to_string(u));
+  log_debug("Created: %s", user_to_string(u));
   return u;
 }
 
@@ -33,7 +33,7 @@ void user_destroy(User* u){
 }
 
 
-//set
+//Set
 void user_setName(User* u, const char* name) {
   strcpy(u->name, name);
 }
@@ -42,8 +42,8 @@ void user_setPassword(User* u, const char* password) {
   strcpy(u->password, password);
 }
 
-//Other functions
 
+//Print and Debug
 void user_print(User* u) { //Debug function
   log_debug(user_to_string(u));
 }

@@ -3,12 +3,15 @@
 
 #include <stdbool.h>
 
+void initDatabase(bool);
 void createTable();
+void closeDatabase();
+
+bool insertUser(char[], char[]);
+
 bool isExistingUser(char[], char[]);
 bool isLoggedExistingUser(char[], char[]);
+
 void dbUpdateStatus(char[], char*);
-bool insertUser(char[], char[]);
-void initDatabase(bool);
-void closeDatabase();
 
 #endif

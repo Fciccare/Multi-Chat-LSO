@@ -7,10 +7,8 @@
 #include "socket_handler.h"
 #include "../library/log.h"
 
+//Main Dispatcher
 bool socketDispatcher(int *client_socket_id, char *buffer) {
-
-  //if buffer vuoto
-  //togli dalla stanza quello con socket_id
 
   char tag[5] = {0};
   strncpy(tag, buffer, 5);    // get the tag
@@ -36,7 +34,7 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
     not_accept_request(&(*message));
   } else if (strncmp(tag, "[EXT]", 5) == 0) {
     if(!exit_room(&(*message), client_socket_id))
-      return false; //if returns false, close socket
+      return false; //if this function returns false, calling function will close socket
   } else {
     char text[] = "Message recieved doesn't contain valid tag\n";
     log_error("%s. Tag: %s, Message: %s",text, tag, message);
@@ -45,66 +43,104 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
   return true;
 }
 
-void accept_request(char *message) { // Accept user in a room
-  // TODO: Rivedi i casi limiti strani
 
-  char *string_socket_id_client = strtok(message, "<>");
+//Request Processing
+void broadcast_message_into_room(char *message, int *client_socket_id) {
+  // Send message to every client in room
+
+  char *message_to_send = strtok(message, "<>");
   char *string_room_id = strtok(NULL, "<>");
 
-  // Questo socket id è il client che è stato accettato
+  int room_id = atoi(string_room_id);
 
-  int socket_id_client = atoi(string_socket_id_client);
-  unsigned int room_id = atoi(string_room_id);
+  int length = strlen(message_to_send) + 1;
+  char text[length + 15];
 
-  // Insert client into room
   Room *room = rooms_get_room_by_id(room_id);
-  Client *client = rooms_get_client_from_room_by_id(0, socket_id_client);
-  room_add_client(room, client);
-  rooms_remove_from_zero(client->socket_id); // TODO: questo ritorna un boolean, vedere se lo vogliamo gestire
+  Client **clients = room->clients;
+  int online_client = room->clients_counter;
 
-  // Debug prints: current and starting room
-  room_print(room);
-  room_print(rooms_get_room_by_id(0));
+  int count = 0; // how many clients has been sent to
+  for (int i = 0; i < MAX_CLIENTS; ++i) {
+    if (count == online_client) { // if message has been sent to every online client
+      return;
+    } else {
+      if ((clients + i) != NULL) {
+        int client_id = (*(clients + i))->socket_id; // client_id changes at every loop, it's the destination socket id
+        
+        sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id);
+        //[MSG]message_to_send<>sender_socket_id
+        log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
+        write(client_id, text, strlen(text));
 
-  // printf("Socket id client: %d \nRoom id: %d\n", socket_id_client, room_id);//Debug print
-
-  // Send to Client it has been accepted
-  char text[] = "Access accept\n";
-  log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
-  write(socket_id_client, text, strlen(text));
+        count++;
+      }
+    }
+  }
 }
 
-void not_accept_request(char *message) { // Don't accept a Client in a room
-  // Send to Client it has not been accepted
-  unsigned int client_socket_id = atoi(message);
-  char text[] = "Access denied\n";
-  log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
-  write(client_socket_id, text, strlen(text));
+
+void login(char *message, int *client_socket_id) {
+  char *text = strdup(message);
+
+  char *username = strtok(text, "<>");
+  char *password = strtok(NULL, "<>");
+  char *status = "0";
+  password[strlen(password) - 1] = '\0'; // remove \n from a string
+
+  if (isExistingUser(username, password)) { //if user is in database and isn't logged //DA REVISIONARE
+    if(isLoggedExistingUser(username, password)) {
+      char buffer[20] = {0};
+      
+      if (log_user(user_create(username, password), *client_socket_id)) { //put user in starting room
+        status = "1";
+        dbUpdateStatus(username, status);
+        strcpy(buffer, "Login successful\n");
+        log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
+        write(*client_socket_id, buffer, strlen(buffer));               // Java recv needs string end with EOF
+      } else { //unable to put it in starting room 
+        strcpy(buffer, "Starting room full\n");
+        write(*client_socket_id, buffer, strlen(buffer)); // Java recv need string end with EOF
+        log_warn("Starting room full");
+      }
+    } else {
+      //TODO: write "utente già loggato"
+      log_info("User %s already logged", username);
+    }
+  } else { //if user doesn't exist
+    char buffer[20] = {0};
+    strcpy(buffer, "Login failed\n");
+    log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
+    write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
+    log_warn("Login failed");                                       // Server Log
+  }
+
+  free(text);
 }
 
-void request_to_enter_room(char *message, int *client_socket_id) {
-  // TODO: CHE SE DEVE FIXAAA OOOOOOOOOOOO vabbè questa la metto a posto poi
-  // Send to master client Room request to join another client, please Valentina fix it 💔(non so che devo fixà)
+void register_user(char *message, int *client_socket_id) {
+  char *text = strdup(message);
 
-  // client_socket_id is client requesting to enter room
-  unsigned int room_id = atoi(message);
-  printf("Room id chosen from client is: %d\n", room_id); // Debug print
-  Room *room = rooms_get_room_by_id(room_id);
-  Client *client = rooms_get_client_from_room_by_id(0, *client_socket_id);
+  char *username = strtok(text, "<>");
+  char *password = strtok(NULL, "<>");
+  password[strlen(password) - 1] = '\0'; // remove \n from string
 
-  int master_client_socket_id = 0;
+  if (insertUser(username, password)) {
+    char buffer[25] = {0};
+    strcpy(buffer, "Register successful\n");
+    log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
+    write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
+  } else {
+    char buffer[25] = {0};
+    strcpy(buffer, "Register failed\n");
+    log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
+    write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
+    log_warn("Register failed");                                    // Server Log
+  }
 
-  // if(room->master_client != NULL) //allo sto coso cerve a evitare il seg fault,
-  // dovremmo valutare quanto vogliamo fare controlli
-  // in teoira queste cose non dovrebbero succedere, ma di solito comunque si controlla
-
-  master_client_socket_id = room->master_client->socket_id;
-  char buffer[50];
-  sprintf(buffer, "[RQT]%d<>%s<>%d\n", *client_socket_id, client->user->name, room_id);
-  //[RQT]client_requesting_to_enter_socket_id<>user_name<>room_id
-  log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-  write(master_client_socket_id, buffer, strlen(buffer));
+  free(text);
 }
+
 
 void create_room(char *message, int *client_socket_id) {
   Client *client = rooms_get_client_from_room_by_id(0, *client_socket_id);
@@ -145,109 +181,6 @@ void create_room(char *message, int *client_socket_id) {
   log_warn("Room create failed");
 }
 
-void broadcast_message_into_room(char *message, int *client_socket_id) {
-  // Send message to every client in room
-
-  char *message_to_send = strtok(message, "<>");
-  char *string_room_id = strtok(NULL, "<>");
-
-  int room_id = atoi(string_room_id);
-
-  int length = strlen(message_to_send) + 1;
-  char text[length + 15];
-
-  Room *room = rooms_get_room_by_id(room_id);
-  Client **clients = room->clients;
-  int online_client = room->clients_counter;
-
-  int count = 0; // how many clients has been sent to
-  for (int i = 0; i < MAX_CLIENTS; ++i) {
-    if (count == online_client) { // if message has been sent to every online client
-      return;
-    } else {
-      if ((clients + i) != NULL) {
-        int client_id = (*(clients + i))->socket_id; // client_id changes at every loop, it's the destination socket id
-        
-        sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id);
-        //[MSG]message_to_send<>sender_socket_id
-        log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
-        write(client_id, text, strlen(text));
-
-        count++;
-      }
-    }
-  }
-}
-
-void login(char *message, int *client_socket_id) {
-  char *text = strdup(message);
-
-  char *username = strtok(text, "<>");
-  char *password = strtok(NULL, "<>");
-  char *status = "0";
-  password[strlen(password) - 1] = '\0'; // remove \n from a string
-
-  if (isExistingUser(username, password)) { //if user is in database and isn't logged //DA REVISIONARE
-    if(isLoggedExistingUser(username, password)) {
-      char buffer[20] = {0};
-      
-      if (log_user(user_create(username, password), *client_socket_id)) { //put user in starting room
-        status = "1";
-        dbUpdateStatus(username, status);
-        strcpy(buffer, "Login successful\n");
-        log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-        write(*client_socket_id, buffer, strlen(buffer));               // Java recv needs string end with EOF
-      } else { //unable to put it in starting room 
-        strcpy(buffer, "Starting room full\n");
-        write(*client_socket_id, buffer, strlen(buffer)); // Java recv need string end with EOF
-        log_warn("Starting room full");
-      }
-    } else {
-      //TODO: write "utente già loggato"
-      log_info("User %s already logged", username);
-    }
-  } else { //if user doesn't exist
-    char buffer[20] = {0};
-    strcpy(buffer, "Login failed\n");
-    log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-    write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
-    log_warn("Login failed");                                       // Server Log
-  }
-
-  free(text);
-}
-
-bool log_user(User *u, int client_socket_id) {
-  //Log user into Starting room
-  Client *client = client_create(u, client_socket_id, 0);
-  Room *room_zero = rooms_get_room_by_id(0);
-  bool status = room_add_client(room_zero, client); //room_add_client fails if room is full
-  return status; 
-}
-
-void register_user(char *message, int *client_socket_id) {
-  char *text = strdup(message);
-
-  char *username = strtok(text, "<>");
-  char *password = strtok(NULL, "<>");
-  password[strlen(password) - 1] = '\0'; // remove \n from string
-
-  if (insertUser(username, password)) {
-    char buffer[25] = {0};
-    strcpy(buffer, "Register successful\n");
-    log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-    write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
-  } else {
-    char buffer[25] = {0};
-    strcpy(buffer, "Register failed\n");
-    log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-    write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
-    log_warn("Register failed");                                    // Server Log
-  }
-
-  free(text);
-}
-
 void get_list(int *client_socket_id) {
   //Send list of current rooms 
   //To make sure client recieves entire list, we format the string sent this way:
@@ -284,8 +217,71 @@ void get_list(int *client_socket_id) {
   }
   log_info("Server is sending(%ld): %s", strlen(end), end); // Debug print
   write(*client_socket_id, end, strlen(end));
-  printf("Room List sent successfully"); //Server Log
+  log_info("Room List sent successfully"); //Server Log
 }
+
+
+void request_to_enter_room(char *message, int *client_socket_id) {
+
+  // client_socket_id is client requesting to enter room
+  unsigned int room_id = atoi(message);
+  printf("Room id chosen from client is: %d\n", room_id); // Debug print
+  Room *room = rooms_get_room_by_id(room_id);
+  Client *client = rooms_get_client_from_room_by_id(0, *client_socket_id);
+
+  int master_client_socket_id = 0;
+
+  //TODO: Decidere su questo controllo
+  // if(room->master_client != NULL) //allo sto coso cerve a evitare il seg fault,
+  // dovremmo valutare quanto vogliamo fare controlli
+  // in teoira queste cose non dovrebbero succedere, ma di solito comunque si controlla
+
+  master_client_socket_id = room->master_client->socket_id;
+  char buffer[50];
+  sprintf(buffer, "[RQT]%d<>%s<>%d\n", *client_socket_id, client->user->name, room_id);
+  //[RQT]client_requesting_to_enter_socket_id<>user_name<>room_id
+  log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
+  write(master_client_socket_id, buffer, strlen(buffer));
+}
+
+void accept_request(char *message) { // Accept user in a room
+  // TODO: Rivedi i casi limiti strani
+
+  char *string_socket_id_client = strtok(message, "<>");
+  char *string_room_id = strtok(NULL, "<>");
+
+  // Questo socket id è il client che è stato accettato
+
+  int socket_id_client = atoi(string_socket_id_client);
+  unsigned int room_id = atoi(string_room_id);
+
+  // Insert client into room
+  //TODO: controlla se questi diventano NULL
+  Room *room = rooms_get_room_by_id(room_id);
+  Client *client = rooms_get_client_from_room_by_id(0, socket_id_client);
+  room_add_client(room, client);
+  rooms_remove_from_zero(client->socket_id); // TODO: questo ritorna un boolean, vedere se lo vogliamo gestire
+
+  // Debug prints: current and starting room
+  room_print(room);
+  room_print(rooms_get_room_by_id(0));
+
+  // printf("Socket id client: %d \nRoom id: %d\n", socket_id_client, room_id);//Debug print
+
+  // Send to Client it has been accepted
+  char text[] = "Access accept\n";
+  log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
+  write(socket_id_client, text, strlen(text));
+}
+
+void not_accept_request(char *message) { // Don't accept a Client in a room
+  // Send to Client it has not been accepted
+  unsigned int client_socket_id = atoi(message);
+  char text[] = "Access denied\n";
+  log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
+  write(client_socket_id, text, strlen(text));
+}
+
 
 bool exit_room(char* message, int *client_socket_id) { //Exit room
   int room_id = atoi(message);
@@ -321,3 +317,14 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   return true;
 
 }
+
+
+//Auxiliar
+bool log_user(User *u, int client_socket_id) {
+  //Log user into Starting room
+  Client *client = client_create(u, client_socket_id, 0);
+  Room *room_zero = rooms_get_room_by_id(0);
+  bool status = room_add_client(room_zero, client); //room_add_client fails if room is full
+  return status; 
+}
+

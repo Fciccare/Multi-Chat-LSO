@@ -25,16 +25,14 @@
 
 #include "library/log.h"
 
-void error_handler(char[]);
 void *socket_handler(void *);
 void socket_close(int);
-void signal_handler(int);
-void remove_client(int);
 
-void test();
+
+void error_handler(char[]);
+void signal_handler(int);
 
 fd_set readfds, master;
-
 int maxfdp;
 
 int main(int argc, char* argv[]) {
@@ -142,6 +140,7 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
+
 void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e non a una copia
   int client_socket_id = *(int *)client_socket_id_void;
   char buffer[256] = {0};
@@ -161,7 +160,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       log_error("Trying to delete non existing Client! Socket id:%d", client_socket_id);
       return NULL;
     }
-    dbUpdateStatus(client->user->name, "0");  
+    dbUpdateStatus(client->user->name, "0");
 
     //Rooms and B logic
     rooms_delete_client(client);
@@ -179,15 +178,16 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
   pthread_exit(NULL);
 }
 
-void socket_close(int client_socket_id) {
+void socket_close(int client_socket_id) { //Auxiliar function to close a socket connection
   close(client_socket_id);
   FD_CLR(client_socket_id, &master);
   if(client_socket_id == maxfdp)
     maxfdp--;
 }
 
+
 void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/write
-  perror(text);
+  log_error("%s", text);
   exit(EXIT_FAILURE);
 }
 
@@ -197,59 +197,3 @@ void signal_handler(int sig) {
   exit(EXIT_SUCCESS);
 }
 
-// void test() { //è uno schifo ma non cancelliamolo
-//   log_info("INIZIO TESSSSSSTTTTTTTT");
-
-//   int *p1, *p2, *p3;
-//   int s1 = 4; 
-//   int s2 = 5;
-//   int s3 = 6;
-
-//   p1=&s1;
-//   p2=&s2;
-//   p3=&s3;
-
-//   if(isExistingUser("a", "a")){
-//     User* u1 = user_create("a","a");
-//     log_user(u1, *p1);
-//   }
-
-//   if(isExistingUser("user1", "password")){
-//     User* u2 = user_create("user1","password");
-//     log_user(u2, *p2);
-//   }
-
-//   if(isExistingUser("Girgio", "Giorgio")){
-//     User* u3 = user_create("Girgio","Giorgio");
-//     log_user(u3, *p3);
-//   }
-
-//   // room = room_create(0, message, client); //Create new room, id is set to 0 but will be changed
-//   // log_info("Room created");
-  
-//   // if (rooms_add_room(room)) {
-//   //   log_debug("Room added");
-    
-//   //   room_print(room);//TODO: Change with room_to_string for prevent spam room null
-//   //   char text[35];
-//   //   sprintf(text, "Room create successful<>%d\n", room->id);
-//   //   log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
-//   //   write(*client_socket_id, text, strlen(text));               // Remember: Java recv need string end with EOF
-//   //   rooms_remove_from_zero(client->socket_id); // TODO: Ritorna un boolean, forse lo vogliamo gestire?
-//   //   return;
-
-//   //Dalla funzione accept_request
-//   Room *room = rooms_get_room_by_id(1);
-//   Client *client = rooms_get_client_by_id(*p2);
-//   room_add_client(room, client);
-//   rooms_remove_from_zero(client->socket_id);
-
-//   client = rooms_get_client_by_id(*p3);
-//   room_add_client(room, client);
-//   rooms_remove_from_zero(client->socket_id);
-//   ///////////////////////////////
-
-//   room_remove_client(room, *p2);
-//   rooms_move_to_zero(client);
-
-// }
