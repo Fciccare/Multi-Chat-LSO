@@ -43,26 +43,34 @@ public class Server {
         }).start();
     }
 
-    private void initRead(){
+    private boolean initRead(){
         if(socket.isConnected() && input == null){
             try {
                 input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 Log.d(TAG, "Input created");
+                return true;
             } catch (IOException e) {
                 Log.e(TAG, e.toString());
             }
-        }else Log.e(TAG, "Can't create in/out beacause socket not connected or is alread created");
+        }else if(input != null)
+            return true;
+        else Log.e(TAG, "Can't create in/out beacause socket not connected or is alread created");
+        return false;
     }
 
-    private void initWrite(){
+    private boolean initWrite(){
         if(socket.isConnected() && out == null){
             try {
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
                 Log.d(TAG, "Out created");
+                return true;
             } catch (IOException e) {
                 Log.e(TAG, e.toString());
             }
-        }else Log.e(TAG, "Can't create in/out beacause socket not connected or is alread created");
+        }else if(out != null)
+            return true;
+        else Log.e(TAG, "Can't create in/out beacause socket not connected or is alread created");
+        return false;
     }
 
     public void write(String message){
@@ -77,6 +85,8 @@ public class Server {
         String message = "";
         if(input == null)
             initRead();
+            //if(!initRead())
+                //return null;
         try {
             message = input.readLine();
             if(message == null)

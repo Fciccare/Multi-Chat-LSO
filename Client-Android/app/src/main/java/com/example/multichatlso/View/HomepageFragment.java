@@ -147,13 +147,16 @@ public class HomepageFragment extends Fragment {
 
     private void listRoom(){
         String message = "[LST]";
+        Log.d(TAG, "Write to Server: " + message);
         Server.getInstance().write(message);
-
-        new Thread(() -> {
-            getActivity().runOnUiThread(() -> {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        //executor.execute(() -> {
+            new Thread(() -> {
                 String result = "";
                 do {
-                    result += Server.getInstance().read() + "\n";
+                    String temp = Server.getInstance().read() + "\n";
+                    Log.d(TAG, "Il server ha risposto con: " + temp);
+                    result += temp;
                 }while (!result.contains("[/LST]"));
 
                 Log.d(TAG, "Lista di stanza: " + result);
@@ -161,9 +164,11 @@ public class HomepageFragment extends Fragment {
                 rooms.clear();
                 rooms.addAll(roomArrayList);
                 Log.d(TAG, "Lista Room: " + rooms);
-                adapter.notifyDataSetChanged();
-            });
-        }).start();
+                getActivity().runOnUiThread(() -> {
+                    adapter.notifyDataSetChanged();
+                });
+            }).start();
+        //});
     }
 
     private List<Room> castListToRoom(String list){

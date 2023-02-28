@@ -53,11 +53,13 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, message);
         Server.getInstance().write(message);
         String recevingString = Server.getInstance().read();
-        if(recevingString != null) Log.d(TAG, recevingString + String.valueOf(recevingString.length()));
-        if(recevingString.contains("Login successful"))
+        if(recevingString != null && recevingString.contains("Login successful"))
             startActivity(new Intent(this, BottomNavigationActivity.class));
-        else
+        else{
+            Log.d(TAG, "Server responde with: " + recevingString);
             Toasty.error(getApplicationContext(), "Login errato", Toast.LENGTH_SHORT, true).show();
+        }
+
 
     }
 }
