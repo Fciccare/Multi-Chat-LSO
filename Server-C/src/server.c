@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
-#include "database/database.h"
+//#include "database/database.h"
 
 #include "handler/rooms_handler.h"
 #include "handler/socket_handler.h"
