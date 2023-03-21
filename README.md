@@ -1,5 +1,28 @@
 # Multi-Chat-LSO
 
+## How to build/run?
+```bash
+cd Server-C/
+make
+bin/server -d
+
+#Optional
+make clean #(for clear executable)
+```
+
+### Database
+Per far compilare il database c'è bisogno di installare le seguenti librerie:
+```bash
+# Debian/Ubuntu
+sudo apt install libpq-dev
+
+# Arch
+sudo pacman -S postgresql-libs
+
+# Other distro? Google it
+```
+
+
 ## Funzionalità da implementare (Server Side) :soon:
 
 :white_check_mark: N utenti (client) possono accedere ad un sistema di chat <br />
