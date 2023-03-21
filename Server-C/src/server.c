@@ -159,7 +159,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
     if(client == NULL){
       log_error("Trying to delete non existing Client! Socket id:%d", client_socket_id);
       return NULL;
-    }
+    }else log_debug("Removing client with socket id:%d", client_socket_id);
     dbUpdateStatus(client->user->name, "0");
 
     //Rooms and B logic
