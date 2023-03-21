@@ -19,12 +19,7 @@ SRC_EXT := c
 
 SRC = src/server.c src/objects/*.c src/handler/*.c src/database/*.c src/database/library/sqlite3.c src/library/log.c
 
-$(info $(SOURCES))
-
-
 TARGET := $(BIN_PATH)/server
-
-
 
 all: $(TARGET)
 	@printf "\e[32m%b\e[0m" "Build completato\n"
@@ -34,6 +29,7 @@ all: $(TARGET)
 # $^ sta per "tutti gli elementi alla destra di :" (in questo caso $(SRC))
 $(TARGET): $(SRC)
 	@printf "\e[32m%b\e[0m" "Compilazione sorgenti\n"
+	@mkdir -p $(BIN_PATH)
 	$(CC) $(CFLAGS) -o $@ $(LDFLAGS) $^
 
 
