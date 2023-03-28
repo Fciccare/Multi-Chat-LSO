@@ -57,7 +57,7 @@ void closeDatabase() {
 }
 
 bool insertUser(char username[], char password[]){
-    char* error = 0;
+    //char* error = 0;
     sqlite3_stmt* stmt;
     char query[] = "INSERT INTO Users (username, password, online_status) VALUES(?, ?, 0);";
 

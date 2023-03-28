@@ -77,7 +77,8 @@ void rooms_get_formatted_room(int i, char* buff) { //Get a specific room in a fo
 }
 
 bool is_valid_room_id(int id) {
-  return (0 <= id < MAX_ROOMS);
+  //return (0 <= id < MAX_ROOMS);
+  return (0<= id && id < MAX_ROOMS) ? true : false;
 }
 
 
@@ -211,7 +212,7 @@ void rooms_delete_client_from_room(int socket_id, int room_id) {
 
 void rooms_remove_from_and_destory(Room* r, Client* c){
   //check if r and c NOT NULL before calling this function!
-  int socket_id = c->socket_id;
+  //int socket_id = c->socket_id;
   room_remove_client(r, c->socket_id);
   client_destory(c); 
 }

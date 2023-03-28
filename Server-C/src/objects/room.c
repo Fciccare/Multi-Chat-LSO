@@ -78,7 +78,7 @@ Client* room_get_client_by_id(Room* r, int client_socket_id){
   int max = MAX_CLIENTS;
   if (r->id == 0)
     max = MAX_CLIENTS_ZERO;
-  for (int i = 0; i < MAX_CLIENTS; i++) {
+  for (int i = 0; i < max; i++) {
     if(r->clients[i] != NULL){
       count++;
       if(r->clients[i]->socket_id == client_socket_id){
@@ -91,6 +91,7 @@ Client* room_get_client_by_id(Room* r, int client_socket_id){
       return NULL;
     }
   }
+  return NULL;
 }
 
 
@@ -149,6 +150,7 @@ bool room_remove_client(Room* r, int socket_id) {
     }
     if (count == online_client) return false;
   }
+  return false;
 }
 
 
