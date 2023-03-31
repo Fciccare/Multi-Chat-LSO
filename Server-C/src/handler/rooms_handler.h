@@ -18,6 +18,7 @@ Client* rooms_get_client_from_room_by_id(int room_id, int client_socket_id);
 Client* rooms_get_client_by_id(int client_socket_id);
 void rooms_get_formatted_room(int i, char* buff);
 bool is_valid_room_id(int id); //return (0 <= id < MAX_ROOMS);
+bool rooms_is_empty(int room_id);
 
 //Rooms Logic
 void update_next_unactive_room_index();

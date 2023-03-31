@@ -15,3 +15,9 @@ Server-C/database/a.out
 /.idea/
 Client-Andorid/local.properties
 Server-C/bin/server
+Client-Android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+
+Client-Android/.gradle/file-system.probe
+Client-Android/.gradle/7.4/executionHistory/executionHistory.lock
+Client-Android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+Client-Android/.gradle/7.4/fileHashes/fileHashes.lock

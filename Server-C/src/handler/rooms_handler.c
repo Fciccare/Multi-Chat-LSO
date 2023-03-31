@@ -140,14 +140,16 @@ void rooms_delete_room(unsigned int room_id) {
   if(room_id == 0 || room_id >= MAX_ROOMS || rooms[room_id] == NULL) { //unexpected behaviour
     log_error("Trying to delete non-existing room (room_id:%d)", room_id);
     return;
-  }
+  }else log_debug("Room exists, deleting...");
 
-  for (int i = 0; i < MAX_CLIENTS; i++)  {
-    Client* client_to_move = rooms[room_id]->clients[i];
-    if(client_to_move != NULL) {
-      rooms_move_to_zero(client_to_move, room_id);
-    }
-  }
+  if(rooms[room_id]->clients_counter != 0){
+    for (int i = 0; i < MAX_CLIENTS; i++)  {
+        Client* client_to_move = rooms[room_id]->clients[i];
+        if(client_to_move != NULL) {
+          rooms_move_to_zero(client_to_move, room_id);
+        }
+      }
+  }else 
   
   log_debug("deleting room: %s",room_to_string(rooms[room_id]));
   room_delete(rooms[room_id]); 
@@ -215,8 +217,36 @@ void rooms_remove_from_and_destory(Room* r, Client* c){
   //int socket_id = c->socket_id;
   room_remove_client(r, c->socket_id);
   client_destory(c); 
+  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
+  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
+  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
+  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
+  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
+  /*
+  log_debug("Sto per morire");
+  printf("%d \n", r->id);
+  printf("%d \n", r->clients_counter);
+  printf("%s \n", r->name);
+  if(r->master_client == NULL){
+    printf("Master client NULL \n");
+  }else printf("Master client not null \n");
+  log_debug("Sono morto");
+  room_print(r);
+
+
+  //TODO: Mi sa che messo qui non è il massimo, valutare se spostarlo
+  if(rooms_is_empty(r->id)){
+    log_debug("Room is empty, deleting room...");
+    rooms_delete_room(r->id);
+  }
+  */
 }
 
+bool rooms_is_empty(int room_id){
+  if(rooms[room_id] != NULL && rooms[room_id]->clients_counter == 0)
+    return true;
+  return false;
+}
 
 //Prints and Debug
 void print_rooms() { //debug function

@@ -338,10 +338,15 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
+  }else log_debug("Successfully moved client with socket_id:%d");
+
+  //TODO: Aggiungere logica nel caso in cui è l'ultimo nella stanza, distruggerla
+  if(rooms_is_empty(room_id)){
+    log_debug("Room is empty, deleting room...");
+    rooms_delete_room(room_id);
   }
 
   return true;
-
 }
 
 
