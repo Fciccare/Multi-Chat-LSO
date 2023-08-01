@@ -37,6 +37,10 @@ sudo pacman -S postgresql-libs
 
 ## TO DO :page_with_curl:
 
+**Cose a cui dare priorità (Vale)**
+ - Controllare le deallocazioni
+ - Implementare i lock per i thread
+
 **Logica di controllo**
   - :black_square_button: Controllo e gestione degli errori :construction:WIP:construction:
   - :white_check_mark: Controllo se utente già loggato
@@ -57,7 +61,12 @@ sudo pacman -S postgresql-libs
   - :white_check_mark: Cacciare la gente quando la stanza viene cancellata
  
  **Client Android :construction:WIP:construction:** 
-  - Tutto - Login e Regiser
+  - :white_check_mark: Login e register
+  - :white_check_mark: Creare, entrare e accettare nelle stanza
+  - :white_check_mark: Invio messaggi
+  - :black_square_button: Timeout per le richieste di entrata
+  - :black_square_button: Limite ai caratteri dei messaggi
+  - :black_square_button: Grafica chat
 
   **Funzionalià interamente opzionali da sviluppare per utlime se ci va**
   - Propic
