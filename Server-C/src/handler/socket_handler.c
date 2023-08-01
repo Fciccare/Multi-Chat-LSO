@@ -50,7 +50,8 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
 //Request Processing
 void broadcast_message_into_room(char *message, int *client_socket_id) {
   // Send message to every client in room
-
+  //TODO: Check regex input        \[MSG\].*<>\d*
+  
   char *message_to_send = strtok(message, "<>");
   char *string_room_id = strtok(NULL, "<>");
 
