@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
-#include "database/database.h"
+//#include "database/database.h"
 
 #include "handler/rooms_handler.h"
 #include "handler/socket_handler.h"
@@ -30,7 +30,7 @@ void socket_close(int);
 
 
 void error_handler(char[]);
-void signal_handler(int);
+void signal_handler();
 
 fd_set readfds, master;
 int maxfdp;
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 ////INITIALIZATION SERVER////////////////////////////////////////////////
   signal(SIGINT, signal_handler); //Close database when server is stopped
 
-  char buffer[256] = {0};
+  //char buffer[256] = {0};
   int opt, port = 9192;
   char ipaddr[16] = "127.0.0.1";
   bool debug = false;
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
 
   //Setup socket
   struct sockaddr_in saddress, caddress;
-  int server_tcp, len;
+  int server_tcp;
 
   // Setup socket TCP SERVER
   saddress.sin_family = AF_INET;
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
   while (1) {
     readfds = master;
 
-    int nready = select(maxfdp + 1, &readfds, NULL, NULL, NULL); // Select get the highest socket ID + 1
+    /*int nready = */select(maxfdp + 1, &readfds, NULL, NULL, NULL); // Select get the highest socket ID + 1
     
     for (int i = 0; i <= maxfdp; i++) { //Check all File Descriptors 
       if (FD_ISSET(i, &readfds)) {      //to find which one changed
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 
           log_info("SOCKET ACTIVETED IS: %d", i); //Log Server
 
-          len = sizeof(caddress);
+          unsigned int len = sizeof(caddress);
           int client_socket_id;
           if ((client_socket_id = accept(server_tcp, (struct sockaddr *)&caddress, &len)) == -1)
             error_handler("Accept Error");
@@ -159,7 +159,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
     if(client == NULL){
       log_error("Trying to delete non existing Client! Socket id:%d", client_socket_id);
       return NULL;
-    }
+    }else log_debug("Removing client with socket id:%d", client_socket_id);
     dbUpdateStatus(client->user->name, "0");
 
     //Rooms and B logic
@@ -191,7 +191,7 @@ void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/w
   exit(EXIT_FAILURE);
 }
 
-void signal_handler(int sig) {
+void signal_handler() {
   closeDatabase();
   //TODO: rooms_destroy();
   exit(EXIT_SUCCESS);

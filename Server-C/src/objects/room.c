@@ -20,12 +20,15 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
 
   if(id == 0){ //Starting room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);
+    bzero(r->clients, MAX_CLIENTS_ZERO);
     log_debug("Created dinamic array %d size", MAX_CLIENTS_ZERO);
   }
   else{ //Regular room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS);
+    bzero(r->clients, MAX_CLIENTS);
     log_debug("Created dinamic array %d size", MAX_CLIENTS);
   }
+  
 
   if(master_client != NULL){
     log_debug("Master client NOT NULL");
@@ -70,10 +73,12 @@ Client* room_get_client_by_id(Room* r, int client_socket_id){
   int online_client = r->clients_counter;
   int count = 0;
 
+  //room_client_print(r);
+
   int max = MAX_CLIENTS;
   if (r->id == 0)
     max = MAX_CLIENTS_ZERO;
-  for (int i = 0; i < MAX_CLIENTS; i++) {
+  for (int i = 0; i < max; i++) {
     if(r->clients[i] != NULL){
       count++;
       if(r->clients[i]->socket_id == client_socket_id){
@@ -86,6 +91,7 @@ Client* room_get_client_by_id(Room* r, int client_socket_id){
       return NULL;
     }
   }
+  return NULL;
 }
 
 
@@ -144,6 +150,7 @@ bool room_remove_client(Room* r, int socket_id) {
     }
     if (count == online_client) return false;
   }
+  return false;
 }
 
 
@@ -158,6 +165,16 @@ char* room_to_string(Room* r){
     sprintf(value, "Room: {id: %d, name: %s, clients_counter: %d, Master%s}", r->id, r->name,r->clients_counter, client_to_string_full(r->master_client));
     return strdup(value);
   } 
-    
+
   return "Client: NULL";
+}
+
+void room_client_print(Room* r){
+  if(r!=NULL){
+    for(int i=0; i < MAX_CLIENTS; ++i){
+      if(r->clients[i] == NULL){
+        printf("(%d): NULL \n", i);
+      }else printf("(%d): NOT NULL \n", i);
+    }
+  }
 }

@@ -40,5 +40,6 @@ bool room_remove_client(Room* r, int socket_id);
 //Print and Debug
 void room_print(Room* r); //Debug function
 char* room_to_string(Room* r);
+//void room_client_print(Room* r);
 
 #endif

@@ -26,7 +26,7 @@ void traceCallback( void* udp, const char* sql ) {
 
 void initDatabase(bool debug){
     log_debug("Starting database...");
-    sqlite3_open("database/database.db", &db);
+    sqlite3_open("src/database/database.db", &db);
     if(debug)
         sqlite3_trace(db, traceCallback, NULL);
     createTable();
@@ -46,6 +46,7 @@ void createTable(){ //SQL query for creating tables
     if(sqlite3_exec(db, query, NULL, NULL, &error) == SQLITE_OK){
         log_debug("Table created or alreary created");
     } else {
+        log_error("Error creating table");
         errorHandler(error);
         sqlite3_free(error);
     }
@@ -56,7 +57,7 @@ void closeDatabase() {
 }
 
 bool insertUser(char username[], char password[]){
-    char* error = 0;
+    //char* error = 0;
     sqlite3_stmt* stmt;
     char query[] = "INSERT INTO Users (username, password, online_status) VALUES(?, ?, 0);";
 

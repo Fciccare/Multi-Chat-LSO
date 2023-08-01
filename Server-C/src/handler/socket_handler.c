@@ -7,10 +7,12 @@
 #include "socket_handler.h"
 #include "../library/log.h"
 
+void error_handler(char text[]);
+
 //Main Dispatcher
 bool socketDispatcher(int *client_socket_id, char *buffer) {
 
-  char tag[5] = {0};
+  char tag[6] = {0};
   strncpy(tag, buffer, 5);    // get the tag
   char *message = buffer + 5; // point to buffer without tag
   message = strdup(message);  // get rid of tag
@@ -38,7 +40,8 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
   } else {
     char text[] = "Message recieved doesn't contain valid tag\n";
     log_error("%s. Tag: %s, Message: %s",text, tag, message);
-    write(*client_socket_id, text, strlen(text));
+    if(write(*client_socket_id, text, strlen(text)) < 0)
+      error_handler("Errore write");
   }
   return true;
 }
@@ -47,7 +50,8 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
 //Request Processing
 void broadcast_message_into_room(char *message, int *client_socket_id) {
   // Send message to every client in room
-
+  //TODO: Check regex input        \[MSG\].*<>\d*
+  
   char *message_to_send = strtok(message, "<>");
   char *string_room_id = strtok(NULL, "<>");
 
@@ -57,6 +61,13 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
   char text[length + 15];
 
   Room *room = rooms_get_room_by_id(room_id);
+  
+  if(room == NULL){
+    log_debug("Room to send message is NULL, stop broadcasting");
+    //TODO: add client response, room is null
+    return;
+  }
+    
   Client **clients = room->clients;
   int online_client = room->clients_counter;
 
@@ -71,7 +82,8 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
         sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id);
         //[MSG]message_to_send<>sender_socket_id
         log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
-        write(client_id, text, strlen(text));
+        if(write(client_id, text, strlen(text)) < 0)
+          error_handler("Errore write");
 
         count++;
       }
@@ -97,10 +109,12 @@ void login(char *message, int *client_socket_id) {
         dbUpdateStatus(username, status);
         strcpy(buffer, "Login successful\n");
         log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-        write(*client_socket_id, buffer, strlen(buffer));               // Java recv needs string end with EOF
+        if(write(*client_socket_id, buffer, strlen(buffer)) < 0)               // Java recv needs string end with EOF
+          error_handler("Error write");
       } else { //unable to put it in starting room 
         strcpy(buffer, "Starting room full\n");
-        write(*client_socket_id, buffer, strlen(buffer)); // Java recv need string end with EOF
+        if(write(*client_socket_id, buffer, strlen(buffer)) < 0) // Java recv need string end with EOF
+          error_handler("Error write");
         log_warn("Starting room full");
       }
     } else {
@@ -111,7 +125,8 @@ void login(char *message, int *client_socket_id) {
     char buffer[20] = {0};
     strcpy(buffer, "Login failed\n");
     log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-    write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
+    if(write(*client_socket_id, buffer, strlen(buffer)) < 0)        // Java recv need string end with EOF
+      error_handler("Errore write");
     log_warn("Login failed");                                       // Server Log
   }
 
@@ -129,12 +144,14 @@ void register_user(char *message, int *client_socket_id) {
     char buffer[25] = {0};
     strcpy(buffer, "Register successful\n");
     log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-    write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
+    if( write(*client_socket_id, buffer, strlen(buffer)) < 0)
+      error_handler("Errore write");               // Java recv need string end with EOF
   } else {
     char buffer[25] = {0};
     strcpy(buffer, "Register failed\n");
     log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-    write(*client_socket_id, buffer, strlen(buffer));               // Java recv need string end with EOF
+    if( write(*client_socket_id, buffer, strlen(buffer)) < 0)              // Java recv need string end with EOF
+      error_handler("Errore write");
     log_warn("Register failed");                                    // Server Log
   }
 
@@ -150,7 +167,8 @@ void create_room(char *message, int *client_socket_id) {
     log_error("No user in room_zero with id: %d", *client_socket_id);
     char* text = "Error creation of room\n";
     log_warn("Server is sending(%ld): %s", strlen(text), text);
-    write(*client_socket_id, text, strlen(text)); 
+    if (write(*client_socket_id, text, strlen(text)) < 0)
+      error_handler("Errore write");
     return;
   } 
   
@@ -171,13 +189,15 @@ void create_room(char *message, int *client_socket_id) {
     char text[35];
     sprintf(text, "Room create successful<>%d\n", room->id);
     log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
-    write(*client_socket_id, text, strlen(text));               // Remember: Java recv need string end with EOF
+    if(write(*client_socket_id, text, strlen(text)) < 0)               // Remember: Java recv need string end with EOF
+      error_handler("Errore write");
     rooms_remove_from_zero(client->socket_id); // TODO: Ritorna un boolean, forse lo vogliamo gestire?
     return;
   }
 
   // else: failed to create room
-  write(*client_socket_id, "Room create failed\n", 20); // Java recv need string end with EOF
+  if(write(*client_socket_id, "Room create failed\n", 20) < 0) // Java recv need string end with EOF
+    error_handler("Errore write");
   log_warn("Room create failed");
 }
 
@@ -198,9 +218,10 @@ void get_list(int *client_socket_id) {
 
   sprintf(start, "[LST]%d\n", MAX_CLIENTS);
   log_info("Server is sending(%ld): %s", strlen(start), start); // Debug print
-  write(*client_socket_id, start, strlen(start));
+  if ( write(*client_socket_id, start, strlen(start)) < 0)
+    error_handler("Errore write");
 
-  int tmpFound = 0;                                  // how many rooms already found
+  unsigned int tmpFound = 0;                                  // how many rooms already found
   int i = 1;                                         // index to visit array (0 is tarting room so we exclude it)
   while (tmpFound < (rooms_active - 1)) { // if all active rooms have been visited, we stop searching the array
     if (i > MAX_ROOMS) {                             // check to avoid seg fault
@@ -209,14 +230,16 @@ void get_list(int *client_socket_id) {
     rooms_get_formatted_room(i, buff); // it gets roomID<>roomNAME<>clientsConnected\n, if rooom is unactive termination character
     if (buff[0] != '\0') {
       log_info("Server is sending(%ld): %s", strlen(buff), buff); // Debug print
-      write(*client_socket_id, buff, strlen(buff));
+      if(write(*client_socket_id, buff, strlen(buff)) < 0)
+        error_handler("Errore write");
       bzero(buff, 42);
       tmpFound++;
     } //if buff == '\0' room is unactive so we don't send it to client
     i++;
   }
   log_info("Server is sending(%ld): %s", strlen(end), end); // Debug print
-  write(*client_socket_id, end, strlen(end));
+  if(write(*client_socket_id, end, strlen(end)) < 0)
+    error_handler("Errore write");
   log_info("Room List sent successfully"); //Server Log
 }
 
@@ -241,7 +264,8 @@ void request_to_enter_room(char *message, int *client_socket_id) {
   sprintf(buffer, "[RQT]%d<>%s<>%d\n", *client_socket_id, client->user->name, room_id);
   //[RQT]client_requesting_to_enter_socket_id<>user_name<>room_id
   log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
-  write(master_client_socket_id, buffer, strlen(buffer));
+  if(write(master_client_socket_id, buffer, strlen(buffer)) < 0)
+    error_handler("Errore write");
 }
 
 void accept_request(char *message) { // Accept user in a room
@@ -271,7 +295,8 @@ void accept_request(char *message) { // Accept user in a room
   // Send to Client it has been accepted
   char text[] = "Access accept\n";
   log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
-  write(socket_id_client, text, strlen(text));
+  if(write(socket_id_client, text, strlen(text)) < 0)
+    error_handler("Errore write");
 }
 
 void not_accept_request(char *message) { // Don't accept a Client in a room
@@ -279,7 +304,8 @@ void not_accept_request(char *message) { // Don't accept a Client in a room
   unsigned int client_socket_id = atoi(message);
   char text[] = "Access denied\n";
   log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
-  write(client_socket_id, text, strlen(text));
+  if(write(client_socket_id, text, strlen(text)) < 0)
+    error_handler("Errore write");
 }
 
 
@@ -302,7 +328,8 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
 
     //Socket logic
     char message_to_send[] = "Disconnected";
-    write(*client_socket_id, message_to_send, strlen(message_to_send));
+    if(write(*client_socket_id, message_to_send, strlen(message_to_send)) < 0)
+      error_handler("Errore write");
     return false; //when returning false, close soket
 
   } //else
@@ -312,10 +339,15 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
+  }else log_debug("Successfully moved client with socket_id:%d");
+
+  //TODO: Aggiungere logica nel caso in cui è l'ultimo nella stanza, distruggerla
+  if(rooms_is_empty(room_id)){
+    log_debug("Room is empty, deleting room...");
+    rooms_delete_room(room_id);
   }
 
   return true;
-
 }
 
 
@@ -327,4 +359,10 @@ bool log_user(User *u, int client_socket_id) {
   bool status = room_add_client(room_zero, client); //room_add_client fails if room is full
   return status; 
 }
+/*
+void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/write
+  log_error("%s", text);
+  exit(EXIT_FAILURE);
+}*/
+
 
