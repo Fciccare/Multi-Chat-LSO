@@ -28,10 +28,10 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (INCOMING_MESSAGE == viewType){
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_layout,parent,false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.out,parent,false);
             return new ViewHolderIncoming(view);
         }else if (OUTCOMING_MESSAGE == viewType){
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_layout_2,parent,false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.me,parent,false);
             return new ViewHolderOutcoming(view);
         }
         return null;
@@ -43,10 +43,10 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
         if (INCOMING_MESSAGE == holder.getItemViewType()){
             ViewHolderIncoming incoming = (ViewHolderIncoming) holder;
-            incoming.textMessage.setText(message.getText());
+            incoming.setDetail(message);
         }else if (OUTCOMING_MESSAGE == holder.getItemViewType()){
             ViewHolderOutcoming outcoming = (ViewHolderOutcoming) holder;
-            outcoming.textMessage.setText(message.getText());
+            outcoming.setDetail(message);
         }
 
     }
@@ -66,15 +66,19 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     public class ViewHolderIncoming extends RecyclerView.ViewHolder{
 
         private TextView textMessage;
-        //private TextView senderName;
+        private TextView senderName;
 
         public ViewHolderIncoming(@NonNull View itemView) {
             super(itemView);
-            textMessage = itemView.findViewById(R.id.textMessage);
+            //textMessage = itemView.findViewById(R.id.textMessage);
+            textMessage = itemView.findViewById(R.id.text_gchat_message_other);
+            senderName = itemView.findViewById(R.id.text_gchat_user_other);
         }
 
         public void setDetail(Message message) {
+            System.out.println(message.toString());
             textMessage.setText(message.getText());
+            senderName.setText(message.getUser());
         }
     }
 
@@ -85,7 +89,8 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
         public ViewHolderOutcoming(@NonNull View itemView) {
             super(itemView);
-            textMessage = itemView.findViewById(R.id.textMessage2);
+            //textMessage = itemView.findViewById(R.id.textMessage2);
+            textMessage = itemView.findViewById(R.id.text_gchat_message_me);
         }
 
         public void setDetail(Message message) {
