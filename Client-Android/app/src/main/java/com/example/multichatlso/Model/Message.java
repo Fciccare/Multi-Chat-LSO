@@ -5,11 +5,11 @@ import java.io.Serializable;
 public class Message implements Serializable {
 
     private String text;
-    private String user;
+    private int user_id;
 
-    public Message(String text, String user) {
+    public Message(String text, int user_id) {
         this.text = text;
-        this.user = user;
+        this.user_id = user_id;
     }
 
     public String getText() {
@@ -20,11 +20,11 @@ public class Message implements Serializable {
         this.text = text;
     }
 
-    public String getUser() {
-        return user;
+    public int getUser_id() {
+        return user_id;
     }
 
-    public void setUser(String user) {
-        this.user = user;
+    public void setUser_id(int user_id) {
+        this.user_id = user_id;
     }
 }

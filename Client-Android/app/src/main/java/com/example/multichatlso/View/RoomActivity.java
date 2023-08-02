@@ -75,6 +75,10 @@ public class RoomActivity extends AppCompatActivity {
 
     private void sendMessage(){
         String message = textView.getText().toString();
+        if(message.trim().isEmpty()){
+            Toasty.error(getBaseContext(), "Inserisci un messaggio").show();
+            return;
+        }
         message = "[MSG]" + message + "<>" + room.getId();
         Server.getInstance().write(message);
         Log.d(TAG, "Send to server: " + message);
@@ -91,10 +95,11 @@ public class RoomActivity extends AppCompatActivity {
                     Log.d(TAG, "Server sended: " + result);
                     if (result.contains("[MSG]")){
                         String[] splitted = result.trim().split("<>");
-                        Message m = new Message(splitted[0].replace("[MSG]", ""), splitted[1]);
+                        Message m = new Message(splitted[0].replace("[MSG]", ""), Integer.parseInt(splitted[1]));
                         messages.add(m);
                         runOnUiThread(() -> {
                             adapter.notifyDataSetChanged();
+                            recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
                         });
                     } else if(result.contains("[RQT]")){
                         //[RQT]client_socket_id<>username<>room_id

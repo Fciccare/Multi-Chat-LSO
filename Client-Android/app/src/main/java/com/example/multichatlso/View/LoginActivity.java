@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.multichatlso.Model.RecyclerMessageAdapter;
 import com.example.multichatlso.R;
 import com.example.multichatlso.Model.Server;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
@@ -19,7 +20,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
 
     private EditText passwordText, username;
-    ExtendedFloatingActionButton signIn, signUp;
+    private ExtendedFloatingActionButton signIn, signUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +53,14 @@ public class LoginActivity extends AppCompatActivity {
         String message = "[LGN]" + name + "<>" + password;
         Log.d(TAG, message);
         Server.getInstance().write(message);
-        String recevingString = Server.getInstance().read();
-        if(recevingString != null && recevingString.contains("Login successful"))
+        String receivingString = Server.getInstance().read();
+        Log.d(TAG, receivingString);
+        String user_id = receivingString.trim().split("<>")[1];
+        RecyclerMessageAdapter.user_id=Integer.parseInt(user_id);
+        if(receivingString != null && receivingString.contains("Login successful"))
             startActivity(new Intent(this, BottomNavigationActivity.class));
         else{
-            Log.d(TAG, "Server responde with: " + recevingString);
+            Log.d(TAG, "Server responde with: " + receivingString);
             Toasty.error(getApplicationContext(), "Login errato", Toast.LENGTH_SHORT, true).show();
         }
 
