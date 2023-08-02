@@ -58,7 +58,7 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
   int room_id = atoi(string_room_id);
 
   int length = strlen(message_to_send) + 1;
-  char text[length + 15];
+  char text[length + 30];
 
   Room *room = rooms_get_room_by_id(room_id);
   
@@ -70,6 +70,15 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
     
   Client **clients = room->clients;
   int online_client = room->clients_counter;
+  char* name = NULL;
+  for(int i=0; i < MAX_CLIENTS; ++i){
+    if(room->clients[i] != NULL){
+      if(room->clients[i]->socket_id == *client_socket_id){
+        name=room->clients[i]->user->name;
+        break;
+      }   
+    }
+  }
 
   int count = 0; // how many clients has been sent to
   for (int i = 0; i < MAX_CLIENTS; ++i) {
@@ -79,7 +88,7 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
       if ((clients + i) != NULL) {
         int client_id = (*(clients + i))->socket_id; // client_id changes at every loop, it's the destination socket id
         
-        sprintf(text, "[MSG]%s<>%d\n", message_to_send, *client_socket_id);
+        sprintf(text, "[MSG]%s<>%d<>%s\n", message_to_send, *client_socket_id, name);
         //[MSG]message_to_send<>sender_socket_id
         log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
         if(write(client_id, text, strlen(text)) < 0)
