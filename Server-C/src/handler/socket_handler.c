@@ -102,12 +102,13 @@ void login(char *message, int *client_socket_id) {
 
   if (isExistingUser(username, password)) { //if user is in database and isn't logged //DA REVISIONARE
     if(isLoggedExistingUser(username, password)) {
-      char buffer[20] = {0};
+      char buffer[30] = {0};
       
       if (log_user(user_create(username, password), *client_socket_id)) { //put user in starting room
         status = "1";
         dbUpdateStatus(username, status);
-        strcpy(buffer, "Login successful\n");
+        //strcpy(buffer, "Login successful\n");
+        sprintf(buffer, "Login successful<>%d\n", *client_socket_id);
         log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
         if(write(*client_socket_id, buffer, strlen(buffer)) < 0)               // Java recv needs string end with EOF
           error_handler("Error write");
