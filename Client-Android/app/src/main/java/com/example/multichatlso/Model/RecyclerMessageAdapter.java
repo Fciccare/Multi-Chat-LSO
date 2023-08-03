@@ -3,7 +3,6 @@ package com.example.multichatlso.Model;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,8 +14,9 @@ import java.util.ArrayList;
 
 public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static int INCOMING_MESSAGE = 1;
-    private static int OUTCOMING_MESSAGE = 2;
+    public static int user_id;
+    private static final int INCOMING_MESSAGE = 1;
+    private static final int OUTCOMING_MESSAGE = 2;
 
     private ArrayList<Message> messages;
 
@@ -52,8 +52,8 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     }
 
     @Override
-    public int getItemViewType(int position) {
-        if(messages.get(position).getUser().equals("5"))
+    public int getItemViewType(int position) {//TODO: Add logic
+        if(messages.get(position).getUser_id()==user_id)
             return OUTCOMING_MESSAGE;
         else return INCOMING_MESSAGE;
     }
@@ -78,7 +78,7 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         public void setDetail(Message message) {
             System.out.println(message.toString());
             textMessage.setText(message.getText());
-            senderName.setText(message.getUser());
+            senderName.setText(String.valueOf(message.getUser_id()));
         }
     }
 
