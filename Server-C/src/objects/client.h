@@ -17,7 +17,7 @@ typedef struct{
 
 //Constructors and Destroy
 Client* client_create(User* user, int socket_id, unsigned int room_id);
-void client_destory(Client* c);
+void client_destroy(Client* c);
 
 //Set
 void client_setUser(Client* c, User* user);

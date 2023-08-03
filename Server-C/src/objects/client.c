@@ -16,9 +16,10 @@ Client* client_create(User* user, int socket_id, unsigned int room_id) {
   return c;
 }
 
-void client_destory(Client* c) {
+void client_destroy(Client* c) {
   log_debug("Destroying: %s", client_to_string_full(c));
   free(c);
+  c = NULL;
 }
 
 

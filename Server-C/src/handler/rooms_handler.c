@@ -9,7 +9,7 @@
 Room* rooms[MAX_ROOMS] = {0};
 unsigned int rooms_active = 1; //room 0 (starting room) is always active
 unsigned int next_unactive_room_index = 1; //next empty spot to fill with new room(always updated!)
-//0 must never be used as an id!
+//NOTICE: 0 must never be used as an id!
 
 
 
@@ -17,8 +17,11 @@ unsigned int next_unactive_room_index = 1; //next empty spot to fill with new ro
 
 - Se client che esce è master, dare master a qualcun altro
 - Se però master è ultimo, cancellare stanza
+  Fatto?? Funzionaaaaaaaaa???????
+
 
 - rooms_destory() (Per quando si termina il server)
+  DA FARE ANCORA
 
 
 
@@ -34,7 +37,7 @@ void init_starting_room(){
   rooms[0] = room_create(0, "Defualt Room", NULL);
 }
 
-/*TODO: rooms_destroy(){
+/*TODO: rooms_destroy(){ FUNCTION TO CALL WHEN CLOSING SERVER
   //for each room, call room_destroy();
 
 }*/
@@ -137,21 +140,22 @@ bool rooms_add_room(Room* new_room) {
 }
 
 void rooms_delete_room(unsigned int room_id) {
-  if(room_id == 0 || room_id >= MAX_ROOMS || rooms[room_id] == NULL) { //unexpected behaviour
+  Room* room = rooms[room_id];
+  if(room_id == 0 || room_id >= MAX_ROOMS || room == NULL) { //unexpected behaviour
     log_error("Trying to delete non-existing room (room_id:%d)", room_id);
     return;
   }else log_debug("Room exists, deleting...");
 
-  if(rooms[room_id]->clients_counter != 0){
+  if(!(room_is_empty(room))){
     for (int i = 0; i < MAX_CLIENTS; i++)  {
-        Client* client_to_move = rooms[room_id]->clients[i];
+        Client* client_to_move = room->clients[i];
         if(client_to_move != NULL) {
           rooms_move_to_zero(client_to_move, room_id);
         }
       }
-  }else 
+  }
   
-  log_debug("deleting room: %s",room_to_string(rooms[room_id]));
+  log_debug("deleting room: %s", room_to_string(rooms[room_id]));
   room_delete(rooms[room_id]); 
   rooms[room_id] = NULL;
   rooms_active--;
@@ -172,29 +176,63 @@ bool rooms_remove_from_zero(int socket_id){ //removes a client from starting roo
 
 bool rooms_move_to_zero(Client* client, int old_room_id){ //removes from current room and moves to room zero
 
-  if(!is_valid_room_id(old_room_id)){ //unexpected behaviour
-    log_error("Trying to access room with invalid id:%d", old_room_id);
+  Room* old_room = rooms[old_room_id];
+  if(old_room == NULL){ //unexpected behaviour
+    log_error("Trying to access NULL room");
     return false;
   }
 
   if(client == NULL) { //unexpected behaviour
-    log_error("Trting to move NULL client from room:%d", old_room_id);
+    log_error("Trying to move NULL client from room:%d", old_room);
+    return false;
   }
 
   Room* room_zero = rooms_get_room_by_id(0);
   bool status = room_add_client(room_zero, client);
   if(status){
-    status = room_remove_client(rooms[old_room_id], client->socket_id);
+    status = room_remove_client(old_room, client->socket_id);
     log_debug("Moved client %s to starting room", client_to_string(client));
-  } 
+  } else{
+    log_error("Couldn't add client %d to starting room, forcing disconnection...", client->socket_id);
+    // socket_diconnect_client(client->socket_id); //TODO IN REALTA' NON LA VEDE STA FUNZIONE!!! Metterla nel main??
+    rooms_remove_destroy_client(client);
+  }
   return status;
 }
 
-void rooms_delete_client(Client* client) { 
-  if(client != NULL)
-    rooms_remove_from_and_destory(rooms[client->room_id], client);
-  else //unexpected behaviour
+void rooms_remove_destroy_client(Client* client) { 
+
+  //Remove client from room and desroy client
+  if (client == NULL) { //unexpected behaviour
     log_error("Trying to delete NULL client");
+    return;
+  }
+
+  if(rooms[client->room_id] == NULL){ //unexpected behaviour
+    log_error("Trying to remove client from null room, we'll just destroy it...");
+    client_destroy(client);
+    return;
+  }
+
+  Room* room = rooms[client->room_id];
+  
+  if(room_remove_client(rooms[client->room_id], client->socket_id))
+    client_destroy(client);
+  else
+    log_error("Oh no è successo un casino con le stanze, buona fortuna a debuggarlo =)");
+  
+  if(room->id == 0) //don't destroy starting room
+    return;
+
+  if(room_is_empty(room)){ 
+    room_delete(room);
+    return;
+  }
+
+  // if(room->master_client == NULL){ //if client deleted was master, change it
+  //   room_change_master(room);
+  // } IN TEORIA LO FA GIA' room_remove_client
+
 }
 
 void rooms_delete_client_from_room(int socket_id, int room_id) {
@@ -203,50 +241,15 @@ void rooms_delete_client_from_room(int socket_id, int room_id) {
     return;
   }
 
-  Client* c = NULL;
-  if((c = room_get_client_by_id(rooms[room_id], socket_id)) != NULL){
-    rooms_remove_from_and_destory(rooms[room_id], c);
+  Client* c = room_get_client_by_id(rooms[room_id], socket_id);
+  if(c != NULL){
+    rooms_remove_destroy_client(c);
   } else { //unexpected behaviour
     log_error("Trying to delete client n.%d from room n.%d, but it is not there!", socket_id, room_id);
   }
 
 }
 
-void rooms_remove_from_and_destory(Room* r, Client* c){
-  //check if r and c NOT NULL before calling this function!
-  //int socket_id = c->socket_id;
-  room_remove_client(r, c->socket_id);
-  client_destory(c); 
-  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
-  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
-  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
-  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
-  //TODO:IMPORTANTE! VERIFICARE PERCHÉ LA ROOM DA SEGFALUT
-  /*
-  log_debug("Sto per morire");
-  printf("%d \n", r->id);
-  printf("%d \n", r->clients_counter);
-  printf("%s \n", r->name);
-  if(r->master_client == NULL){
-    printf("Master client NULL \n");
-  }else printf("Master client not null \n");
-  log_debug("Sono morto");
-  room_print(r);
-
-
-  //TODO: Mi sa che messo qui non è il massimo, valutare se spostarlo
-  if(rooms_is_empty(r->id)){
-    log_debug("Room is empty, deleting room...");
-    rooms_delete_room(r->id);
-  }
-  */
-}
-
-bool rooms_is_empty(int room_id){
-  if(rooms[room_id] != NULL && rooms[room_id]->clients_counter == 0)
-    return true;
-  return false;
-}
 
 //Prints and Debug
 void print_rooms() { //debug function

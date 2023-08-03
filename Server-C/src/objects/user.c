@@ -30,6 +30,7 @@ User* user_create(const char* name, const char* password) {
 void user_destroy(User* u){
   log_debug("destroying user: %s", user_to_string(u));
   free(u);
+  u = NULL;
 }
 
 

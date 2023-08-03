@@ -21,3 +21,10 @@ Client-Android/.gradle/file-system.probe
 Client-Android/.gradle/7.4/executionHistory/executionHistory.lock
 Client-Android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
 Client-Android/.gradle/7.4/fileHashes/fileHashes.lock
+
+#Valentina 
+Server-C/s_build_and_run.sh
+Server-C/src/s_build_and_run.sh
+Server-C/src/server
+Server-C/src/database/database.c
+Server-C/src/database/database.db

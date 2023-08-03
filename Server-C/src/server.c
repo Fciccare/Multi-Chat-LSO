@@ -163,7 +163,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
     dbUpdateStatus(client->user->name, "0");
 
     //Rooms and B logic
-    rooms_delete_client(client);
+    rooms_remove_destroy_client(client);
 
 
   } else {//fulfill client request

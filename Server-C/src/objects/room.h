@@ -36,6 +36,9 @@ Client* room_get_client_by_id(Room* r, int client_socket_id);
 //Logic
 bool room_add_client(Room* r, Client* client);
 bool room_remove_client(Room* r, int socket_id); 
+bool room_change_master(Room* r);
+bool room_is_empty(Room* r);
+void room_clear(Room* r);
 
 //Print and Debug
 void room_print(Room* r); //Debug function

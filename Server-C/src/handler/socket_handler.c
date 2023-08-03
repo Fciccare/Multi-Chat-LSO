@@ -17,6 +17,8 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
   char *message = buffer + 5; // point to buffer without tag
   message = strdup(message);  // get rid of tag
 
+  //TODO: Check if messages are correctly formatted (in every funcion called)
+
   if (strncmp(tag, "[MSG]", 5) == 0) { // Message sent in room
     broadcast_message_into_room(&(*message), client_socket_id);
   } else if (strncmp(tag, "[LGN]", 5) == 0) { // Login user
@@ -38,8 +40,8 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
     if(!exit_room(&(*message), client_socket_id))
       return false; //if this function returns false, calling function will close socket
   } else {
-    char text[] = "Message recieved doesn't contain valid tag\n";
-    log_error("%s. Tag: %s, Message: %s",text, tag, message);
+    char text[] = "Message received doesn't contain valid tag\n";
+    log_warn("%s. Tag: %s, Message: %s",text, tag, message);
     if(write(*client_socket_id, text, strlen(text)) < 0)
       error_handler("Errore write");
   }
@@ -64,7 +66,7 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
   
   if(room == NULL){
     log_debug("Room to send message is NULL, stop broadcasting");
-    //TODO: add client response, room is null
+    //TODO: add client response (send error?), room is null
     return;
   }
     
@@ -132,6 +134,7 @@ void login(char *message, int *client_socket_id) {
   }
 
   free(text);
+  text = NULL;
 }
 
 void register_user(char *message, int *client_socket_id) {
@@ -157,6 +160,7 @@ void register_user(char *message, int *client_socket_id) {
   }
 
   free(text);
+  text = NULL;
 }
 
 
@@ -322,7 +326,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   } //else
 
   if(room_id == 0){ //Disconnect from the app
-    log_info("Socket %d is disconnecting from the app", *client_socket_id);
+    log_info("Client with socket_id %d is leaving room 0", *client_socket_id);
     
     //Room logic
     rooms_delete_client_from_room(*client_socket_id, 0);
@@ -336,14 +340,14 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   } //else
 
   //Exiting from a room
-  if (!rooms_move_to_zero(client, room_id)){
+  if (!rooms_move_to_zero(client, room_id)){ 
     //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
-  }else log_debug("Successfully moved client with socket_id:%d");
+  } else log_debug("Moved client with socket_id: %d from room %d to room 0", client->socket_id, room_id);
 
-  //TODO: Aggiungere logica nel caso in cui è l'ultimo nella stanza, distruggerla
-  if(rooms_is_empty(room_id)){
+  //Delete room if no one is inside anymore
+  if(room_is_empty(rooms_get_room_by_id(room_id))){
     log_debug("Room is empty, deleting room...");
     rooms_delete_room(room_id);
   }
@@ -360,10 +364,15 @@ bool log_user(User *u, int client_socket_id) {
   bool status = room_add_client(room_zero, client); //room_add_client fails if room is full
   return status; 
 }
+
 /*
 void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/write
   log_error("%s", text);
   exit(EXIT_FAILURE);
 }*/
+
+// void socket_disconnect_client(int socket_id){
+//   //TODO
+// }
 
 

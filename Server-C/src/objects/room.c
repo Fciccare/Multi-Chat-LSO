@@ -8,6 +8,11 @@
 
 #include "../library/log.h"
 
+
+//TESTARE PASSAGGIO DI PROPRIETA' DELLA STANZA
+
+//POI TESTARE CANCELLAZIONE DELLE STANZE QUANDO TUTTI ESCONO
+
 //Constructor and Drestory
 Room* room_create(unsigned int id, const char* name, Client* master_client) {
   Room* r = (Room*)malloc(sizeof(Room));
@@ -38,7 +43,13 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
 }
 
 void room_delete(Room* r ){
+  //Se la chiami senza che la stanza sia vuota potrebbero succedere casini, non farlo se possibile.
   log_debug("Deleting: %s", room_to_string(r));
+  if (r->clients_counter != 0){
+    log_error("Deleting non-empty room, this shouldn't happen (memory leak the least, server crash the worst), deleting it anyway.");
+    room_clear(r); 
+  }
+  
   r->master_client = NULL;
   r->clients = NULL;
   room_destroy(r);
@@ -47,6 +58,7 @@ void room_delete(Room* r ){
 void room_destroy(Room* r) {
   log_debug("Destroying: %s", room_to_string(r));
   free(r);
+  r = NULL; 
 }
 
 
@@ -73,7 +85,7 @@ Client* room_get_client_by_id(Room* r, int client_socket_id){
   int online_client = r->clients_counter;
   int count = 0;
 
-  //room_client_print(r);
+  //room_client_print(r); //debug
 
   int max = MAX_CLIENTS;
   if (r->id == 0)
@@ -108,7 +120,7 @@ bool room_add_client(Room* r, Client* client) {
   Client** clients = r->clients;
 
   for(int i=0; i<MAX_CLIENTS; i++){
-    if (*(clients+i) == NULL) { //found empty spot
+    if (clients[i] == NULL) { //found empty spot
       log_debug("Adding %s to room: %d", client_to_string(client), r->id);
 
       r->clients[i] = client;
@@ -119,19 +131,18 @@ bool room_add_client(Room* r, Client* client) {
     }
   }
   //unexpected behaviour
-  log_error("Could not find place in room for client"); 
+  log_error("Could not find place in room %d for client %d", r->id, client->socket_id); 
   return false;
 }
 
 bool room_remove_client(Room* r, int socket_id) {
-
   if(r == NULL || r->clients_counter <= 0){ //unexpected behaviour
     log_error("Room null or Client count <=0 in room id: %d", r->id);
     return false;
   }
 
   Client** clients = r->clients;
-  int online_client = r->clients_counter;
+  int online_clients = r->clients_counter;
 
   int max = MAX_CLIENTS;
   if(r->id==0)
@@ -139,20 +150,67 @@ bool room_remove_client(Room* r, int socket_id) {
 
   int count = 0;
   for (int i = 0; i < max; i++) {
-    if (*(clients+i) != NULL) { 
+    if (clients[i] != NULL) { 
       count++;
-      if ((*(clients+i))->socket_id == socket_id){
-        r->clients_counter = r->clients_counter - 1;
-        *(clients+i) = NULL;
+      if (clients[i]->socket_id == socket_id){ //Client Found
+        r->clients_counter--;
+        clients[i] = NULL;
         log_debug("Client with socket_id:%d removed from room:%d", socket_id, r->id);
+
+        //If Client removed was master, chose a new master
+        if(r->id != 0 && r->clients_counter > 0 && r->master_client->socket_id == socket_id) 
+          room_change_master(r);
+        
         return true;
-      }    
+      }
     }
-    if (count == online_client) return false;
+    if (count == online_clients) return false;
   }
   return false;
 }
 
+bool room_change_master(Room* r){
+  //Changes it to the first Client it finds in r->Clients
+
+  Client** clients = r->clients;
+
+  if(r == NULL || r->clients_counter <= 0){ //unexpected behaviour
+    log_error("Room null or Client count <=0");
+    return false;
+  }
+
+  int max = MAX_CLIENTS;
+
+  for (int i = 0; i < max; i++) {
+    if (clients[i] != NULL) {
+      r->master_client = clients[i];
+      log_debug("New Master is: %d", r->master_client->socket_id);
+      return true;
+    }
+  }
+  log_error("Could not change master");
+  return false;
+}
+
+bool room_is_empty(Room* r){
+  if(r->clients_counter == 0)
+    return true;
+  return false;
+}
+
+void room_clear(Room* r) {
+  //Unexpected bheavior
+  int max = MAX_CLIENTS;
+  unsigned count = 0;
+  for (int i = 0; i < max; i++) {
+    if(r->clients[i] != NULL){
+      count++;
+      client_destroy(r->clients[i]);
+    }
+    if (count == r->clients_counter) break;
+  }
+  r->clients_counter = 0;
+}
 
 //Print and Debug
 void room_print(Room* r) { //Debug funcion
