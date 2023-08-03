@@ -38,7 +38,7 @@ sudo pacman -S postgresql-libs
 ## TO DO :page_with_curl:
 
 **Cose a cui dare priorità (Vale)**
- - Controllare le deallocazioni
+ - Controllare le deallocazioni (in parte fatto)
  - Implementare i lock per i thread
 
 **Logica di controllo**
@@ -50,12 +50,12 @@ sudo pacman -S postgresql-libs
   - :white_check_mark: Uscire se si disconnette
   - :white_check_mark: Uscire a comando da una stanza
   - :white_check_mark: Scrivere nella chat a tutti i presenti
-  - :black_square_button: Passare la propietà della stanza, se sei il master ed esci, ad un utente casuale
+  - :white_check_mark: Passare la propietà della stanza, se sei il master ed esci, ad un utente casuale
   - :black_square_button: OPZIONALE: Passare la proprietà della stanza a un utente a scelta
   - :black_square_button: OPZIONALE: Disconnettersi normalmente dalla app da una stanza qualsiasi
 
 **Logica di cancellazione delle stanze**
-  - :black_square_button: Cancellare la stanza se l'ultima persona esce
+  - :white_check_mark: Cancellare la stanza se l'ultima persona esce
   
   - :black_square_button: OPZIONALE: Il master può cancellare la stanza
   - :white_check_mark: Cacciare la gente quando la stanza viene cancellata
