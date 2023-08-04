@@ -158,7 +158,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       //Not logged user
       log_debug("Client doesn't exist. ID: %d. Just disconnecting", client_socket_id);
     
-    } else {
+    } else { //Logged user
       //DB logic
       log_debug("Updating DB status of client with socket id: %d", client_socket_id);
       dbUpdateStatus(client->user->name, "0");

@@ -43,9 +43,15 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
 
 void room_delete(Room* r ){
   //Se la chiami senza che la stanza sia vuota potrebbero succedere casini, non farlo se possibile.
-  log_debug("Deleting: %s", room_to_string(r));
+
+  if (r == NULL){ //unexpected behaviour
+    log_error("Trying to delete NULL room");
+    return;
+  }
+
+  log_debug("Deleting room: %d", r->id);
   if (r->clients_counter != 0){
-    log_error("Deleting non-empty room, this shouldn't happen (memory leak the least, server crash the worst), deleting it anyway.");
+    log_error("Deleting non-empty room, umpredictable behaviour, deleting it anyway.");
     room_clear(r); 
   }
   
@@ -54,8 +60,8 @@ void room_delete(Room* r ){
   room_destroy(r);
 }
 
-void room_destroy(Room* r) {
-  log_debug("Destroying: %s", room_to_string(r));
+void room_destroy(Room* r) { 
+  log_debug("Destroying room: %d", r->id);
   free(r);
   r = NULL; 
 }
