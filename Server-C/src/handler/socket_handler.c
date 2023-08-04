@@ -87,7 +87,7 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
     if (count == online_client) { // if message has been sent to every online client
       return;
     } else {
-      if ((clients + i) != NULL) {
+      if (clients[i] != NULL) {
         int client_id = (*(clients + i))->socket_id; // client_id changes at every loop, it's the destination socket id
         
         sprintf(text, "[MSG]%s<>%d<>%s\n", message_to_send, *client_socket_id, name);
@@ -175,17 +175,18 @@ void register_user(char *message, int *client_socket_id) {
 
 void create_room(char *message, int *client_socket_id) {
   Client *client = rooms_get_client_from_room_by_id(0, *client_socket_id);
-  if(client != NULL) {
-    log_info("Getted user from room_zero with id: %d", *client_socket_id);
-  }else{
-    log_error("No user in room_zero with id: %d", *client_socket_id);
+
+  if(client == NULL) { //Unexpected behaviour
+    log_error("No client in room_zero with id: %d", *client_socket_id);
     char* text = "Error creation of room\n";
     log_warn("Server is sending(%ld): %s", strlen(text), text);
     if (write(*client_socket_id, text, strlen(text)) < 0)
       error_handler("Errore write");
+    
     return;
   } 
-  
+
+  //log_debug("Got client from room 0 with id: %d", *client_socket_id);
   Room *room = NULL;
 
   if (*(message + strlen(message) - 1) == '\n') { // Remove '\n' from end of string that java puts
@@ -194,23 +195,24 @@ void create_room(char *message, int *client_socket_id) {
   }
   
   room = room_create(0, message, client); //Create new room, id is set to 0 but will be changed
-  log_info("Room created");
+  log_info("Room %d created", room->id);
   
   if (rooms_add_room(room)) {
-    log_debug("Room added");
-    
-    log_debug(room_to_string(room));
+    // log_debug("Room %d added", room->id);
+    // log_debug(room_to_string(room));
+
     char text[35];
     sprintf(text, "Room create successful<>%d\n", room->id);
-    log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
-    if(write(*client_socket_id, text, strlen(text)) < 0)               // Remember: Java recv need string end with EOF
+    // log_debug("Server is sending(%ld): %s", strlen(text), text) // Debug print
+    if(write(*client_socket_id, text, strlen(text)) < 0)
       error_handler("Errore write");
+
     rooms_remove_from_zero(client->socket_id); // TODO: Ritorna un boolean, forse lo vogliamo gestire?
     return;
   }
 
   // else: failed to create room
-  if(write(*client_socket_id, "Room create failed\n", 20) < 0) // Java recv need string end with EOF
+  if(write(*client_socket_id, "Room create failed\n", 20) < 0)
     error_handler("Errore write");
   log_warn("Room create failed");
 }
@@ -338,13 +340,16 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     log_info("Client with socket_id %d is leaving room 0", *client_socket_id);
     
     //Room logic
-    rooms_delete_client_from_room(*client_socket_id, 0);
+    rooms_remove_from_room(*client_socket_id, 0);
+
+    //DB logic
+    dbUpdateStatus(client->user->name, "0");
 
     //Socket logic
     char message_to_send[] = "Disconnected";
     if(write(*client_socket_id, message_to_send, strlen(message_to_send)) < 0)
       error_handler("Errore write");
-    return false; //when returning false, close soket
+    return false; //when returning false, close socket
 
   } //else
 

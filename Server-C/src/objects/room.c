@@ -16,22 +16,21 @@
 //Constructor and Drestory
 Room* room_create(unsigned int id, const char* name, Client* master_client) {
   Room* r = (Room*)malloc(sizeof(Room));
-  log_debug("Room malloc successful");
   r->id = id;
   strcpy(r->name, name);
   r->clients_counter = 0;
   r->master_client = master_client;
-  log_debug("Setted id=%d, name=%s, client_counter=0, master_client", id, name);
+  // log_debug("Setted id=%d, name=%s, client_counter=0, master_client", id, name);
 
   if(id == 0){ //Starting room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);
     bzero(r->clients, MAX_CLIENTS_ZERO);
-    log_debug("Created dinamic array %d size", MAX_CLIENTS_ZERO);
+    // log_debug("Created dinamic array %d size", MAX_CLIENTS_ZERO);
   }
   else{ //Regular room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS);
     bzero(r->clients, MAX_CLIENTS);
-    log_debug("Created dinamic array %d size", MAX_CLIENTS);
+    // log_debug("Created dinamic array %d size", MAX_CLIENTS);
   }
   
 
@@ -44,9 +43,15 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
 
 void room_delete(Room* r ){
   //Se la chiami senza che la stanza sia vuota potrebbero succedere casini, non farlo se possibile.
-  log_debug("Deleting: %s", room_to_string(r));
+
+  if (r == NULL){ //unexpected behaviour
+    log_error("Trying to delete NULL room");
+    return;
+  }
+
+  log_debug("Deleting room: %d", r->id);
   if (r->clients_counter != 0){
-    log_error("Deleting non-empty room, this shouldn't happen (memory leak the least, server crash the worst), deleting it anyway.");
+    log_error("Deleting non-empty room, umpredictable behaviour, deleting it anyway.");
     room_clear(r); 
   }
   
@@ -55,8 +60,8 @@ void room_delete(Room* r ){
   room_destroy(r);
 }
 
-void room_destroy(Room* r) {
-  log_debug("Destroying: %s", room_to_string(r));
+void room_destroy(Room* r) { 
+  log_debug("Destroying room: %d", r->id);
   free(r);
   r = NULL; 
 }
@@ -94,12 +99,12 @@ Client* room_get_client_by_id(Room* r, int client_socket_id){
     if(r->clients[i] != NULL){
       count++;
       if(r->clients[i]->socket_id == client_socket_id){
-        log_debug("found client with id:%d in room with id:%d", client_socket_id, r->id);
+        // log_debug("found client with id:%d in room with id:%d", client_socket_id, r->id);
         return r->clients[i];
       }
     }
     if(count == online_client) {
-      log_debug("can't find client with id:%d in room with id:%d", client_socket_id, r->id);
+      // log_debug("can't find client with id:%d in room with id:%d", client_socket_id, r->id);
       return NULL;
     }
   }
@@ -121,7 +126,7 @@ bool room_add_client(Room* r, Client* client) {
 
   for(int i=0; i<MAX_CLIENTS; i++){
     if (clients[i] == NULL) { //found empty spot
-      log_debug("Adding %s to room: %d", client_to_string(client), r->id);
+      // log_debug("Adding %s to room: %d", client_to_string(client), r->id);
 
       r->clients[i] = client;
       r->clients_counter++;

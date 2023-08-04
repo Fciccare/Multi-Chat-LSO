@@ -26,7 +26,7 @@ void traceCallback( void* udp, const char* sql ) {
 
 void initDatabase(bool debug){
     log_debug("Starting database...");
-    sqlite3_open("src/database/database.db", &db);
+    sqlite3_open("database/database.db", &db);
     if(debug)
         sqlite3_trace(db, traceCallback, NULL);
     createTable();

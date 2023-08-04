@@ -28,7 +28,7 @@ void rooms_delete_room(unsigned int room_id);
 bool rooms_remove_from_zero(int socket_id);
 bool rooms_move_to_zero(Client* client, int old_room_id);
 void rooms_remove_destroy_client(Client* client);
-void rooms_delete_client_from_room(int socket_id, int room_id);
+void rooms_remove_from_room(int socket_id, int room_id);
 void rooms_remove_client_and_destroy(Room* r, Client* c);
 
 //Prints and Debug

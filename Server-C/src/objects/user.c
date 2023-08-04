@@ -28,6 +28,10 @@ User* user_create(const char* name, const char* password) {
 }
 
 void user_destroy(User* u){
+  if(u == NULL){
+    log_error("Trying to destroy NULL user");
+    return;
+  }
   log_debug("destroying user: %s", user_to_string(u));
   free(u);
   u = NULL;

@@ -17,7 +17,12 @@ Client* client_create(User* user, int socket_id, unsigned int room_id) {
 }
 
 void client_destroy(Client* c) {
-  log_debug("Destroying: %s", client_to_string_full(c));
+  if (c == NULL) {
+    log_error("Trying to destroy NULL client");
+    return;
+  }
+  log_debug("Destroying client with id: %d", c->socket_id);
+  user_destroy(c->user);
   free(c);
   c = NULL;
 }
