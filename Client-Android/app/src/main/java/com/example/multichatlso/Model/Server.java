@@ -3,6 +3,9 @@ package com.example.multichatlso.Model;
 import android.os.StrictMode;
 import android.util.Log;
 
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.MutableLiveData;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -21,6 +24,8 @@ public class Server {
     private Socket socket = null;
     private PrintWriter out = null;
     private BufferedReader input = null;
+
+    private SingleLiveData<String> listen = new SingleLiveData<>();
 
     public static Server getInstance(){
         if(instance == null)
@@ -166,7 +171,7 @@ public class Server {
         }).start();
     }
 
-    public String read(){
+    public String blockingRead(){
         String message = "";
         if(input == null)
             initRead();
@@ -181,5 +186,27 @@ public class Server {
         }
         return message;
     }
+
+    public void read() {
+        new Thread(() -> {
+            String message = "";
+            if (input == null)
+                initRead();
+            try {
+                message = input.readLine();
+                if (message == null)
+                    Log.e(TAG, "Server disconnected");
+            } catch (IOException e) {
+                Log.e(TAG, e.toString());
+            }
+            Log.d(TAG,"La read ha letto: " + message + " set listen");
+            listen.postValue(message);
+        }).start();
+    }
+
+    public SingleLiveData<String> getListen() {
+        return listen;
+    }
+
 }
 

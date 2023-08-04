@@ -10,7 +10,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.multichatlso.R;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -68,33 +71,45 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         private TextView textMessage;
         private TextView senderName;
 
+        private TextView textDate;
+
         public ViewHolderIncoming(@NonNull View itemView) {
             super(itemView);
             //textMessage = itemView.findViewById(R.id.textMessage);
             textMessage = itemView.findViewById(R.id.text_gchat_message_other);
             senderName = itemView.findViewById(R.id.text_gchat_user_other);
+            textDate = itemView.findViewById(R.id.text_gchat_timestamp_other);
         }
 
         public void setDetail(Message message) {
             System.out.println(message.toString());
             textMessage.setText(message.getText());
             senderName.setText(String.valueOf(message.getName()));
+            Date currentTime = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            String formattedTime = sdf.format(currentTime);
+            textDate.setText(formattedTime);
         }
     }
 
     public class ViewHolderOutcoming extends RecyclerView.ViewHolder{
 
         private TextView textMessage;
-        //private TextView senderName;
+        private TextView textDate;
 
         public ViewHolderOutcoming(@NonNull View itemView) {
             super(itemView);
             //textMessage = itemView.findViewById(R.id.textMessage2);
             textMessage = itemView.findViewById(R.id.text_gchat_message_me);
+            textDate = itemView.findViewById(R.id.text_gchat_timestamp_me);
         }
 
         public void setDetail(Message message) {
             textMessage.setText(message.getText());
+            Date currentTime = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            String formattedTime = sdf.format(currentTime);
+            textDate.setText(formattedTime);
         }
     }
 }

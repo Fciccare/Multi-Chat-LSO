@@ -24,11 +24,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(this, LoginActivity.class));
     }
 
-    @Override
+  /* @Override
     protected void onDestroy() {
         Log.d(TAG, "MainActivity destroying, send EXT");
         Server.getInstance().write("[EXT]"+ RoomActivity.getRoomId());
         super.onDestroy();
-    }
+    }*/
 }
 

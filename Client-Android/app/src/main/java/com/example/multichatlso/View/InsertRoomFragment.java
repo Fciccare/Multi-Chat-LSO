@@ -6,12 +6,12 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.EditText;
 
 import com.example.multichatlso.Model.Room;
@@ -75,27 +75,31 @@ public class InsertRoomFragment extends Fragment {
         String message = "[CRT]"+roomName;
         Server.getInstance().write(message);
         Log.d(TAG, "Write to server: " + message);
+        Server.getInstance().read();
 
-        String response = Server.getInstance().read();
-        if(response == null){
-            Log.e(TAG, "Socket read null");
-            Toasty.error(requireContext(), "Errore creazione stanza, riprova").show();
-            return;
-        }
-        Log.d(TAG, "Server responde: " + response);
-        if(!response.toLowerCase().contains("successful")){
-            Toasty.error(requireContext(), "Errore creazione stanza").show();
-        }
+        Server.getInstance().getListen().singleObserve(this, response -> {
+            Log.d(TAG, "Observer started");
+            if(response == null){
+                Log.e(TAG, "Socket read null");
+                Toasty.error(requireContext(), "Errore creazione stanza, riprova").show();
+                return;
+            }
+            Log.d(TAG, "Server responde: " + response);
+            if(!response.toLowerCase().contains("successful")){
+                Toasty.error(requireContext(), "Errore creazione stanza").show();
+            }
 
-        String[] splitted = response.trim().split("<>");
-        int id = Integer.parseInt(splitted[1]);
+            String[] splitted = response.trim().split("<>");
+            int id = Integer.parseInt(splitted[1]);
 
-        Room room = new Room(id, roomName, 1, 32); //TODO:Fix hardcoded MAX_CLIENT
+            Room room = new Room(id, roomName, 1, 32); //TODO:Fix hardcoded MAX_CLIENT
 
-        Log.d(TAG, "Room creata, passaggio schermata");
+            Log.d(TAG, "Room creata, passaggio schermata");
 
-        Intent i = new Intent(getActivity(), RoomActivity.class);
-        i.putExtra("Room", room);
-        startActivity(i);
+            Intent i = new Intent(getActivity(), RoomActivity.class);
+            i.putExtra("Room", room);
+            startActivity(i);
+        });
+
     }
 }

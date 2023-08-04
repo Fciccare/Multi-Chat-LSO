@@ -1,6 +1,7 @@
 package com.example.multichatlso.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -53,20 +54,23 @@ public class SignupActivity extends AppCompatActivity {
 
         String message = "[RGT]" + txtUsername + "<>" + txtPassword1;
         Server.getInstance().write(message);
-        String receivingString = Server.getInstance().read();
-        if(receivingString == null){
-            Log.e(TAG, "Socket read null");
-            Toasty.error(getApplicationContext(), "Errore, riprova").show();
-            return;
-        }
-        Log.d(TAG, "Server: " + receivingString);
-        if(receivingString.contains("Register successful")){
-            Log.d(TAG, "Register successful");
-            startActivity(new Intent(this, LoginActivity.class));
-        }else {
-            Log.e(TAG, "Register failed");
-            Toasty.error(getApplicationContext(), "Registrazione fallito", Toasty.LENGTH_SHORT, true).show();
-        }
+        Server.getInstance().read();
 
+        Server.getInstance().getListen().singleObserve(this, receivingString -> {
+            Log.d(TAG, "Observer started");
+            if(receivingString == null){
+                Log.e(TAG, "Socket read null");
+                Toasty.error(getApplicationContext(), "Errore, riprova").show();
+                return;
+            }
+            Log.d(TAG, "Server: " + receivingString);
+            if(receivingString.contains("Register successful")){
+                startActivity(new Intent(this, LoginActivity.class));
+                finish();
+            }else {
+                Toasty.error(getApplicationContext(), "Registrazione fallito", Toasty.LENGTH_SHORT, true).show();
+            }
+            Server.getInstance().getListen().removeObservers(this);
+        });
     }
 }

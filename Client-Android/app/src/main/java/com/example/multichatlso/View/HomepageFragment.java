@@ -6,12 +6,12 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.CountDownTimer;
-import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +24,6 @@ import com.example.multichatlso.R;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,7 +40,8 @@ public class HomepageFragment extends Fragment {
     private RecyclerRoomAdapter adapter;
     private Sweetalert pDialog;
 
-    private Thread t = null;
+    private String stringRooms = "";
+
 
     private static final String TAG = "HomepageFragment";
 
@@ -91,9 +91,9 @@ public class HomepageFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
-        listRoom();
+        listRooms();
         swipeContainer.setOnRefreshListener(() -> {
-            listRoom();
+            listRooms();
             swipeContainer.setRefreshing(false);
         });
 
@@ -109,72 +109,68 @@ public class HomepageFragment extends Fragment {
     }
 
     private void requestToEnterRoom(int position){
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        //Handler h = new Handler(Looper.getMainLooper());
-        //new Handler().postDelayed(() -> { executor.shutdown(); stopLoading(); Toasty.error(requireContext(), "Tempo scaduto, riprova").show();}, 15000 );
-        executor.execute(() -> {
-            t  = new Thread(() -> {
-                Room room = rooms.get(position);
-                String message = "[RQT]" + String.valueOf(room.getId());//[RQT]2
-                Server.getInstance().write(message);
-                startLoading();
-                requireActivity().runOnUiThread(() -> {
-                    new CountDownTimer(12000, 12000){
+        Room room = rooms.get(position);
+        String message = "[RQT]" + String.valueOf(room.getId());//[RQT]2
+        Server.getInstance().write(message);
+        startLoading();
+        new CountDownTimer(15000,15000){
+            @Override public void onTick(long l) {}
+            @Override public void onFinish() {stopLoading();}
+        }.start();
+        Server.getInstance().read();
 
-                        @Override
-                        public void onTick(long l) {}
-
-                        @Override
-                        public void onFinish() {
-                            Log.d(TAG, "Timeout");
-                            stopLoading();
-                            t.interrupt();
-                            executor.shutdown();
-                        }
-                    }.start();
-                });
-                String value = Server.getInstance().read();
-                if(value == null){
-                    Log.e(TAG, "Socket read null");
-                    stopLoading();
-                    Toasty.error(requireContext(), "Errore, riprova").show();
-                    return;
-                }
-                Log.d(TAG, value);
-                getActivity().runOnUiThread(() -> {
-                    if (value.toLowerCase().contains("accept")) {
-                        Intent i = new Intent(getActivity(), RoomActivity.class);
-                        i.putExtra("Room", room);
-                        stopLoading();
-                        startActivity(i);
-                    } else {
-                        stopLoading();
-                        Toasty.error(requireContext(), "Non sei stato accettato nella stanza").show();
-                    }
-                });
-            });
-            t.start();
-        });
-
-        /*
-        new Thread(() -> {
-            Room room = rooms.get(position);
-            String message = "[RQT]" + String.valueOf(room.getId());//[RQT]2
-            Server.getInstance().write(message);
-            String value = Server.getInstance().read();
-
-            if(value.toLowerCase().contains("accept")){
-                Intent i = new Intent(getActivity(), RoomActivity.class);
-                i.putExtra("Room", room);
-                startActivity(i);
-            }else{
-                Toasty.error(requireContext(), "Non sei stato accettato nella stanza").show();
+        Server.getInstance().getListen().singleObserve(this, value -> {
+            if(value == null){
+                Log.e(TAG, "Socket read null");
+                stopLoading();
+                Toasty.error(requireContext(), "Errore, riprova").show();
+                return;
             }
-        }).start();*/
-
+            Log.d(TAG, value);
+            getActivity().runOnUiThread(() -> {
+                if (value.toLowerCase().contains("accept")) {
+                    Intent i = new Intent(getActivity(), RoomActivity.class);
+                    i.putExtra("Room", room);
+                    stopLoading();
+                    startActivity(i);
+                } else {
+                    stopLoading();
+                    Toasty.error(requireContext(), "Non sei stato accettato nella stanza").show();
+                }
+            });
+            Server.getInstance().getListen().removeObservers(this);
+        });
     }
 
-    private void listRoom(){
+    private void listRooms(){
+        String message = "[LST]";
+        Log.d(TAG, "Write to Server: " + message);
+        Server.getInstance().write(message);
+        Server.getInstance().read();
+
+        Server.getInstance().getListen().observe(this, recevingString -> {
+            if(recevingString.contains("[/LST]")){
+                Server.getInstance().getListen().removeObservers(this);
+                stringRooms += "[/LST]";
+                Log.d(TAG, "Lista di stanza: " + stringRooms);
+                List<Room> roomArrayList = castListToRoom(stringRooms);
+                rooms.clear();
+                rooms.addAll(roomArrayList);
+                Log.d(TAG, "Lista Room: " + rooms);
+                getActivity().runOnUiThread(() -> {
+                    adapter.notifyDataSetChanged();
+                });
+                stringRooms="";
+                return;
+            }
+            Server.getInstance().read();
+            String temp = recevingString + "\n";
+            Log.d(TAG, "Il server ha risposto con: " + temp);
+            stringRooms += temp;
+        });
+    }
+
+    /*private void listRoom(){
         String message = "[LST]";
         Log.d(TAG, "Write to Server: " + message);
         Server.getInstance().write(message);
@@ -183,7 +179,7 @@ public class HomepageFragment extends Fragment {
             new Thread(() -> {
                 String result = "";
                 do {
-                    String temp = Server.getInstance().read() + "\n";//TODO: ERROR HANDLING
+                    String temp = Server.getInstance().blockingRead() + "\n";//TODO: ERROR HANDLING
                     Log.d(TAG, "Il server ha risposto con: " + temp);
                     result += temp;
                 }while (!result.contains("[/LST]"));
@@ -198,7 +194,7 @@ public class HomepageFragment extends Fragment {
                 });
             }).start();
         //});
-    }
+    }*/
 
     private List<Room> castListToRoom(String list){
         String[] lines = list.split("\n");

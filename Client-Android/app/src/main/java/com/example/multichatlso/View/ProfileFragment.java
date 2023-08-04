@@ -59,7 +59,7 @@ public class ProfileFragment extends Fragment {
             Log.d(TAG, "Scrivo allo socket: " + txtSocket.getText().toString());
 
             String result = "";
-            result = Server.getInstance().read();
+            result = Server.getInstance().blockingRead();
 
             if(result.contains("Error"))
                 Toasty.error(requireContext(), result).show();

@@ -1,6 +1,7 @@
 package com.example.multichatlso.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -42,7 +43,7 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    public void login(){
+    /*public void login(){
         if(username.getText().toString().isEmpty() || passwordText.getText().toString().isEmpty()){
             Toasty.error(getApplicationContext(), "Riempi i campi", Toast.LENGTH_SHORT, true).show();
             return;
@@ -53,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
         String message = "[LGN]" + name + "<>" + password;
         Log.d(TAG, message);
         Server.getInstance().write(message);
-        String receivingString = Server.getInstance().read();
+        String receivingString = Server.getInstance().blockingRead();
         if(receivingString == null || receivingString.isEmpty()){
             Log.e(TAG, "Socket read null");
             Toasty.error(getApplicationContext(), "Errore, riprova").show();
@@ -68,7 +69,37 @@ public class LoginActivity extends AppCompatActivity {
             Log.d(TAG, "Server responde with: " + receivingString);
             Toasty.error(getApplicationContext(), "Login errato", Toast.LENGTH_SHORT, true).show();
         }
+    }*/
 
+    public void login(){
+        if(username.getText().toString().isEmpty() || passwordText.getText().toString().isEmpty()){
+            Toasty.error(getApplicationContext(), "Riempi i campi", Toast.LENGTH_SHORT, true).show();
+            return;
+        }
+        String name = username.getText().toString();
+        String password = passwordText.getText().toString();
+        String message = "[LGN]" + name + "<>" + password;
+        Log.d(TAG, message);
+        Server.getInstance().write(message);
+        Server.getInstance().read();
 
+        Server.getInstance().getListen().singleObserve(this, receivingString -> {//TODO: SPLIT FUNCTION
+            Log.d(TAG, "Observer started");
+            if(receivingString == null || receivingString.isEmpty()){
+                Log.e(TAG, "Socket read null");
+                Toasty.error(getApplicationContext(), "Errore, riprova").show();
+                return;
+            }
+            Log.d(TAG, "Observed:" + receivingString);
+            if(receivingString.contains("Login successful")){
+                String user_id = receivingString.trim().split("<>")[1];
+                RecyclerMessageAdapter.user_id=Integer.parseInt(user_id);
+                startActivity(new Intent(this, BottomNavigationActivity.class));
+                finish();
+            } else{
+                Toasty.error(getApplicationContext(), "Login errato", Toast.LENGTH_SHORT, true).show();
+            }
+            Server.getInstance().getListen().removeObservers(this);
+        });
     }
 }
