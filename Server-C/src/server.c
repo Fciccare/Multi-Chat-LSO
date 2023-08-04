@@ -71,7 +71,6 @@ int main(int argc, char* argv[]) {
   //Init database and structure
   initDatabase(debug);
   init_starting_room();
-  log_debug("Room initiated");
 
   //Setup socket
   struct sockaddr_in saddress, caddress;
@@ -148,28 +147,31 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
 
   pthread_detach(pthread_self()); // We detach here so that thread can be deallocated when finished
   
-  if (byte <= 0) { //If Client Disconnects or Error occurs
+  if (byte <= 0) { //Client Disconnects or Error occurs
     log_info("SOCKET CLIENT DISCONNECTED ID: %d", client_socket_id); //Server Log
     
     //Socket logic
     socket_close(client_socket_id);
   
-    //DB logic
     Client* client = rooms_get_client_by_id(client_socket_id);
-    if(client == NULL){
-      log_error("Trying to delete non existing Client! Socket id:%d", client_socket_id);
-      return NULL;
-    }else log_debug("Removing client with socket id:%d", client_socket_id);
-    dbUpdateStatus(client->user->name, "0");
+    if(client == NULL){ 
+      //Not logged user
+      log_debug("Client doesn't exist. ID: %d. Just disconnecting", client_socket_id);
+    
+    } else {
+      //DB logic
+      log_debug("Updating DB status of client with socket id: %d", client_socket_id);
+      dbUpdateStatus(client->user->name, "0");
 
-    //Rooms and B logic
-    rooms_remove_destroy_client(client);
+      //Rooms logic
+      rooms_remove_destroy_client(client);
+    }
 
-
-  } else {//fulfill client request
+  } else { //Client has request
     log_info("Message received: %s", buffer);
-    if (!socketDispatcher(&client_socket_id, buffer)){
-      //if oscketDispatcher returns false, close socket
+
+    if (!socketDispatcher(&client_socket_id, buffer)){ //fulfill request
+      //if soscketDispatcher returns false, invalid request: close socket
       socket_close(client_socket_id);
     }
   }

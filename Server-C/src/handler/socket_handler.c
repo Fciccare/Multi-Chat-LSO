@@ -338,7 +338,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     log_info("Client with socket_id %d is leaving room 0", *client_socket_id);
     
     //Room logic
-    rooms_delete_client_from_room(*client_socket_id, 0);
+    rooms_remove_from_room(*client_socket_id, 0);
 
     //Socket logic
     char message_to_send[] = "Disconnected";

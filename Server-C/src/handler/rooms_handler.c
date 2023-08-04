@@ -15,15 +15,8 @@ unsigned int next_unactive_room_index = 1; //next empty spot to fill with new ro
 
 /*TODO: (VAI VALE U CAN DO IT (si me lo dico da sola))
 
-- Se client che esce è master, dare master a qualcun altro
-- Se però master è ultimo, cancellare stanza
-  Fatto?? Funzionaaaaaaaaa???????
-
-
 - rooms_destory() (Per quando si termina il server)
   DA FARE ANCORA
-
-
 
 - (dobbiamo vedere da android se si può fare facile)
   Logica per uscire normalmente dalla app da qualsiasi stanza
@@ -35,6 +28,7 @@ unsigned int next_unactive_room_index = 1; //next empty spot to fill with new ro
 //Init and Destroy
 void init_starting_room(){
   rooms[0] = room_create(0, "Defualt Room", NULL);
+  log_info("Default room initiated, SERVER READY");
 }
 
 /*TODO: rooms_destroy(){ FUNCTION TO CALL WHEN CLOSING SERVER
@@ -72,7 +66,7 @@ Client* rooms_get_client_by_id(int socket_id){
   return c;
 }
 
-void rooms_get_formatted_room(int i, char* buff) { //Get a specific room in a formatted manner 
+void rooms_get_formatted_room(int i, char* buff) { //Get specific room in formatted manner 
   if (rooms[i] == NULL) //If room is not active, returns terminatoin character
     buff[0] = '\0';
   else
@@ -168,13 +162,13 @@ void rooms_delete_room(unsigned int room_id) {
 
 
 //Client Logic
-bool rooms_remove_from_zero(int socket_id){ //removes a client from starting room
+bool rooms_remove_from_zero(int socket_id){ //Removes a client from starting room
   Room* room_zero = rooms_get_room_by_id(0);
   log_debug("Removing client with socket_it %d from starting room", socket_id);
   return room_remove_client(room_zero, socket_id);
 }
 
-bool rooms_move_to_zero(Client* client, int old_room_id){ //removes from current room and moves to room zero
+bool rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current room and moves to room zero
 
   Room* old_room = rooms[old_room_id];
   if(old_room == NULL){ //unexpected behaviour
@@ -200,9 +194,8 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //removes from current
   return status;
 }
 
-void rooms_remove_destroy_client(Client* client) { 
+void rooms_remove_destroy_client(Client* client) { //Removes client from room and desroy client
 
-  //Remove client from room and desroy client
   if (client == NULL) { //unexpected behaviour
     log_error("Trying to delete NULL client");
     return;
@@ -216,26 +209,25 @@ void rooms_remove_destroy_client(Client* client) {
 
   Room* room = rooms[client->room_id];
   
-  if(room_remove_client(rooms[client->room_id], client->socket_id))
-    client_destroy(client);
+  if(room_remove_client(rooms[client->room_id], client->socket_id)) //remove client from room and
+    client_destroy(client);                                         //destroy it
   else
-    log_error("Oh no è successo un casino con le stanze, buona fortuna a debuggarlo =)");
+    log_error("Oh no è successo un casino con le stanze, buona fortuna a debuggarlo =)"); //TODO
   
-  if(room->id == 0) //don't destroy starting room
+  if(room->id == 0) {//don't destroy starting room
+    log_debug("Client removed and destroyed from room 0 (log da togliere)"); //TODO
     return;
+  }
 
   if(room_is_empty(room)){ 
+    log_debug("Room %d is empty, deleting it.", room->id);
     room_delete(room);
     return;
   }
 
-  // if(room->master_client == NULL){ //if client deleted was master, change it
-  //   room_change_master(room);
-  // } IN TEORIA LO FA GIA' room_remove_client
-
 }
 
-void rooms_delete_client_from_room(int socket_id, int room_id) {
+void rooms_remove_from_room(int socket_id, int room_id) { //Auxiliar function: Removes client from room
   if((!is_valid_room_id(room_id)) || (rooms[room_id] == NULL)){ //unexpected behaviour
     log_error("Trying to delete client with socket_id %d from invalid room id %d", socket_id, room_id);
     return;
@@ -252,7 +244,7 @@ void rooms_delete_client_from_room(int socket_id, int room_id) {
 
 
 //Prints and Debug
-void print_rooms() { //debug function
+void print_rooms() { //Debug function
   for(int i = 0; i<MAX_CLIENTS; i++) {
     if(rooms[i] != NULL)
       room_print(rooms[i]);
