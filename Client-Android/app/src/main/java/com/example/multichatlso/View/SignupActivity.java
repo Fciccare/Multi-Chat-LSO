@@ -54,6 +54,11 @@ public class SignupActivity extends AppCompatActivity {
         String message = "[RGT]" + txtUsername + "<>" + txtPassword1;
         Server.getInstance().write(message);
         String receivingString = Server.getInstance().read();
+        if(receivingString == null){
+            Log.e(TAG, "Socket read null");
+            Toasty.error(getApplicationContext(), "Errore, riprova").show();
+            return;
+        }
         Log.d(TAG, "Server: " + receivingString);
         if(receivingString.contains("Register successful")){
             Log.d(TAG, "Register successful");

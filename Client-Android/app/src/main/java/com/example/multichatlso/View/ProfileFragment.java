@@ -61,7 +61,6 @@ public class ProfileFragment extends Fragment {
             String result = "";
             result = Server.getInstance().read();
 
-
             if(result.contains("Error"))
                 Toasty.error(requireContext(), result).show();
             else

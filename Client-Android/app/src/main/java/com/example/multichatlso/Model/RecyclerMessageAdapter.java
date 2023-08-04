@@ -78,7 +78,7 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         public void setDetail(Message message) {
             System.out.println(message.toString());
             textMessage.setText(message.getText());
-            senderName.setText(String.valueOf(message.getUser_id()));
+            senderName.setText(String.valueOf(message.getName()));
         }
     }
 

@@ -54,6 +54,11 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(TAG, message);
         Server.getInstance().write(message);
         String receivingString = Server.getInstance().read();
+        if(receivingString == null || receivingString.isEmpty()){
+            Log.e(TAG, "Socket read null");
+            Toasty.error(getApplicationContext(), "Errore, riprova").show();
+            return;
+        }
         Log.d(TAG, receivingString);
         String user_id = receivingString.trim().split("<>")[1];
         RecyclerMessageAdapter.user_id=Integer.parseInt(user_id);

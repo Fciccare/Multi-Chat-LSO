@@ -67,8 +67,8 @@ public class InsertRoomFragment extends Fragment {
 
     private void createRoom() {
         String roomName = txtNameRoom.getText().toString();
-        if(roomName.length() > 32){
-            Toasty.error(getContext(), "Nome della stanza troppo lungo").show();
+        if(roomName.length() > 32 || roomName.length() == 0){
+            Toasty.error(getContext(), "Nome della stanza non accettato").show();
             return;
         }
 
@@ -77,6 +77,11 @@ public class InsertRoomFragment extends Fragment {
         Log.d(TAG, "Write to server: " + message);
 
         String response = Server.getInstance().read();
+        if(response == null){
+            Log.e(TAG, "Socket read null");
+            Toasty.error(requireContext(), "Errore creazione stanza, riprova").show();
+            return;
+        }
         Log.d(TAG, "Server responde: " + response);
         if(!response.toLowerCase().contains("successful")){
             Toasty.error(requireContext(), "Errore creazione stanza").show();
