@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #include "rooms_handler.h"
 #include "../library/log.h"
@@ -11,23 +12,24 @@ unsigned int rooms_active = 1; //room 0 (starting room) is always active
 unsigned int next_unactive_room_index = 1; //next empty spot to fill with new room(always updated!)
 //NOTICE: 0 must never be used as an id!
 
-
+pthread_mutex_t rooms_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*TODO: (VAI VALE U CAN DO IT (si me lo dico da sola))
 
 - rooms_destory() (Per quando si termina il server)
   DA FARE ANCORA
-
-- (dobbiamo vedere da android se si può fare facile)
-  Logica per uscire normalmente dalla app da qualsiasi stanza
-
 */
 
 
 
 //Init and Destroy
 void init_starting_room(){
+  log_debug("Locking rooms_mutex before initialization of room 0");
+  pthread_mutex_lock(&rooms_mutex);
   rooms[0] = room_create(0, "Defualt Room", NULL);
+  log_debug("Unlocking rooms_mutex after initization of room 0");
+  pthread_mutex_unlock(&rooms_mutex);
+
   log_info("Default room initiated, SERVER READY");
 }
 
@@ -38,7 +40,7 @@ void init_starting_room(){
 
 
 //Get
-Room* rooms_get_room_by_id(unsigned int room_id){
+Room* rooms_get_room_by_id(unsigned int room_id){ //Auxiliar function
 
   if(room_id >= MAX_ROOMS){
     log_error("Error: rooms_get_room_by_id, out of bounds array index");
@@ -69,8 +71,9 @@ Client* rooms_get_client_by_id(int socket_id){
 void rooms_get_formatted_room(int i, char* buff) { //Get specific room in formatted manner 
   if (rooms[i] == NULL) //If room is not active, returns terminatoin character
     buff[0] = '\0';
-  else
-    sprintf(buff, "%d<>%s<>%d\n",i, rooms[i]->name, rooms[i]->clients_counter); // roomID<>roomNAME<>clientsConnected
+  else {
+    sprintf(buff, "%d<>%s<>%d\n", i, rooms[i]->name, rooms[i]->clients_counter); // roomID<>roomNAME<>clientsConnected
+  }
 }
 
 bool is_valid_room_id(int id) {
@@ -80,7 +83,7 @@ bool is_valid_room_id(int id) {
 
 
 //Rooms Logic
-void update_next_unactive_room_index() { //to be called after every rooms_add_room
+void update_next_unactive_room_index() { //Auxiliar function to rooms_add_room
 
   if(rooms_active >= MAX_ROOMS){ //unexpected behaviour
     log_error("trying to find next_unactive_room_index when there isn't one");
@@ -97,7 +100,7 @@ void update_next_unactive_room_index() { //to be called after every rooms_add_ro
         i=1;               //we keep searching from the start (0 excluded)
         
     } else {//rooms[i]==NULL
-      log_debug("next_unactive_room_index:%d", i);
+      // log_debug("next_unactive_room_index:%d", i);
       next_unactive_room_index = i;
       return;
     }
@@ -121,6 +124,9 @@ bool rooms_add_room(Room* new_room) {
     return false;
   }
   
+  log_debug("Locking rooms_mutex before adding a new room");
+  pthread_mutex_lock(&rooms_mutex);
+
   log_debug("Next unactive room index that will be used: %d", next_unactive_room_index);
   rooms[next_unactive_room_index] = new_room;
   rooms_active++;
@@ -130,6 +136,10 @@ bool rooms_add_room(Room* new_room) {
   
   if(rooms_active<MAX_ROOMS)
     update_next_unactive_room_index();
+  
+  log_debug("Unlocking rooms_mutex after adding a new room");
+  pthread_mutex_unlock(&rooms_mutex);
+  
   return true;
 }
 
@@ -149,6 +159,10 @@ void rooms_delete_room(unsigned int room_id) {
       }
   }
   
+  
+  log_debug("Locking rooms_mutex before deleting room");
+  pthread_mutex_lock(&rooms_mutex);
+  
   log_debug("deleting room: %s", room_to_string(rooms[room_id]));
   room_delete(rooms[room_id]); 
   rooms[room_id] = NULL;
@@ -158,6 +172,9 @@ void rooms_delete_room(unsigned int room_id) {
   if(room_id<next_unactive_room_index)
     next_unactive_room_index = room_id;
   log_debug("next_unactive_room_index:%d", next_unactive_room_index);
+  
+  log_debug("Unlocking rooms_mutex beforeafter deleting room");
+  pthread_mutex_unlock(&rooms_mutex);
 }
 
 

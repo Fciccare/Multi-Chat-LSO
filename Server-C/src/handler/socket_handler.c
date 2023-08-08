@@ -195,7 +195,7 @@ void create_room(char *message, int *client_socket_id) {
   }
   
   room = room_create(0, message, client); //Create new room, id is set to 0 but will be changed
-  log_info("Room %d created", room->id);
+  // log_debug("Room created, now adding it");
   
   if (rooms_add_room(room)) {
     // log_debug("Room %d added", room->id);
@@ -218,14 +218,13 @@ void create_room(char *message, int *client_socket_id) {
 }
 
 void get_list(int *client_socket_id) {
-  //Send list of current rooms 
-  //To make sure client recieves entire list, we format the string sent this way:
-  /*
-  [LST]MAX_CLIENTS
-  roomID<>roomNAME<>clientsConnected
-  ...
-  roomID<>roomNAME<>clientsConnected
-  [/LST]
+  /*Send list of current rooms, format the string sent this way:
+
+    [LST]MAX_CLIENTS
+    roomID<>roomNAME<>clientsConnected
+    ...
+    roomID<>roomNAME<>clientsConnected
+    [/LST]
 
   */
   char start[10];
@@ -233,24 +232,26 @@ void get_list(int *client_socket_id) {
   char buff[42] = {0}; // formatted room buffer
 
   sprintf(start, "[LST]%d\n", MAX_CLIENTS);
-  log_info("Server is sending(%ld): %s", strlen(start), start); // Debug print
-  if ( write(*client_socket_id, start, strlen(start)) < 0)
+  log_debug("Server is sending(%ld): %s", strlen(start), start); // Debug print
+  if ( write(*client_socket_id, start, strlen(start)) < 0 )
     error_handler("Errore write");
 
-  unsigned int tmpFound = 0;                                  // how many rooms already found
-  int i = 1;                                         // index to visit array (0 is tarting room so we exclude it)
-  while (tmpFound < (rooms_active - 1)) { // if all active rooms have been visited, we stop searching the array
-    if (i > MAX_ROOMS) {                             // check to avoid seg fault
-      perror("Qualcosa non va con l'array delle stanze");
-    }
+  unsigned int roomsFound = 0;              // how many rooms already found
+  int i = 1;                                // index to visit array (0 is starting room so we exclude it)
+  while (roomsFound < (rooms_active - 1)) { // if all active rooms have been visited, we stop searching the array
+    if (i > MAX_ROOMS)                      // check to avoid seg fault
+      log_error("Rooms array index out of bound");
+
     rooms_get_formatted_room(i, buff); // it gets roomID<>roomNAME<>clientsConnected\n, if rooom is unactive termination character
     if (buff[0] != '\0') {
-      log_info("Server is sending(%ld): %s", strlen(buff), buff); // Debug print
+      log_debug("Server is sending(%ld): %s", strlen(buff), buff); // Debug print
       if(write(*client_socket_id, buff, strlen(buff)) < 0)
         error_handler("Errore write");
-      bzero(buff, 42);
-      tmpFound++;
+
+      roomsFound++;
     } //if buff == '\0' room is unactive so we don't send it to client
+
+    memset(buff, 0, sizeof(buff)); // reset buff
     i++;
   }
   log_info("Server is sending(%ld): %s", strlen(end), end); // Debug print
