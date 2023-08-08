@@ -72,4 +72,8 @@ public class BottomNavigationActivity extends AppCompatActivity {
                 .setNegativeButton("No", (dialogInterface, i) -> {})
                 .show();
     }
+
+    private void exit(){
+        super.onBackPressed();
+    }
 }
