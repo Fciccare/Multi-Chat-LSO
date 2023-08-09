@@ -21,6 +21,8 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     private static final int INCOMING_MESSAGE = 1;
     private static final int OUTCOMING_MESSAGE = 2;
 
+    private static final int ADMIN_MESSAGE = 0;
+
     private ArrayList<Message> messages;
 
     public RecyclerMessageAdapter (ArrayList<Message> messages){
@@ -36,6 +38,9 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         }else if (OUTCOMING_MESSAGE == viewType){
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.me,parent,false);
             return new ViewHolderOutcoming(view);
+        }else if (ADMIN_MESSAGE == viewType){
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.mid,parent,false);
+            return new ViewHolderMid(view);
         }
         return null;
     }
@@ -50,15 +55,19 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         }else if (OUTCOMING_MESSAGE == holder.getItemViewType()){
             ViewHolderOutcoming outcoming = (ViewHolderOutcoming) holder;
             outcoming.setDetail(message);
+        }else if (ADMIN_MESSAGE == holder.getItemViewType()) {
+            ViewHolderMid mid = (ViewHolderMid) holder;
+            mid.setDetail(message);
         }
-
     }
 
     @Override
     public int getItemViewType(int position) {//TODO: Add logic
-        if(messages.get(position).getUser_id()==user_id)
+        if (messages.get(position).getUser_id() == user_id){
             return OUTCOMING_MESSAGE;
-        else return INCOMING_MESSAGE;
+        }else if ((messages.get(position).getUser_id()==0)){
+             return ADMIN_MESSAGE;
+        }else return INCOMING_MESSAGE;
     }
 
     @Override
@@ -89,6 +98,18 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
             String formattedTime = sdf.format(currentTime);
             textDate.setText(formattedTime);
+        }
+    }
+
+    public class ViewHolderMid extends RecyclerView.ViewHolder{
+        private TextView textMessage;
+
+        public ViewHolderMid(@NonNull View itemView) {
+            super(itemView);
+            textMessage = itemView.findViewById(R.id.text_gchat_message_admin);
+        }
+        public void setDetail(Message message) {
+            textMessage.setText(message.getText());
         }
     }
 
