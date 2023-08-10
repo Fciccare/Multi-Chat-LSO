@@ -8,10 +8,10 @@
 
 #include "../library/log.h"
 
-
-//TESTARE PASSAGGIO DI PROPRIETA' DELLA STANZA
-
-//POI TESTARE CANCELLAZIONE DELLE STANZE QUANDO TUTTI ESCONO
+//NOTICE: all the functions must be called with the corresponding room mutex locked
+//        and the room must be unlocked after the function call
+//        bad things will happen otherwise
+//        you were warned
 
 //Constructor and Drestory
 Room* room_create(unsigned int id, const char* name, Client* master_client) {
@@ -22,27 +22,34 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
   r->master_client = master_client;
   // log_debug("Setted id=%d, name=%s, client_counter=0, master_client", id, name);
 
+
+  //TEST: dinamic array with memset
   if(id == 0){ //Starting room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);
-    bzero(r->clients, MAX_CLIENTS_ZERO);
-    // log_debug("Created dinamic array %d size", MAX_CLIENTS_ZERO);
+    memset(r->clients, 0, sizeof(Client*) * MAX_CLIENTS_ZERO);
+    log_debug("Created dinamic array %d size", MAX_CLIENTS_ZERO);
+    r->master_client = NULL; //Starting room has no master client
+    return r;
   }
-  else{ //Regular room
+  //Regular room
+  else{ 
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS);
-    bzero(r->clients, MAX_CLIENTS);
-    // log_debug("Created dinamic array %d size", MAX_CLIENTS);
+    memset(r->clients, 0, sizeof(Client*) * MAX_CLIENTS);
+    log_debug("Created dinamic array %d size", MAX_CLIENTS);
   }
-  
 
-  if(master_client != NULL){
+  if(master_client != NULL) {
     log_debug("Master client NOT NULL");
     room_add_client(r, master_client);
+  }
+  else { //Unexpected behaviour
+    log_error("Master client NULL");
   }
   return r;
 }
 
-void room_delete(Room* r ){
-  //Se la chiami senza che la stanza sia vuota potrebbero succedere casini, non farlo se possibile.
+void room_delete(Room* r ){ //TEST this
+  //NOTICE: do not call this function if the room is not empty, it will cause unexpected behaviour
 
   if (r == NULL){ //unexpected behaviour
     log_error("Trying to delete NULL room");
@@ -55,15 +62,19 @@ void room_delete(Room* r ){
     room_clear(r); 
   }
   
+  log_debug("Destroying room: %d", r->id);
   r->master_client = NULL;
   r->clients = NULL;
   room_destroy(r);
 }
 
-void room_destroy(Room* r) { 
+void room_destroy(Room* r) { //Called by room_delete
+  
   log_debug("Destroying room: %d", r->id);
   free(r);
-  r = NULL; 
+  r = NULL;
+
+  log_debug("Room destroyed");
 }
 
 
@@ -114,9 +125,21 @@ Client* room_get_client_by_id(Room* r, int client_socket_id){
 
 //Logic
 bool room_add_client(Room* r, Client* client) {
+
+  if (client == NULL) {
+    log_error("Trying to add NULL client to room");
+    return false;
+  }
+
+  if(r == NULL){
+    log_warn("Trying to add client to NULL room");
+    return false;
+  }
+
   if (r->id != 0 && r->clients_counter == MAX_CLIENTS) {
     log_warn("Room %d full, can't add %s", r->id, client_to_string(client));
     return false;
+
   } else if (r->id == 0 && r->clients_counter == MAX_CLIENTS_ZERO ){
     log_warn("Room zero full, can't add %s", client_to_string(client));
     return false;
@@ -141,6 +164,7 @@ bool room_add_client(Room* r, Client* client) {
 }
 
 bool room_remove_client(Room* r, int socket_id) {
+  
   if(r == NULL || r->clients_counter <= 0){ //unexpected behaviour
     log_error("Room null or Client count <=0 in room id: %d", r->id);
     return false;
@@ -162,8 +186,18 @@ bool room_remove_client(Room* r, int socket_id) {
         clients[i] = NULL;
         log_debug("Client with socket_id:%d removed from room:%d", socket_id, r->id);
 
-        //If Client removed was master, chose a new master
-        if(r->id != 0 && r->clients_counter > 0 && r->master_client->socket_id == socket_id) 
+        if(r->id == 0)
+          return true;
+
+        //If room is empty, destroy it
+        if(r->clients_counter == 0) { 
+          log_debug("Room %d is empty, destroying it", r->id);
+          room_destroy(r);
+          return true;
+        }
+
+        //If Client removed was master, choose a new master
+        if(r->master_client->socket_id == socket_id) 
           room_change_master(r);
         
         return true;
@@ -193,11 +227,13 @@ bool room_change_master(Room* r){
       return true;
     }
   }
+  
+  //unexpected behaviour
   log_error("Could not change master");
   return false;
 }
 
-bool room_is_empty(Room* r){
+bool room_is_empty(Room* r){ //to be called inside mutex
   if(r->clients_counter == 0)
     return true;
   return false;

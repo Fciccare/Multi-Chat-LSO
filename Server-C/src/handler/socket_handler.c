@@ -194,7 +194,8 @@ void create_room(char *message, int *client_socket_id) {
     //log_debug("Removed newline from message");
   }
   
-  room = room_create(0, message, client); //Create new room, id is set to 0 but will be changed
+
+  room = room_create(-1, message, client); //Create new room, id is set to 0 but will be changed
   // log_debug("Room created, now adding it");
   
   if (rooms_add_room(room)) {
@@ -355,17 +356,17 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   } //else
 
   //Exiting from a room
-  if (!rooms_move_to_zero(client, room_id)){ 
+  if (!rooms_move_to_zero_wrapper(client, room_id)){ 
     //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
   } else log_debug("Moved client with socket_id: %d from room %d to room 0", client->socket_id, room_id);
 
-  //Delete room if no one is inside anymore
-  if(room_is_empty(rooms_get_room_by_id(room_id))){
-    log_debug("Room is empty, deleting room...");
-    rooms_delete_room(room_id);
-  }
+  //Delete room if no one is inside anymore ORA LO FACCIO IN ROOMS_HANDLER NON HA SENSO STIA QUAAAA
+  // if(room_is_empty(rooms_get_room_by_id(room_id))){
+  //   log_debug("Room is empty, deleting room...");
+  //   rooms_delete_room(room_id);
+  // }
 
   return true;
 }

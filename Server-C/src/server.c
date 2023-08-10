@@ -25,6 +25,7 @@
 
 #include "library/log.h"
 
+
 void *socket_handler(void *);
 void socket_close(int);
 
@@ -70,7 +71,7 @@ int main(int argc, char* argv[]) {
   log_info("Server address: %s, Port: %d", ipaddr, port);
   //Init database and structure
   initDatabase(debug);
-  init_starting_room();
+  rooms_init();
 
   //Setup socket
   struct sockaddr_in saddress, caddress;
