@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.example.multichatlso.Model.RecyclerMessageAdapter;
 import com.example.multichatlso.R;
 import com.example.multichatlso.Model.Server;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import es.dmoral.toasty.Toasty;
@@ -41,6 +42,13 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(this, SignupActivity.class));
         });
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "Resume socket");
+        Server.getInstance();
     }
 
     /*public void login(){
@@ -95,11 +103,28 @@ public class LoginActivity extends AppCompatActivity {
                 String user_id = receivingString.trim().split("<>")[1];
                 RecyclerMessageAdapter.user_id=Integer.parseInt(user_id);
                 startActivity(new Intent(this, BottomNavigationActivity.class));
-                finish();
+                //finish();
             } else{
                 Toasty.error(getApplicationContext(), "Login errato", Toast.LENGTH_SHORT, true).show();
             }
             Server.getInstance().getListen().removeObservers(this);
         });
     }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "Tasto Back premuto");
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Uscire dall'App?")
+                .setMessage("Vuoi uscire dall'App?")
+                .setPositiveButton("SÌ", (dialogInterface, i) -> {
+                    Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                    homeIntent.addCategory( Intent.CATEGORY_HOME );
+                    homeIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(homeIntent);
+                })
+                .setNegativeButton("NO", (dialogInterface, i) -> {})
+                .show();
+    }
+
 }

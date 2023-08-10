@@ -53,10 +53,11 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
 void broadcast_message_into_room(char *message, int *client_socket_id) {
   // Send message to every client in room
   //TODO: Check regex input        \[MSG\].*<>\d*
+  //TODO: PLS ADD LOGS
   
   char *message_to_send = strtok(message, "<>");
   char *string_room_id = strtok(NULL, "<>");
-
+  
   int room_id = atoi(string_room_id);
 
   int length = strlen(message_to_send) + 1;
@@ -69,7 +70,7 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
     //TODO: add client response (send error?), room is null
     return;
   }
-    
+  
   Client **clients = room->clients;
   int online_client = room->clients_counter;
   char* name = NULL;
@@ -81,7 +82,7 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
       }   
     }
   }
-
+  
   int count = 0; // how many clients has been sent to
   for (int i = 0; i < MAX_CLIENTS; ++i) {
     if (count == online_client) { // if message has been sent to every online client
@@ -90,7 +91,9 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
       if (clients[i] != NULL) {
         int client_id = (*(clients + i))->socket_id; // client_id changes at every loop, it's the destination socket id
         
-        sprintf(text, "[MSG]%s<>%d<>%s\n", message_to_send, *client_socket_id, name);
+        if(*client_socket_id == 0){
+          sprintf(text, "%s<>%d<>%s\n", message_to_send, *client_socket_id,"Admin");
+        }else sprintf(text, "[MSG]%s<>%d<>%s\n", message_to_send, *client_socket_id, name);
         //[MSG]message_to_send<>sender_socket_id
         log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
         if(write(client_id, text, strlen(text)) < 0)
@@ -315,6 +318,12 @@ void accept_request(char *message) { // Accept user in a room
   log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
   if(write(socket_id_client, text, strlen(text)) < 0)
     error_handler("Errore write");
+
+  //Send to client information for ui chat
+  char buffer[100];
+  sprintf(buffer, "[MSG]L'utente %s è entrato/a nella stanza<>%d\n", client->user->name,room_id);
+  int admin_socket=0;
+  broadcast_message_into_room(buffer, &admin_socket);
 }
 
 void not_accept_request(char *message) { // Don't accept a Client in a room

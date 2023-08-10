@@ -10,6 +10,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/buttonLogOut"
+            android:layout_width="166dp"
+            android:layout_height="54dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:layout_marginTop="282dp"
+            android:contentDescription="@string/login"
+            android:text="Disconnetiti"
+            android:textColor="#5D4037"
+            android:textColorLink="@color/purple_200"
+            app:backgroundTint="#FFB300"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/buttonSocket" />
+
         <EditText
             android:id="@+id/editTextSocket"
             android:layout_width="wrap_content"

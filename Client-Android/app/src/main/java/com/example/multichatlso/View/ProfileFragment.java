@@ -15,6 +15,10 @@ import android.widget.EditText;
 
 import com.example.multichatlso.Model.Server;
 import com.example.multichatlso.R;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
 
@@ -26,6 +30,8 @@ public class ProfileFragment extends Fragment {
 
     private EditText txtSocket;
     private Button button;
+
+    private ExtendedFloatingActionButton logoutButton;
 
     private ProfileFragment() {/*Required empty public constructor*/}
 
@@ -52,7 +58,14 @@ public class ProfileFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         txtSocket = view.findViewById(R.id.editTextSocket);
+        logoutButton = view.findViewById(R.id.buttonLogOut);
         button = view.findViewById(R.id.buttonSocket);
+
+        logoutButton.setOnClickListener(view12 -> {
+            Log.d(TAG, "Socket close");
+            Server.getInstance().stopServer();
+            requireActivity().finish();
+        });
 
         button.setOnClickListener(view1 -> {
             Server.getInstance().write(txtSocket.getText().toString());

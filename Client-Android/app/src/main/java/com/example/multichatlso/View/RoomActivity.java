@@ -9,6 +9,7 @@ import android.os.CountDownTimer;
 import android.util.Log;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.example.multichatlso.Model.Message;
 import com.example.multichatlso.Model.RecyclerMessageAdapter;
@@ -16,6 +17,7 @@ import com.example.multichatlso.Model.Room;
 import com.example.multichatlso.Model.Server;
 import com.example.multichatlso.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -30,7 +32,7 @@ public class RoomActivity extends AppCompatActivity {
     private static Room room;
     private ArrayList<Message> messages;
 
-    private AutoCompleteTextView textView;
+    private EditText textView;
     private Button button;
     private RecyclerView recyclerView;
     private RecyclerMessageAdapter adapter;
@@ -47,7 +49,7 @@ public class RoomActivity extends AppCompatActivity {
         }
 
         textView = findViewById(R.id.textMessage);
-        button = findViewById(R.id.buttonSend);
+        button = findViewById(R.id.floatingActionButton);
         recyclerView = findViewById(R.id.recyclerView2);
 
         Toasty.success(getBaseContext(), room.toString()).show();
@@ -71,6 +73,10 @@ public class RoomActivity extends AppCompatActivity {
         String message = textView.getText().toString();
         if(message.trim().isEmpty()){
             Toasty.error(getBaseContext(), "Inserisci un messaggio").show();
+            return;
+        }
+        if(message.length() > 200){
+            Toasty.error(getBaseContext(), "Massimo 200 caratteri").show();
             return;
         }
         message = "[MSG]" + message.trim() + "<>" + room.getId();
