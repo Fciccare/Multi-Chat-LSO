@@ -189,12 +189,18 @@ bool room_remove_client(Room* r, int socket_id) {
         if(r->id == 0)
           return true;
 
+        /*-------------------------------
+        //TODO: Rivedere questa logica
         //If room is empty, destroy it
         if(r->clients_counter == 0) { 
           log_debug("Room %d is empty, destroying it", r->id);
           room_destroy(r);
           return true;
-        }
+        }*/
+        //FIX TEMPORANEO DA CAMBIARE INSIEME ALLA LOGICA
+        if(r->clients_counter == 0)
+          return true;
+        //-------------------------------
 
         //If Client removed was master, choose a new master
         if(r->master_client->socket_id == socket_id) 

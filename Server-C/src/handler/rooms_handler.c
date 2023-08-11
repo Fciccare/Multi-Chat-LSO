@@ -329,7 +329,9 @@ void rooms_remove_destroy_client(Client* client) { //Removes client from room an
     return;
   }
 
-  Room* room = rooms[client->room_id];
+  int room_id = client->room_id;
+
+  Room* room = rooms[room_id];
   if(room == NULL){ //unexpected behaviour
     log_error("Trying to remove client from null room, we'll just destroy it...");
     client_destroy(client);
@@ -350,9 +352,9 @@ void rooms_remove_destroy_client(Client* client) { //Removes client from room an
     log_debug("Room %d is empty, locking rooms_mutex and deleting room.", room->id);
     pthread_mutex_lock(&rooms_mutex);
     room_delete(room);
-    rooms[client->room_id] = NULL;
+    rooms[room_id] = NULL;
     rooms_active--;
-    log_debug("rooms_mutex after deleting room", client->room_id);
+    log_debug("rooms_mutex after deleting room", room_id);
     pthread_mutex_unlock(&rooms_mutex);
   }
 
