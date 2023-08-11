@@ -1,5 +1,6 @@
 package com.example.multichatlso.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -7,15 +8,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toolbar;
 
 import com.example.multichatlso.Model.Message;
 import com.example.multichatlso.Model.RecyclerMessageAdapter;
 import com.example.multichatlso.Model.Room;
 import com.example.multichatlso.Model.Server;
 import com.example.multichatlso.R;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -37,6 +42,8 @@ public class RoomActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecyclerMessageAdapter adapter;
 
+    private MaterialToolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +58,12 @@ public class RoomActivity extends AppCompatActivity {
         textView = findViewById(R.id.textMessage);
         button = findViewById(R.id.floatingActionButton);
         recyclerView = findViewById(R.id.recyclerView2);
+        toolbar = findViewById(R.id.MaterialToolbar);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
 
         Toasty.success(getBaseContext(), room.toString()).show();
 
@@ -59,6 +72,8 @@ public class RoomActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
+
+
 
         //fetchMessage();
         fetchMessages();
@@ -212,6 +227,24 @@ public class RoomActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("No", (dialogInterface, i) -> {})
                 .show();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed(); // Chiama il metodo di default per tornare indietro
+            return true;
+        }else if(item.getItemId() == R.id.listButton){
+            Toasty.normal(this, "Lista persone").show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
+        getMenuInflater().inflate(R.menu.room_menu, menu);
+        return true;
     }
 
     public static int getRoomId() {

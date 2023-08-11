@@ -115,7 +115,16 @@ public class HomepageFragment extends Fragment {
         startLoading();
         new CountDownTimer(15000,15000){
             @Override public void onTick(long l) {}
-            @Override public void onFinish() {stopLoading();}
+            @Override public void onFinish() {
+                stopLoading();
+                Log.d(TAG, "Tempo scaduto, aggiornamento stanze");
+                rooms.clear();
+                getActivity().runOnUiThread(() -> {
+                    adapter.notifyDataSetChanged();
+                });
+                listRooms();
+                swipeContainer.setRefreshing(false);
+            }
         }.start();
         Server.getInstance().read();
 

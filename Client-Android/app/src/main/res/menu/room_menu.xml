@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/listButton"
+        android:icon="@drawable/ic_round_people_alt_24"
+        app:showAsAction="always"
+        android:title="Lista" />
+</menu>
