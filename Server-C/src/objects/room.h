@@ -4,6 +4,7 @@
 #define MAX_CLIENTS 32  // Max Clients supported by a room
 #define MAX_CLIENTS_ZERO 256  // Max Clients supported by room zero, the starting room
 
+#include <pthread.h>
 #include "client.h"
 
 //Structure//
