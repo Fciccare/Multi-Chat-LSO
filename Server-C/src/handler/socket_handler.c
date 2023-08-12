@@ -351,7 +351,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     log_info("Client with socket_id %d is leaving room 0", *client_socket_id);
     
     //Room logic
-    rooms_remove_from_room(*client_socket_id, 0);
+    rooms_remove_destroy_client_wrapper(client);
 
     //DB logic
     dbUpdateStatus(client->user->name, "0");
@@ -370,12 +370,6 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
   } else log_debug("Moved client with socket_id: %d from room %d to room 0", client->socket_id, room_id);
-
-  //Delete room if no one is inside anymore ORA LO FACCIO IN ROOMS_HANDLER NON HA SENSO STIA QUAAAA
-  // if(room_is_empty(rooms_get_room_by_id(room_id))){
-  //   log_debug("Room is empty, deleting room...");
-  //   rooms_delete_room(room_id);
-  // }
 
   return true;
 }

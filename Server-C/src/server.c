@@ -165,7 +165,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       dbUpdateStatus(client->user->name, "0");
 
       //Rooms logic
-      rooms_remove_destroy_client(client);
+      rooms_remove_destroy_client_wrapper(client);
     }
 
   } else { //Client has request
