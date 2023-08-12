@@ -38,8 +38,9 @@ sudo pacman -S postgresql-libs
 ## TO DO :page_with_curl:
 
 **Cose a cui dare priorità (Vale)**
- - Controllare le deallocazioni (in parte fatto)
- - Implementare i lock per i thread
+ - Chiusura PULITA (anche quando forzata) del server  
+ - Controllare le deallocazioni : Fatto in parte
+ - Implementare i lock per i thread : Fatto ma è da testare
 
 **Logica di controllo**
   - :black_square_button: Controllo e gestione degli errori :construction:WIP:construction:
