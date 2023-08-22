@@ -41,7 +41,7 @@ void rooms_init(){
 }
 
 void rooms_destroy(){ //To be called when closing server
-  for (int i = 0; i++; i<MAX_ROOMS){
+  for (int i = 0; i<MAX_ROOMS; i++){
     if(rooms[i] != NULL){
       room_clear(rooms[i]);
       room_delete(rooms[i]);
@@ -77,15 +77,21 @@ Client* rooms_get_client_by_id(int socket_id){ //HAS MUTEX LOCK INSIDE
   log_debug("Locking rooms_mutex before searching for client %d", socket_id);
   pthread_mutex_lock(&rooms_mutex);
   int max = rooms_active;
+  int counter = 0; //Active rooms found counter
   for (int i = 0; i < MAX_ROOMS; i++){
+    if (counter == max) //There aren't anymore active rooms to check
+      break;
+    pthread_mutex_lock(&room_mutexes[i]);
     if (rooms[i] != NULL) {
+      counter++;
       if ((c = rooms_get_client_from_room_by_id(i, socket_id)) != NULL)
         break;
     }
-    if (i == max) 
-      break;
+    pthread_mutex_unlock(&room_mutexes[i]);
   }
+  
   log_debug("Unlocking rooms_mutex after searching for client %d", socket_id);
+  pthread_mutex_unlock(&room_mutexes[c->room_id]);
   pthread_mutex_unlock(&rooms_mutex);
   return c;
 }
@@ -247,7 +253,7 @@ bool rooms_remove_from_zero(int socket_id){ //Removes a client from starting roo
   return status;
 }
 
-bool rooms_remove_from(Client* client){
+bool rooms_remove_client(Client* client){
   //HAS MUTEX LOCK INSIDE
   if(client == NULL){ //unexpected behaviour
     log_error("Trying to remove NULL client from room");
@@ -289,6 +295,7 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current
   
   //NOTICE: this function is called only within mutex lock of room_mutexs[old_room_id] and locks room_mutexes[0]
 
+//TODO remeve thi useless commented code
   // Room* old_room = rooms[old_room_id];
   // if(old_room == NULL){ //unexpected behaviour
   //   log_error("rooms_move_to_zero: Trying to access NULL room");
@@ -300,7 +307,7 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current
   //   return false;
   // }
 
-  bool status = rooms_remove_from(client); //This function has mutex lock inside
+  bool status = rooms_remove_client(client); //This function has mutex lock inside
 
   log_debug("Locking room_mutexes[0] before adding client to starting room");
   pthread_mutex_lock(&room_mutexes[0]);
@@ -310,13 +317,8 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current
   if(status){
     log_debug("Moved client %s to starting room", client_to_string(client));
 
-    //Every room is destroyed when empty, so we don't need to check if it's empty
-    // if(room_is_empty(old_room)){
-    //   log_debug("Room is empty, deleting room...");
-    //   rooms_delete_room(old_room->id);
-    // }
-  } else {
-    log_error("Couldn't move client %d to starting room, forcing disconnection...", client->socket_id);
+  } else { //rare case
+    log_warn("Couldn't move client %d to starting room, forcing disconnection...", client->socket_id);
     // socket_diconnect_client(client->socket_id); //TODO IN REALTA' NON LA VEDE STA FUNZIONE!!! Metterla nel main??
     client_destroy(client);
   }
@@ -327,73 +329,26 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current
   return status;
 }
 
-void rooms_remove_destroy_client_wrapper(Client* client) { //Removes client from room (uses rooms_remove_destroy_client)
+void rooms_remove_destroy_client(Client* client) { //Removes client from room and destroys it HAS MUTEX LOCK INSIDE
   
-  //HAS MUTEX LOCK INSIDE
+  //This function is called by socket_handler when a client disconnects
+  //It locks the room_mutex of the room the client is in
 
-  if (client == NULL){
-    log_error("client NULL passed to room_remove_destroy_client_wrapper");
+  if(client == NULL){ //unexpected behaviour
+    log_error("Trying to remove NULL client from room");
     return;
   }
 
-  int room_id = client->room_id;
-  log_debug("Locking room_mutexes[%d] before removing client", room_id);
-  pthread_mutex_lock(&room_mutexes[room_id]);
-
-  if (rooms[room_id] == NULL) {
-    log_error("Trying to delete client with socket_id %d from NULL room n.%d", client->socket_id, room_id);
-    pthread_mutex_unlock(&room_mutexes[room_id]);
-    return;
+  if (rooms_remove_client(client)) {
+    log_debug("Client %d removed from room %d", client->socket_id, client->room_id);
+  } else {
+    log_error("Client %d not removed from room %d", client->socket_id, client->room_id);
   }
 
-  rooms_remove_destroy_client(client); //This function has mutex lock 
-
-
-  log_debug("Unlocking room_mutexes[%d] after removing client", room_id);
-  pthread_mutex_unlock(&room_mutexes[room_id]);
+  client_destroy(client);
 
 }
 
-void rooms_remove_destroy_client(Client* client) { //Removes) client from room and desroy client
-
-  //NOTICE: this function is not thread safe, it should be called only while holding the room_mutex of the room
-  //It is called by rooms_remove_from_room (which has the mutex lock inside)
-  //TESSSSSSSSSSSSTAAAAAAAAAAA
-
-  if (client == NULL) { //unexpected behaviour
-    log_error("Trying to delete NULL client");
-    return;
-  }
-
-  Room* room = rooms[client->room_id];
-  if(room == NULL){ //unexpected behaviour
-    log_warn("Trying to remove client from null room, we'll just destroy it...");
-    client_destroy(client);
-    return;
-  }
-  
-  if(room_remove_client(room, client->socket_id)) //remove client from room and
-    client_destroy(client);                       //destroy it
-  else
-    log_error("Oh no è successo un casino con le stanze, buona fortuna a debuggarlo =)"); //TODO
-  
-  if(room->id == 0) {//don't destroy starting room
-    log_debug("Client removed and destroyed from room 0 (log da togliere)"); //TODO
-    return;
-  }
-
-// room_remove_client cancella la stanza se serve
-  // if(room_is_empty(room)){ 
-  //   log_debug("Room %d is empty, locking rooms_mutex and deleting room.", room->id);
-  //   pthread_mutex_lock(&rooms_mutex);
-  //   room_delete(room);
-  //   rooms[client->room_id] = NULL;
-  //   rooms_active--;
-  //   log_debug("rooms_mutex after deleting room", client->room_id);
-  //   pthread_mutex_unlock(&rooms_mutex);
-  // }
-
-}
 
 
 //Prints and Debug

@@ -351,7 +351,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     log_info("Client with socket_id %d is leaving room 0", *client_socket_id);
     
     //Room logic
-    rooms_remove_destroy_client_wrapper(client);
+    rooms_remove_destroy_client(client);
 
     //DB logic
     dbUpdateStatus(client->user->name, "0");
