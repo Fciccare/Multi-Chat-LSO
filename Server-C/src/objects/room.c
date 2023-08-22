@@ -70,11 +70,22 @@ void room_delete(Room* r ){ //TEST this
 
 void room_destroy(Room* r) { //Called by room_delete
   
-  log_debug("Destroying room: %d", r->id);
+  log_debug("Destroying room %d", r->id);
   // free(r->clients);
   // r->clients = NULL; 
   free(r);
   r = NULL;
+
+/*
+[] [] []
+|  |  |
+V  V  V
+r1 r2 r3
+
+
+
+*/
+
 
   log_debug("Room destroyed");
 }

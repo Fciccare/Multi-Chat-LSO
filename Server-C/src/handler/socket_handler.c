@@ -365,7 +365,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   } //else
 
   //Exiting from a room
-  if (!rooms_move_to_zero_wrapper(client, room_id)){ 
+  if (!rooms_move_to_zero(client, room_id)){ 
     //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?

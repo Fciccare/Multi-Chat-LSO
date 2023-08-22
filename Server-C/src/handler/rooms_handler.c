@@ -247,37 +247,67 @@ bool rooms_remove_from_zero(int socket_id){ //Removes a client from starting roo
   return status;
 }
 
-bool rooms_move_to_zero_wrapper(Client* client, int old_room_id){ //Called by socket_handler
-  log_debug("Locking room_mutexes[%d] before removing client from old room", old_room_id);
-  pthread_mutex_lock(&room_mutexes[old_room_id]);
-  bool status = rooms_move_to_zero(client, old_room_id);
-  log_debug("Unlocking room_mutexes[%d] after removing client from old room", old_room_id);
-  pthread_mutex_unlock(&room_mutexes[old_room_id]);
+bool rooms_remove_from(Client* client){
+  //HAS MUTEX LOCK INSIDE
+  if(client == NULL){ //unexpected behaviour
+    log_error("Trying to remove NULL client from room");
+    return false;
+  }
+
+  int room_id = client->room_id;
+  log_debug("Locking room_mutexes[%d] before removing client", room_id);
+  pthread_mutex_lock(&room_mutexes[room_id]);
+
+  if (rooms[room_id] == NULL) {
+    log_error("Trying to delete client with socket_id %d from NULL room n.%d", client->socket_id, room_id);
+    pthread_mutex_unlock(&room_mutexes[room_id]);
+    return false;
+  }
+
+  bool status = room_remove_client(rooms[room_id], client->socket_id);
+  if(room_id != 0 && rooms[room_id]->clients_counter == 0){ //if room is empty and not starting room
+    log_debug("Room is empty and deleted inside, deleting it from rooms array");
+    rooms[room_id] = NULL;
+    rooms_active--;
+  }
+
+  log_debug("Unlocking room_mutexes[%d] after removing client", room_id);
+  pthread_mutex_unlock(&room_mutexes[room_id]);
   return status;
-}
+} 
+
+// bool rooms_move_to_zero_wrapper(Client* client, int old_room_id){ //Called by socket_handler
+//   log_debug("Locking room_mutexes[%d] before removing client from old room", old_room_id);
+//   pthread_mutex_lock(&room_mutexes[old_room_id]);
+//   bool status = rooms_move_to_zero(client, old_room_id);
+//   log_debug("Unlocking room_mutexes[%d] after removing client from old room", old_room_id);
+//   pthread_mutex_unlock(&room_mutexes[old_room_id]);
+//   return status;
+// }
 
 bool rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current room and moves to room zero 
   
   //NOTICE: this function is called only within mutex lock of room_mutexs[old_room_id] and locks room_mutexes[0]
 
-  Room* old_room = rooms[old_room_id];
-  if(old_room == NULL){ //unexpected behaviour
-    log_error("rooms_move_to_zero: Trying to access NULL room");
-    return false;
-  }
+  // Room* old_room = rooms[old_room_id];
+  // if(old_room == NULL){ //unexpected behaviour
+  //   log_error("rooms_move_to_zero: Trying to access NULL room");
+  //   return false;
+  // }
 
-  if(client == NULL) { //unexpected behaviour
-    log_error("rooms_move_to_zero: Trying to move NULL client from room:%d", old_room);
-    return false;
-  }
+  // if(client == NULL) { //unexpected behaviour
+  //   log_error("rooms_move_to_zero: Trying to move NULL client from room:%d", old_room);
+  //   return false;
+  // }
+
+  bool status = rooms_remove_from(client); //This function has mutex lock inside
 
   log_debug("Locking room_mutexes[0] before adding client to starting room");
   pthread_mutex_lock(&room_mutexes[0]);
 
   Room* room_zero = rooms_get_room_by_id(0);
-  bool status = room_add_client(room_zero, client);
+  status = room_add_client(room_zero, client) && status;
   if(status){
-    status = room_remove_client(old_room, client->socket_id);
     log_debug("Moved client %s to starting room", client_to_string(client));
 
     //Every room is destroyed when empty, so we don't need to check if it's empty
@@ -286,9 +316,9 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current
     //   rooms_delete_room(old_room->id);
     // }
   } else {
-    log_error("Couldn't add client %d to starting room, forcing disconnection...", client->socket_id);
+    log_error("Couldn't move client %d to starting room, forcing disconnection...", client->socket_id);
     // socket_diconnect_client(client->socket_id); //TODO IN REALTA' NON LA VEDE STA FUNZIONE!!! Metterla nel main??
-    rooms_remove_destroy_client(client); //TODO SINCRONIZZARE ???
+    client_destroy(client);
   }
 
 
@@ -337,7 +367,7 @@ void rooms_remove_destroy_client(Client* client) { //Removes) client from room a
 
   Room* room = rooms[client->room_id];
   if(room == NULL){ //unexpected behaviour
-    log_error("Trying to remove client from null room, we'll just destroy it...");
+    log_warn("Trying to remove client from null room, we'll just destroy it...");
     client_destroy(client);
     return;
   }
