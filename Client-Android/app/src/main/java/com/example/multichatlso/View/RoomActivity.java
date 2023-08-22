@@ -63,6 +63,7 @@ public class RoomActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setTitle(room.getName());
 
 
         Toasty.success(getBaseContext(), room.toString()).show();
@@ -134,6 +135,7 @@ public class RoomActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private Sweetalert createDialog(String[] splitted){
         Sweetalert dialog = new Sweetalert(this, Sweetalert.WARNING_TYPE)

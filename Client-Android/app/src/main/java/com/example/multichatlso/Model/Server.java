@@ -48,10 +48,10 @@ public class Server {
         StrictMode.setThreadPolicy(policy);
 
         new Thread(() -> {
-            while(true){
+           while(true){
                 try {
                     socket = new Socket();
-                    socket.connect(new InetSocketAddress("multichat.ddns.net", 9192), 15000); //Timeout 15 sec for to avoid stuck
+                    socket.connect(new InetSocketAddress("multichat.ddns.net", 9294), 15000); //Timeout 15 sec for to avoid stuck
                     Log.d(TAG, "Socket connected");
                     break;
                 } catch (IOException e) {
