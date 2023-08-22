@@ -58,7 +58,7 @@ void room_delete(Room* r ){ //TEST this
 
   log_debug("Deleting room: %d", r->id);
   if (r->clients_counter != 0){
-    log_error("Deleting non-empty room, umpredictable behaviour, deleting it anyway.");
+    log_error("Deleting non-empty room, umpredictable behaviour (and memory leak), deleting it anyway.");
     room_clear(r); 
   }
   
@@ -71,6 +71,8 @@ void room_delete(Room* r ){ //TEST this
 void room_destroy(Room* r) { //Called by room_delete
   
   log_debug("Destroying room: %d", r->id);
+  // free(r->clients);
+  // r->clients = NULL; 
   free(r);
   r = NULL;
 
@@ -246,6 +248,7 @@ void room_clear(Room* r) {
     if(r->clients[i] != NULL){
       count++;
       client_destroy(r->clients[i]);
+      r->clients[i] = NULL;
     }
     if (count == r->clients_counter) break;
   }

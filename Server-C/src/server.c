@@ -195,8 +195,10 @@ void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/w
 }
 
 void signal_handler() {
+  //TODO CLOSE SOCKET??
   closeDatabase();
-  //TODO: rooms_destroy();
+  // rooms_destroy();
+  // log_info("Closing server");
   exit(EXIT_SUCCESS);
 }
 

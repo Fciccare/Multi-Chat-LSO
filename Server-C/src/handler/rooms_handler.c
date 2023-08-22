@@ -19,8 +19,8 @@ pthread_mutex_t room_mutexes[MAX_ROOMS] = {0};
 
 /*TODO: (VAI VALE U CAN DO IT (si me lo dico da sola))
 
-- rooms_destory() (Per quando si termina il server)
-  DA FARE ANCORA
+FIXARE! 
+Se [EXT] inviato per uscire dalla app -> seg fault su free del client
 */
 
 
@@ -40,10 +40,19 @@ void rooms_init(){
   log_info("Rooms initalized: SERVER READY");
 }
 
-/*TODO: rooms_destroy(){ FUNCTION TO CALL WHEN CLOSING SERVER
-  //for each room, call room_destroy();
-
-}*/
+void rooms_destroy(){ //To be called when closing server
+  for (int i = 0; i++; i<MAX_ROOMS){
+    if(rooms[i] != NULL){
+      room_clear(rooms[i]);
+      room_delete(rooms[i]);
+    }
+    pthread_mutex_destroy(&room_mutexes[i]);
+  }
+  pthread_mutex_destroy(&rooms_mutex);
+  rooms_active = 0;
+  next_unactive_room_index = 1;
+  log_debug("Rooms destroyed");
+}
 
 
 //Get

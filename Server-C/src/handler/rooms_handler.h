@@ -10,7 +10,7 @@ extern unsigned int rooms_active;
 
 //Init and Destroy
 void rooms_init();
-//TODO: rooms_destroy();
+void rooms_destroy();
 
 //Get
 Room* rooms_get_room_by_id(unsigned int room_id);
