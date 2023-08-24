@@ -17,14 +17,6 @@ unsigned int next_unactive_room_index = 1; //next empty spot to fill with new ro
 pthread_mutex_t rooms_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t room_mutexes[MAX_ROOMS] = {0};
 
-/*TODO: (VAI VALE U CAN DO IT (si me lo dico da sola))
-
-FIXARE! 
-Se [EXT] inviato per uscire dalla app -> seg fault su free del client
-*/
-
-
-
 //Init and Destroy
 void rooms_init(){
   log_debug("Locking rooms_mutex before initialization of room 0 and room_mutexes");
@@ -270,12 +262,16 @@ bool rooms_remove_client(Client* client){
     return false;
   }
 
+  bool was_master = (client->socket_id == rooms[room_id]->master_client->socket_id) ? true : false;
   bool status = room_remove_client(rooms[room_id], client->socket_id);
   if(room_id != 0 && rooms[room_id]->clients_counter == 0){ //if room is empty and not starting room
     log_debug("Room is empty and deleted inside, deleting it from rooms array");
     rooms[room_id] = NULL;
     rooms_active--;
   }
+
+  if(was_master && status) //if client was master and was removed
+    notify_new_master(room_id);
 
   log_debug("Unlocking room_mutexes[%d] after removing client", room_id);
   pthread_mutex_unlock(&room_mutexes[room_id]);
@@ -295,13 +291,12 @@ bool rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current
   
   //NOTICE: this function is called only within mutex lock of room_mutexs[old_room_id] and locks room_mutexes[0]
 
-//TODO remeve thi useless commented code
+//TODO remove thi useless commented code
   // Room* old_room = rooms[old_room_id];
   // if(old_room == NULL){ //unexpected behaviour
   //   log_error("rooms_move_to_zero: Trying to access NULL room");
   //   return false;
   // }
-
   // if(client == NULL) { //unexpected behaviour
   //   log_error("rooms_move_to_zero: Trying to move NULL client from room:%d", old_room);
   //   return false;

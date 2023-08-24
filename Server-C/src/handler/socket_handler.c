@@ -311,7 +311,7 @@ void accept_request(char *message) { // Accept user in a room
   room_print(room);
   room_print(rooms_get_room_by_id(0));
 
-  // printf("Socket id client: %d \nRoom id: %d\n", socket_id_client, room_id);//Debug print
+  // log_debug("Socket id client: %d \nRoom id: %d\n", socket_id_client, room_id);//Debug print
 
   // Send to Client it has been accepted
   char text[] = "Access accept\n";
@@ -371,6 +371,26 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     //TODO: write di "si è verificato un errore?" per il Client?
   } else log_debug("Moved client with socket_id: %d from room %d to room 0", client->socket_id, room_id);
 
+  //Send to client information for ui chat
+  char buffer[100];
+  sprintf(buffer, "[MSG]L'utente %s è uscito/a dalla stanza<>%d\n", client->user->name, room_id);
+  int admin_socket=0;
+  broadcast_message_into_room(buffer, &admin_socket);
+
+  return true;
+}
+
+
+bool notify_new_master(int room_id){
+  Room* room = rooms_get_room_by_id(room_id);
+  if(room == NULL){
+    log_error("Room %d not found", room_id);
+    return false;
+  }
+  char buffer[100];
+  sprintf(buffer, "[MSG]L'utente %s è uscito/a dalla stanza<>%d\n", room->master_client->user->name, room_id);
+  int admin_socket=0;
+  broadcast_message_into_room(buffer, &admin_socket);
   return true;
 }
 
