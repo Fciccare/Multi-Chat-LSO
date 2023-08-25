@@ -6,7 +6,6 @@
 typedef struct{
     char name[32];
     char password[256];
-    char* propic;
 } User;
 
 //Functions//
@@ -20,10 +19,5 @@ void user_destroy(User* self);
 //set
 void user_setName(User* user, const char* name);
 void user_setPassword(User* user, const char* password);
-
-
-//Print and Debug
-void user_print(User* user); //Debug function
-char* user_to_string(User* user); //Debug function
 
 #endif

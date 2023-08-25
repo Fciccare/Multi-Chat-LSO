@@ -212,7 +212,7 @@ void create_room(char *message, int *client_socket_id) {
     if(write(*client_socket_id, text, strlen(text)) < 0)
       error_handler("Errore write");
 
-    rooms_remove_from_zero(client->socket_id); // TODO: Ritorna un boolean, forse lo vogliamo gestire?
+    rooms_remove_from_zero(client->socket_id);
     return;
   }
 
@@ -291,7 +291,7 @@ void request_to_enter_room(char *message, int *client_socket_id) {
 }
 
 void accept_request(char *message) { // Accept user in a room
-  // TODO: Rivedi i casi limiti strani
+  // TODO: Rivedi i casi limiti strani QUALI??
 
   char *string_socket_id_client = strtok(message, "<>");
   char *string_room_id = strtok(NULL, "<>");
@@ -306,7 +306,7 @@ void accept_request(char *message) { // Accept user in a room
   Room *room = rooms_get_room_by_id(room_id);
   Client *client = rooms_get_client_from_room_by_id(0, socket_id_client);
   room_add_client(room, client);
-  rooms_remove_from_zero(client->socket_id); // TODO: questo ritorna un boolean, vedere se lo vogliamo gestire
+  rooms_remove_from_zero(client->socket_id);
 
   // Debug prints: current and starting room
   room_print(room);
@@ -423,12 +423,6 @@ bool log_user(User *u, int client_socket_id) { //Log user into Starting room
   bool status = room_add_client(room_zero, client); //room_add_client fails if room is full
   return status; 
 }
-
-/*
-void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/write
-  log_error("%s", text);
-  exit(EXIT_FAILURE);
-}*/
 
 
 
