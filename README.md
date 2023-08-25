@@ -38,9 +38,13 @@ sudo pacman -S postgresql-libs
 ## TO DO :page_with_curl:
 
 **Cose a cui dare priorità (Vale)**
+
+ - Risposta "utente già loggato"
+ - RegEx per le richieste (ODDDIOO)
+ - Gestione errore di Broadcast message (?)
+ - Gestione read/write
  - Chiusura PULITA (anche quando forzata) del server  
  - Controllare le deallocazioni : Fatto in parte
- - Implementare i lock per i thread : Fatto ma è da testare
 
 **Logica di controllo**
   - :black_square_button: Controllo e gestione degli errori :construction:WIP:construction:
@@ -52,27 +56,19 @@ sudo pacman -S postgresql-libs
   - :white_check_mark: Uscire a comando da una stanza
   - :white_check_mark: Scrivere nella chat a tutti i presenti
   - :white_check_mark: Passare la propietà della stanza, se sei il master ed esci, ad un utente casuale
-  - :black_square_button: OPZIONALE: Passare la proprietà della stanza a un utente a scelta
-  - :black_square_button: OPZIONALE: Disconnettersi normalmente dalla app da una stanza qualsiasi
 
 **Logica di cancellazione delle stanze**
   - :white_check_mark: Cancellare la stanza se l'ultima persona esce
-  
-  - :black_square_button: OPZIONALE: Il master può cancellare la stanza
   - :white_check_mark: Cacciare la gente quando la stanza viene cancellata
  
  **Client Android :construction:WIP:construction:** 
   - :white_check_mark: Login e register
   - :white_check_mark: Creare, entrare e accettare nelle stanza
   - :white_check_mark: Invio messaggi
-  - :black_square_button: Timeout per le richieste di entrata
-  - :black_square_button: Limite ai caratteri dei messaggi
+  - :white_check_mark: Timeout per le richieste di entrata
+  - :white_check_mark: Limite ai caratteri dei messaggi
   - :black_square_button: Grafica chat
 
-  **Funzionalià interamente opzionali da sviluppare per utlime se ci va**
-  - Propic
-  - Scegliere a chi passare la proprietà della stanza
-  - Master può cancellare la stanza
  
 ## API :books:
 
@@ -85,6 +81,6 @@ sudo pacman -S postgresql-libs
 |\[ACC\]sock<>room_id | Send "Register successful" | :boom:
 |\[NAC\]sock_client   | Send "Register successful" | :boom:
 |\[RQT\]room_id       | Send "Register successful" | :boom:
-|\[EXT\]room_id       | TODO: Send "[EXT]"         | :boom:
+|\[EXT\]room_id       | Send "[EXT]"               | :boom:
 
 
