@@ -27,7 +27,7 @@
 
 
 void *socket_handler(void *);
-void socket_close(int);
+void socket_close(int socket_id, int status);
 
 
 void error_handler(char[]);
@@ -38,7 +38,7 @@ int maxfdp;
 
 int main(int argc, char* argv[]) {
 
-////INITIALIZATION SERVER////////////////////////////////////////////////
+///INITIALIZATION SERVER////////////////////////////////////////////////
   signal(SIGINT, signal_handler); //Close database when server is stopped
 
   //char buffer[256] = {0};
@@ -101,8 +101,6 @@ int main(int argc, char* argv[]) {
   log_info("MASTER SOCKET SUCCEFULL CREATED WITH ID: %d", server_tcp);
 ///SERVER INITIALIZED//////////////////////////////////////////////////
 
-  // test();
-
   while (1) {
     readfds = master;
 
@@ -148,32 +146,53 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
 
   pthread_detach(pthread_self()); // We detach here so that thread can be deallocated when finished
   
-  if (byte <= 0) { //Client Disconnects or Error occurs
+  //CLIENT DISCONNECT OR ERROR OCCURRS
+  if (byte <= 0) { 
     log_info("SOCKET CLIENT DISCONNECTED ID: %d", client_socket_id); //Server Log
     
     //Socket logic
-    socket_close(client_socket_id);
+    socket_close(client_socket_id, byte);
   
+    //Rooms logic
     Client* client = rooms_get_client_by_id(client_socket_id);
+
+
+    //Not logged user
     if(client == NULL){ 
-      //Not logged user
       log_debug("Client doesn't exist. ID: %d. Just disconnecting", client_socket_id);
     
-    } else { //Logged user
+    //Logged user
+    } else {
       //DB logic
       log_debug("Updating DB status of client with socket id: %d", client_socket_id);
       dbUpdateStatus(client->user->name, "0");
 
       //Rooms logic
-      rooms_remove_destroy_client(client);
-    }
+      int room_id = client->room_id;
+      int status = rooms_remove_destroy_client(client); //Returns: -1 on error, room_id if master changed and 0 if has not
+      if(status < 0){
+        log_warn("Error removing and destroying client from room");
+        return;
+      }
+      if(status > 0){
+        log_info("New master in room with id: %d", room_id);
+        notify_new_master(room_id);
+      }
+      //TODO debug print to remove
+      else {
+        log_debug("No new master in room with id: %d", room_id);
+      }
+      
+    } 
 
-  } else { //Client has request
+  //CLIENT HAS REQUESTED SOMETHING
+  } else { 
     log_info("Message received: %s", buffer);
 
     if (!socketDispatcher(&client_socket_id, buffer)){ //fulfill request
       //if soscketDispatcher returns false, invalid request: close socket
-      socket_close(client_socket_id);
+
+      socket_close(client_socket_id, -1);
     }
   }
 
@@ -181,7 +200,8 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
   pthread_exit(NULL);
 }
 
-void socket_close(int client_socket_id) { //Auxiliar function to close a socket connection
+void socket_close(int client_socket_id, int status) { //Auxiliar function to close a socket 
+
   close(client_socket_id);
   FD_CLR(client_socket_id, &master);
   if(client_socket_id == maxfdp)

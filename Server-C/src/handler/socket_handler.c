@@ -17,6 +17,8 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
   char *message = buffer + 5; // point to buffer without tag
   message = strdup(message);  // get rid of tag
 
+  bool status = true;
+
   //TODO: Check if messages are correctly formatted (in every funcion called)
 
   if (strncmp(tag, "[MSG]", 5) == 0) { // Message sent in room
@@ -37,15 +39,14 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
   } else if (strncmp(tag, "[NAC]", 5) == 0) { // Denied access in a room
     not_accept_request(&(*message));
   } else if (strncmp(tag, "[EXT]", 5) == 0) {
-    if(!exit_room(&(*message), client_socket_id))
-      return false; //if this function returns false, calling function will close socket
+    status = exit_room(&(*message), client_socket_id);
   } else {
     char text[] = "Message received doesn't contain valid tag\n";
     log_warn("%s. Tag: %s, Message: %s",text, tag, message);
     if(write(*client_socket_id, text, strlen(text)) < 0)
       error_handler("Errore write");
   }
-  return true;
+  return status;
 }
 
 
@@ -338,20 +339,33 @@ void not_accept_request(char *message) { // Don't accept a Client in a room
 
 bool exit_room(char* message, int *client_socket_id) { //Exit room
   int room_id = atoi(message);
+  int status = 0;
 
   Client* client = rooms_get_client_from_room_by_id(room_id, *client_socket_id);
   if(client == NULL){
-    log_error("Exit from client_socket_id:%d not found in room:%d", *client_socket_id, room_id);
-    //TODO: write di "si è verificato un errore?" per il Client?
-    return true;
+    log_warn("Exit from client_socket_id:%d not found in room:%d", *client_socket_id, room_id);
+    //TODO chiamata a disconnect_client
 
   } //else
 
   if(room_id == 0){ //Disconnect from the app
     log_info("Client with socket_id %d is leaving room 0", *client_socket_id);
     
+
+  status = rooms_remove_destroy_client(client); //Returns: -1 on error, room_id if master changed and 0 if has not
+
     //Room logic
-    rooms_remove_destroy_client(client);
+    if(status > 0) //if master changed
+      notify_new_master(room_id);
+
+    if(status < 0){
+      log_warn("Could not remove client with socket_id:%d from room:%d", client_socket_id, room_id);
+      return false;
+    }
+
+    //TODO debug print to remove
+    else //if has not changed
+      log_debug("Master of room %d has not changed", room_id);
 
     //DB logic
     dbUpdateStatus(client->user->name, "0");
@@ -365,11 +379,19 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   } //else
 
   //Exiting from a room
-  if (!rooms_move_to_zero(client, room_id)){ 
+  status = rooms_move_to_zero(client, room_id); //Returns: -1 on error, room_id if master changed and 0 if has not
+  if (status < 0) { 
     //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     //TODO: write di "si è verificato un errore?" per il Client?
-  } else log_debug("Moved client with socket_id: %d from room %d to room 0", client->socket_id, room_id);
+  }
+  if (status > 0) { //if master changed
+    notify_new_master(room_id);
+  }
+  //TODO debug print to remove
+  else { //if has not changed
+    log_debug("Master of room %d has not changed", room_id);
+  }
 
   //Send to client information for ui chat
   char buffer[100];
@@ -381,6 +403,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
 }
 
 
+//Auxiliar
 bool notify_new_master(int room_id){
   Room* room = rooms_get_room_by_id(room_id);
   if(room == NULL){
@@ -388,16 +411,13 @@ bool notify_new_master(int room_id){
     return false;
   }
   char buffer[100];
-  sprintf(buffer, "[MSG]L'utente %s è uscito/a dalla stanza<>%d\n", room->master_client->user->name, room_id);
+  sprintf(buffer, "[MSG]L'utente %s è il nuovo master della stanza<>%d\n", room->master_client->user->name, room_id);
   int admin_socket=0;
   broadcast_message_into_room(buffer, &admin_socket);
   return true;
 }
 
-
-//Auxiliar
-bool log_user(User *u, int client_socket_id) {
-  //Log user into Starting room
+bool log_user(User *u, int client_socket_id) { //Log user into Starting room
   Client *client = client_create(u, client_socket_id, 0);
   Room *room_zero = rooms_get_room_by_id(0);
   bool status = room_add_client(room_zero, client); //room_add_client fails if room is full
@@ -410,8 +430,6 @@ void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/w
   exit(EXIT_FAILURE);
 }*/
 
-// void socket_disconnect_client(int socket_id){
-//   //TODO
-// }
+
 
 

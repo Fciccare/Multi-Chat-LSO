@@ -26,13 +26,8 @@ void rooms_delete_room(unsigned int room_id);
 
 //Client Logic
 bool rooms_remove_from_zero(int socket_id);
-bool rooms_remove_client(Client* client);
-bool rooms_move_to_zero_wrapper(Client* client, int old_room_id);
-bool rooms_move_to_zero(Client* client, int old_room_id);
-void rooms_remove_destroy_client(Client* client);
-void rooms_remove_client_and_destroy(Room* r, Client* c);
-
-//Prints and Debug
-void print_rooms(); //debug function
+int rooms_remove_client(Client* client); //Returns: -1 on error, room_id if master changed and 0 if has not
+int rooms_move_to_zero(Client* client, int old_room_id); //Returns: -1 on error, room_id if master changed and 0 if has not
+int rooms_remove_destroy_client(Client* client); //Returns: -1 on error, room_id if master changed and 0 if has not
 
 #endif

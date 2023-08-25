@@ -48,7 +48,7 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
   return r;
 }
 
-void room_delete(Room* r ){ //TEST this
+void room_delete(Room* r ){
   //NOTICE: do not call this function if the room is not empty, it will cause unexpected behaviour
 
   if (r == NULL){ //unexpected behaviour
@@ -75,18 +75,6 @@ void room_destroy(Room* r) { //Called by room_delete
   // r->clients = NULL; 
   free(r);
   r = NULL;
-
-/*
-[] [] []
-|  |  |
-V  V  V
-r1 r2 r3
-
-
-
-*/
-
-
   log_debug("Room destroyed");
 }
 
@@ -176,11 +164,11 @@ bool room_add_client(Room* r, Client* client) {
   return false;
 }
 
-bool room_remove_client(Room* r, int socket_id) {
+int room_remove_client(Room* r, int socket_id) {
   
   if(r == NULL || r->clients_counter <= 0){ //unexpected behaviour
     log_error("Room null or Client count <=0 in room id: %d", r->id);
-    return false;
+    return -1;
   }
 
   Client** clients = r->clients;
@@ -205,29 +193,29 @@ bool room_remove_client(Room* r, int socket_id) {
         if(r->clients_counter == 0 && r->id != 0) { //Check if empty, if true delete the room (but never delete room 0)
           log_debug("Room %d is empty, destroying it", r->id);
           room_delete(r);
-          return true;
+          return 0;
         }
 
         //If Client removed was master, choose a new master
-        if(r->master_client->socket_id == socket_id) 
-          room_change_master(r);
-        
-        return true;
+        if(r->id != 0 && r->master_client->socket_id == socket_id)
+          return room_change_master(r);
+
+        return 0;
       }
     }
-    if (count == online_clients) return false;
+    if (count == online_clients) return -1;
   }
-  return false;
+  return -1;
 }
 
-bool room_change_master(Room* r){
+int room_change_master(Room* r){
   //Changes it to the first Client it finds in r->Clients
 
   Client** clients = r->clients;
 
   if(r == NULL || r->clients_counter <= 0){ //unexpected behaviour
     log_error("Room null or Client count <=0");
-    return false;
+    return -1;
   }
 
   int max = MAX_CLIENTS;
@@ -236,13 +224,13 @@ bool room_change_master(Room* r){
     if (clients[i] != NULL) {
       r->master_client = clients[i];
       log_debug("New Master is: %d", r->master_client->socket_id);
-      return true;
+      return r->id;
     }
   }
   
   //unexpected behaviour
   log_error("Could not change master");
-  return false;
+  return -1;
 }
 
 bool room_is_empty(Room* r){ //to be called inside mutex

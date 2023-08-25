@@ -27,10 +27,10 @@ void not_accept_request(char* message);
 
 bool exit_room(char* message, int* client_socket_id);
 
-bool notify_new_master(int room_id);
 //TODO
 // void socket_disconnect_client(int socket_id); //SPOSTARE IN MAIN??
 
 //Auxiliar
+bool notify_new_master(int room_id);
 bool log_user(User* u, int client_socket_id);
 #endif
