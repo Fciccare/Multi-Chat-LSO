@@ -167,8 +167,11 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       log_debug("Updating DB status of client with socket id: %d", client_socket_id);
       dbUpdateStatus(client->user->name, "0");
 
-      //Rooms logic
       int room_id = client->room_id;
+      char username[32];
+      strcpy(username, client->user->name);
+
+      //Rooms logic
       int status = rooms_remove_destroy_client(client); //Returns: -1 on error, room_id if master changed and 0 if has not
       if(status < 0){
         log_warn("Error removing and destroying client from room");
@@ -182,7 +185,14 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       else {
         log_debug("No new master in room with id: %d", room_id);
       }
-      
+
+      //Notify other clients in room
+      if(room_id != 0){
+        char buffer[100];
+        sprintf(buffer, "[MSG]L'utente %s è uscito/a dalla stanza<>%d\n", username, room_id);
+        int admin_socket=0;
+        broadcast_message_into_room(buffer, &admin_socket);
+      }
     } 
 
   //CLIENT HAS REQUESTED SOMETHING
