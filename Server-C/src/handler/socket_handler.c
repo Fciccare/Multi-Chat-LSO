@@ -134,8 +134,12 @@ void login(char *message, int *client_socket_id) {
         log_warn("Starting room full");
       }
     } else {
-      //TODO: write "utente già loggato"
       log_info("User %s already logged", username);
+      char buffer[30] = {0};
+      strcpy(buffer, "User already logged\n");
+      log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
+      if(write(*client_socket_id, buffer, strlen(buffer)) < 0)        // Java recv need string end with EOF
+        fatal_error_handler("Errore write");
     }
   } else { //if user doesn't exist
     char buffer[20] = {0};

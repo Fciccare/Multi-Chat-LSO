@@ -23,7 +23,6 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
   // log_debug("Setted id=%d, name=%s, client_counter=0, master_client", id, name);
 
 
-  //TEST: dinamic array with memset
   if(id == 0){ //Starting room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);
     memset(r->clients, 0, sizeof(Client*) * MAX_CLIENTS_ZERO);
