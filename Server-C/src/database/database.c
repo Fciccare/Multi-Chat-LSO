@@ -21,6 +21,7 @@ sqlite3* db;
 //TODO: capire come gestire gli errori
 
 void traceCallback( void* udp, const char* sql ) { 
+    udp=udp;//supress warning
     log_debug("SQL: {%s}", sql); 
 } 
 

@@ -187,7 +187,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
 
       //Notify other clients in room
       if(room_id != 0){
-        char buffer[100];
+        //char buffer[100];
         sprintf(buffer, "[MSG]L'utente %s è uscito/a dalla stanza<>%d\n", username, room_id);
         int admin_socket=0;
         broadcast_message_into_room(buffer, &admin_socket);
