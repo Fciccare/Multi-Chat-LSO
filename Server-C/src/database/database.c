@@ -27,7 +27,7 @@ void traceCallback( void* udp, const char* sql ) {
 
 void initDatabase(bool debug){
     log_debug("Starting database...");
-    sqlite3_open("database/database.db", &db);
+    sqlite3_open("src/database/database.db", &db);
     if(debug)
         sqlite3_trace(db, traceCallback, NULL);
     createTable();
@@ -39,8 +39,7 @@ void createTable(){ //SQL query for creating tables
         //"DROP TABLE IF EXISTS Users;";
         "CREATE TABLE IF NOT EXISTS Users("
         "username VARCHAR(25) PRIMARY KEY, "
-        "password VARCHAR(20) NOT NULL, "
-        "image BLOB,"
+        "password VARCHAR(8) NOT NULL, "
         "online_status BOOL NOT NULL);"
         "UPDATE Users SET online_status = 0;";
 
