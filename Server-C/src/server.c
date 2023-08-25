@@ -27,18 +27,23 @@
 
 
 void *socket_handler(void *);
-void socket_close(int socket_id, int status);
+void close_socket(int socket_id, int status);
+void close_all_socket();
+void close_server();
 
-
-void error_handler(char[]);
+void fatal_error_handler(char[]);
+// void fatal_error_handler(char[]);
 void signal_handler();
 
 fd_set readfds, master;
 int maxfdp;
 
+int server_tcp;
+
+
 int main(int argc, char* argv[]) {
 
-///INITIALIZATION SERVER////////////////////////////////////////////////
+///SERVER INITIALIZATION////////////////////////////////////////////////
   signal(SIGINT, signal_handler); //Close database when server is stopped
 
   //char buffer[256] = {0};
@@ -75,7 +80,6 @@ int main(int argc, char* argv[]) {
 
   //Setup socket
   struct sockaddr_in saddress, caddress;
-  int server_tcp;
 
   // Setup socket TCP SERVER
   saddress.sin_family = AF_INET;
@@ -84,13 +88,13 @@ int main(int argc, char* argv[]) {
 
   // Creation socket TCP SERVER
   if ((server_tcp = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    error_handler("Errore socket");
+    fatal_error_handler("Errore socket");
   if (setsockopt(server_tcp, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
-    error_handler("Errore setsockopt");
+    fatal_error_handler("Errore setsockopt");
   if (bind(server_tcp, (struct sockaddr *)&saddress, sizeof(saddress)) < 0)
-    error_handler("Errore bind");
+    fatal_error_handler("Errore bind");
   if (listen(server_tcp, 5) < 0)
-    error_handler("Errore listen");
+    fatal_error_handler("Errore listen");
 
   FD_ZERO(&master);
   FD_ZERO(&readfds);
@@ -116,7 +120,7 @@ int main(int argc, char* argv[]) {
           unsigned int len = sizeof(caddress);
           int client_socket_id;
           if ((client_socket_id = accept(server_tcp, (struct sockaddr *)&caddress, &len)) == -1)
-            error_handler("Accept Error");
+            fatal_error_handler("Accept Error");
           
           FD_SET(client_socket_id, &master);
           if (client_socket_id > maxfdp) 
@@ -129,7 +133,7 @@ int main(int argc, char* argv[]) {
 
           pthread_t thread_id;
           if (pthread_create(&thread_id, NULL, socket_handler, (void *)&i) < 0) 
-            error_handler("Errore creazione thread");
+            fatal_error_handler("Errore creazione thread");
           pthread_join(thread_id, NULL);
         }
       }
@@ -151,7 +155,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
     log_info("SOCKET CLIENT DISCONNECTED ID: %d", client_socket_id); //Server Log
     
     //Socket logic
-    socket_close(client_socket_id, byte);
+    close_socket(client_socket_id, byte);
   
     //Rooms logic
     Client* client = rooms_get_client_by_id(client_socket_id);
@@ -175,15 +179,10 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       int status = rooms_remove_destroy_client(client); //Returns: -1 on error, room_id if master changed and 0 if has not
       if(status < 0){
         log_warn("Error removing and destroying client from room");
-        return;
       }
       if(status > 0){
         log_info("New master in room with id: %d", room_id);
         notify_new_master(room_id);
-      }
-      //TODO debug print to remove
-      else {
-        log_debug("No new master in room with id: %d", room_id);
       }
 
       //Notify other clients in room
@@ -202,7 +201,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
     if (!socketDispatcher(&client_socket_id, buffer)){ //fulfill request
       //if soscketDispatcher returns false, invalid request: close socket
 
-      socket_close(client_socket_id, -1);
+      close_socket(client_socket_id, -1);
     }
   }
 
@@ -210,25 +209,49 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
   pthread_exit(NULL);
 }
 
-void socket_close(int client_socket_id, int status) { //Auxiliar function to close a socket 
-
+void close_socket(int client_socket_id, int status) { //Auxiliar function to close a socket 
+  if(status < 0 && client_socket_id > server_tcp){ //When error occurs or we're forcing a disconnection (if it's the server socket we don't want to send a message)
+    char buffer[100];
+    sprintf(buffer, "[EXT]Errore nella comunicazione con il server, disconnessione...\n");
+    write(client_socket_id, buffer, strlen(buffer));
+  } //else we are closing the socket because the client has disconnected
+  
   close(client_socket_id);
   FD_CLR(client_socket_id, &master);
   if(client_socket_id == maxfdp)
     maxfdp--;
 }
 
-
-void error_handler(char text[]) { //TODO: decidere se usarlo con TUTTE le read/write
-  log_error("%s", text);
-  exit(EXIT_FAILURE);
+void close_all_socket() { //Auxiliar function to close all sockets
+  for (int i = 0; i <= maxfdp; i++) {
+    if (FD_ISSET(i, &master)) {
+      close_socket(i, -1); //We're forcing the disconnection of all clients
+    }
+  }
 }
 
-void signal_handler() {
-  //TODO CLOSE SOCKET??
+void close_server(){
+  log_info("Closing server");
+  close_all_socket();
   closeDatabase();
-  // rooms_destroy();
-  // log_info("Closing server");
+  rooms_destroy();
+  log_info("Server closed");
   exit(EXIT_SUCCESS);
 }
 
+
+void ffatal_error_handler(char text[]) {
+  log_error("A fatal error has occurred: %s", text);
+  close_server();
+  exit(EXIT_FAILURE);
+}
+
+void fatal_error_handler(char text[]) {
+  log_error("An error has occurred: %s", text);
+}
+
+void signal_handler() {
+  log_info("Signal received");
+  close_server();
+  exit(EXIT_SUCCESS);
+}

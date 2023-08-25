@@ -24,8 +24,8 @@ void client_setUser(Client* c, User* user);
 void client_setSocket_id(Client* c, int socket_id);
 void client_setRoom_id(Client* c, unsigned int room_id);
 
-//Print and Debug
-char* client_to_string_full(Client* c); //Debug function
-char* client_to_string(Client* c); //Debug function
+//Debug
+char* client_to_string_full(Client* c);
+char* client_to_string(Client* c);
 
 #endif

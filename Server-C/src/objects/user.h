@@ -20,4 +20,7 @@ void user_destroy(User* self);
 void user_setName(User* user, const char* name);
 void user_setPassword(User* user, const char* password);
 
+//Debug
+char* user_to_string(User* user);
+
 #endif

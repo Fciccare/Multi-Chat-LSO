@@ -42,7 +42,7 @@ void client_setRoom_id(Client* c, unsigned int room_id) {
 }
 
 
-//Print and Debug
+//Debug
 char* client_to_string_full(Client* c) {
   char value[512];
   if(c != NULL) {
@@ -58,6 +58,5 @@ char* client_to_string(Client* c) {
     sprintf(value, "Client: {Socket_id: %d\tRoom_id: %d}", c->socket_id, c->room_id);
     return strdup(value);
   } 
-    
   return "Client: NULL";
 }

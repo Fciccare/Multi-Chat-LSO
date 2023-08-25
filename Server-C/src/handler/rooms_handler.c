@@ -204,14 +204,18 @@ void rooms_delete_room(unsigned int room_id) {
   }
 
   if(!(room_is_empty(room))){
-    log_debug("Room is not empty, moving clients to room 0 (locking room_mutexes[0] before)");
-    pthread_mutex_lock(&room_mutexes[0]);
+    log_debug("Room is not empty, moving clients to room 0 (locking room_mutexes[%d] before)", room_id);
+    pthread_mutex_lock(&room_mutexes[room_id]);
+
     for (int i = 0; i < MAX_CLIENTS; i++)  {
-        Client* client_to_move = room->clients[i];
-        if(client_to_move != NULL) {
-          rooms_move_to_zero(client_to_move, room_id); //TODO QUA METTE IL LOCK E NON VA BENE T-T
-        }
+      Client* client_to_move = room->clients[i];
+      if(client_to_move != NULL) {
+        rooms_move_to_zero(client_to_move, room_id); //This function has room[0] mutex lock inside
       }
+    }
+
+    log_debug("Unlocking room_mutexes[%d] after moving clients to room 0", room_id);
+    pthread_mutex_unlock(&room_mutexes[room_id]);
   }
 
   room_delete(rooms[room_id]);

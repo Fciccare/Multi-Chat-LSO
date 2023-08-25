@@ -41,9 +41,5 @@ int room_change_master(Room* r);
 bool room_is_empty(Room* r);
 void room_clear(Room* r);
 
-//Print and Debug
-void room_print(Room* r); //Debug function
-char* room_to_string(Room* r);
-//void room_client_print(Room* r);
 
 #endif

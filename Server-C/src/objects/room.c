@@ -27,7 +27,7 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
   if(id == 0){ //Starting room
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS_ZERO);
     memset(r->clients, 0, sizeof(Client*) * MAX_CLIENTS_ZERO);
-    log_debug("Created dinamic array %d size", MAX_CLIENTS_ZERO);
+    // log_debug("Created dinamic array %d size", MAX_CLIENTS_ZERO);
     r->master_client = NULL; //Starting room has no master client
     return r;
   }
@@ -35,11 +35,11 @@ Room* room_create(unsigned int id, const char* name, Client* master_client) {
   else{ 
     r->clients = (Client**)malloc(sizeof(Client*) * MAX_CLIENTS);
     memset(r->clients, 0, sizeof(Client*) * MAX_CLIENTS);
-    log_debug("Created dinamic array %d size", MAX_CLIENTS);
+    // log_debug("Created dinamic array %d size", MAX_CLIENTS);
   }
 
   if(master_client != NULL) {
-    log_debug("Master client NOT NULL");
+    // log_debug("Master client NOT NULL");
     room_add_client(r, master_client);
   }
   else { //Unexpected behaviour
@@ -70,12 +70,12 @@ void room_delete(Room* r ){
 
 void room_destroy(Room* r) { //Called by room_delete
   
-  log_debug("Destroying room %d", r->id);
+  // log_debug("Destroying room %d", r->id);
   // free(r->clients);
   // r->clients = NULL; 
   free(r);
   r = NULL;
-  log_debug("Room destroyed");
+  // log_debug("Room destroyed");
 }
 
 
@@ -101,8 +101,6 @@ void room_setMaster_client(Room* r, Client* master_client) {
 Client* room_get_client_by_id(Room* r, int client_socket_id){
   int online_client = r->clients_counter;
   int count = 0;
-
-  //room_client_print(r); //debug
 
   int max = MAX_CLIENTS;
   if (r->id == 0)
@@ -185,13 +183,13 @@ int room_remove_client(Room* r, int socket_id) {
       if (clients[i]->socket_id == socket_id){ //Client Found
         r->clients_counter--;
         clients[i] = NULL;
-        log_debug("Client with socket_id:%d removed from room:%d", socket_id, r->id);
+        // log_debug("Client with socket_id:%d removed from room:%d", socket_id, r->id);
 
         if(r->id == 0)
           return true;
 
         if(r->clients_counter == 0 && r->id != 0) { //Check if empty, if true delete the room (but never delete room 0)
-          log_debug("Room %d is empty, destroying it", r->id);
+          // log_debug("Room %d is empty, destroying it", r->id);
           room_delete(r);
           return 0;
         }
@@ -223,7 +221,7 @@ int room_change_master(Room* r){
   for (int i = 0; i < max; i++) {
     if (clients[i] != NULL) {
       r->master_client = clients[i];
-      log_debug("New Master is: %d", r->master_client->socket_id);
+      // log_debug("New Master is: %d", r->master_client->socket_id);
       return r->id;
     }
   }
@@ -252,29 +250,4 @@ void room_clear(Room* r) {
     if (count == r->clients_counter) break;
   }
   r->clients_counter = 0;
-}
-
-//Print and Debug
-void room_print(Room* r) { //Debug funcion
-  log_debug(room_to_string(r));
-}
-
-char* room_to_string(Room* r){
-  if(r != NULL){
-    char value[512];
-    sprintf(value, "Room: {id: %d, name: %s, clients_counter: %d, Master%s}", r->id, r->name,r->clients_counter, client_to_string_full(r->master_client));
-    return strdup(value);
-  } 
-
-  return "Client: NULL";
-}
-
-void room_client_print(Room* r){
-  if(r!=NULL){
-    for(int i=0; i < MAX_CLIENTS; ++i){
-      if(r->clients[i] == NULL){
-        printf("(%d): NULL \n", i);
-      }else printf("(%d): NOT NULL \n", i);
-    }
-  }
 }
