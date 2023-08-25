@@ -142,11 +142,12 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-
 void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e non a una copia
   int client_socket_id = *(int *)client_socket_id_void;
   char buffer[256] = {0};
   int byte = read(client_socket_id, buffer, sizeof(buffer));
+  if(byte < 0)
+    fatal_error_handler("Errore read");
 
   pthread_detach(pthread_self()); // We detach here so that thread can be deallocated when finished
   
@@ -180,7 +181,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       if(status < 0){
         log_warn("Error removing and destroying client from room");
       }
-      if(status > 0){
+      if(status > 0 && room_id != 0){
         log_info("New master in room with id: %d", room_id);
         notify_new_master(room_id);
       }
@@ -213,7 +214,9 @@ void close_socket(int client_socket_id, int status) { //Auxiliar function to clo
   if(status < 0 && client_socket_id > server_tcp){ //When error occurs or we're forcing a disconnection (if it's the server socket we don't want to send a message)
     char buffer[100];
     sprintf(buffer, "[EXT]Errore nella comunicazione con il server, disconnessione...\n");
-    write(client_socket_id, buffer, strlen(buffer));
+    if(write(client_socket_id, buffer, strlen(buffer)) < 0)
+      fatal_error_handler("Errore write");
+      
   } //else we are closing the socket because the client has disconnected
   
   close(client_socket_id);

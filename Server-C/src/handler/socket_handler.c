@@ -66,8 +66,8 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
 
   Room *room = rooms_get_room_by_id(room_id);
   
-  if(room == NULL){
-    log_debug("Room to send message is NULL, stop broadcasting");
+  if(room == NULL){ //TODO Unexpected behaviour?
+    log_error("Room to send message is NULL, stop broadcasting");
     //TODO: add client response (send error?), room is null
     return;
   }
@@ -96,7 +96,7 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
           sprintf(text, "%s<>%d<>%s\n", message_to_send, *client_socket_id,"Admin");
         }else sprintf(text, "[MSG]%s<>%d<>%s\n", message_to_send, *client_socket_id, name);
         //[MSG]message_to_send<>sender_socket_id
-        log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
+        log_debug("Server is sending(%ld): %s", strlen(text), text); // Debug print
         if(write(client_id, text, strlen(text)) < 0)
           fatal_error_handler("Errore write");
 
@@ -382,7 +382,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   if (status < 0) { 
     //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
-    //TODO: write di "si è verificato un errore?" per il Client?
+    return false;
   }
   if (status > 0) { //if master changed
     notify_new_master(room_id);
