@@ -354,7 +354,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   status = rooms_remove_destroy_client(client); //Returns: -1 on error, room_id if master changed and 0 if has not
 
     //Room logic
-    if(status > 0) //if master changed
+    if(status > 0 && room_id != 0) //if master changed
       notify_new_master(room_id);
 
     if(status < 0){
@@ -384,7 +384,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     return false;
   }
-  if (status > 0) { //if master changed
+  if (status > 0 && room_id != 0) { //if master changed
     notify_new_master(room_id);
   }
   //TODO debug print to remove
@@ -404,6 +404,9 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
 
 //Auxiliar
 bool notify_new_master(int room_id){
+  if(room_id == 0)
+    return true;
+
   Room* room = rooms_get_room_by_id(room_id);
   if(room == NULL){
     log_error("Room %d not found", room_id);
