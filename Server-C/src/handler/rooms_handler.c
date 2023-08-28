@@ -181,6 +181,7 @@ bool rooms_add_room(Room* new_room) { //HAS MUTEX LOCK INSIDE
 }
  
 void rooms_delete_room(unsigned int room_id) {
+  //This function at the moment is called only when closing server
 
   //NOTICE: this function is called only within mutex lock of room_mutexs[room_id] and locks rooms_mutex
 
@@ -236,12 +237,14 @@ void rooms_delete_room(unsigned int room_id) {
 
 //Client Logic
 bool rooms_remove_from_zero(int socket_id){ //Removes a client from starting room
+  //Returns: -2 on error, -1 if room was deleted, room_id if master changed, 0 if client removed but master not changed
+
   log_debug("Locking room_mutexes[0] before removing client from starting room");
   pthread_mutex_lock(&room_mutexes[0]);
 
   Room* room_zero = rooms_get_room_by_id(0);
   log_debug("Removing client with socket_it %d from starting room", socket_id);
-  bool status = room_remove_client(room_zero, socket_id);
+  bool status = room_remove_client(room_zero, socket_id); //Returns: -2 on error, -1 if room was deleted, room_id if master changed, 0 if client removed but master not changed
 
   log_debug("Unlocking room_mutexes[0] after removing client from starting room");
   pthread_mutex_unlock(&room_mutexes[0]);
@@ -251,7 +254,7 @@ bool rooms_remove_from_zero(int socket_id){ //Removes a client from starting roo
 
 int rooms_remove_client(Client* client){ //Removes client from its room 
   //HAS MUTEX LOCK INSIDE
-  //Returns: -1 on error, room_id if master changed and 0 if has not
+  //Returns: -2 on error, -1 if room was deleted, room_id if master changed and 0 if has not
 
   //This function is called by rooms_move_to_zero and rooms_remove_destroy_client
 
@@ -270,10 +273,10 @@ int rooms_remove_client(Client* client){ //Removes client from its room
     return -1;
   }
 
-  int status = room_remove_client(rooms[room_id], client->socket_id); //Returns: -1 on error, room_id if master changed and 0 if has not
+  int status = room_remove_client(rooms[room_id], client->socket_id); //Returns: -2 on error, -1 if room was deleted, room_id if master changed, 0 if client removed but master not changed (or if it is room 0)
   
-  if(room_id != 0 && rooms[room_id]->clients_counter == 0){ //if room is empty and not starting room
-    log_debug("Room is empty and deleted inside, deleting it from rooms array");
+  if(status == -1){ //room was deleted
+    log_debug("Room was deleted inside, removing it from rooms array");
     rooms[room_id] = NULL;
     rooms_active--;
   }
@@ -288,19 +291,16 @@ int rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current 
 
   //NOTICE: this function is called only within mutex lock of room_mutexs[old_room_id] and locks room_mutexes[0]
   
-  //Returns: -1 on error, room_id if master changed and 0 if has not
+  //Returns: -2 on error, -2 if room was deleted, room_id if master changed and 0 if has not
   
-//TODO DEBBUGGINGGG
-  int status = rooms_remove_client(client); //This function has mutex lock inside
+  int status = rooms_remove_client(client); //This function has mutex lock inside, Returns: -2 on error, -1 if room was deleted, room_id if master changed and 0 if has not
 
   log_debug("Locking room_mutexes[0] before adding client to starting room");
   pthread_mutex_lock(&room_mutexes[0]);
 
   Room* room_zero = rooms_get_room_by_id(0);
-  status = room_add_client(room_zero, client) && status;
-  if(status > 0){
+  if(status >= -1 && room_add_client(room_zero, client)) {
     log_debug("Moved client %s to starting room", client_to_string(client));
-
   } else { //rare case
     log_warn("Couldn't move client %d to starting room, destroying it before forcing disconnection...", client->socket_id);
     client_destroy(client);
@@ -316,14 +316,14 @@ int rooms_remove_destroy_client(Client* client) { //Removes client from room and
   
   //This function is called by socket_handler when a client disconnects
   //It locks the room_mutex of the room the client is in
-  //Returns: -1 on error, room_id if master changed and 0 if has not
+  //Returns: -2 on error, -1 if room was deleted, room_id if master changed and 0 if has not
 
   if(client == NULL){ //unexpected behaviour
     log_error("Trying to remove NULL client from room");
     return -1;
   }
 
-  int status = rooms_remove_client(client); //This function has mutex lock inside
+  int status = rooms_remove_client(client); //This function has mutex lock inside, Returns: -2 on error, -2 if room was deleted, room_id if master changed and 0 if has not
 
   //DEBUG PRINTS
   // if (status > 0) {

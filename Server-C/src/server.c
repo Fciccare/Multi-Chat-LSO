@@ -177,17 +177,18 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
       strcpy(username, client->user->name);
 
       //Rooms logic
-      int status = rooms_remove_destroy_client(client); //Returns: -1 on error, room_id if master changed and 0 if has not
-      if(status < 0){
+      int status = rooms_remove_destroy_client(client); //Returns: -2 on error, -1 if room was deleted, room_id if master changed and 0 if has not
+      if(status < -2){
         log_warn("Error removing and destroying client from room");
       }
+      
       if(status > 0 && room_id != 0){
         log_info("New master in room with id: %d", room_id);
         notify_new_master(room_id);
       }
 
       //Notify other clients in room
-      if(room_id != 0){
+      if(room_id != 0 && status > -1){
         //char buffer[100];
         sprintf(buffer, "[MSG]L'utente %s è uscito/a dalla stanza<>%d\n", username, room_id);
         int admin_socket=0;

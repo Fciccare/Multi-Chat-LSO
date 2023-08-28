@@ -351,20 +351,24 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     log_info("Client with socket_id %d is leaving room 0", *client_socket_id);
     
 
-    status = rooms_remove_destroy_client(client); //Returns: -1 on error, room_id if master changed and 0 if has not
+    status = rooms_remove_destroy_client(client); //Returns: -2 on error, -1 if room was destroyed, room_id if master changed and 0 if has not
 
     //Room logic
     if(status > 0 && room_id != 0) //if master changed
       notify_new_master(room_id);
 
-    if(status < 0){
-      log_warn("Could not remove client with socket_id:%d from room:%d", client_socket_id, room_id);
-      return false;
+    if(status == 0){
+      log_debug("Master of room %d has not changed", room_id);
     }
 
-    //TODO debug print to remove
-    else //if has not changed
-      log_debug("Master of room %d has not changed", room_id);
+    if(status == -1){ //if room was destroyed
+      log_info("Room %d was destroyed", room_id);
+    }
+
+    if(status == -1){ //if error occured
+      log_warn("Could not remove client with socket_id:%d from room:%d", client_socket_id, room_id);
+      return false; //when returning false, close socket
+    }
 
     //DB logic
     dbUpdateStatus(client->user->name, "0");
@@ -378,18 +382,29 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   } //else
 
   //Exiting from a room
-  status = rooms_move_to_zero(client, room_id); //Returns: -1 on error, room_id if master changed and 0 if has not
-  if (status < 0) { 
+  status = rooms_move_to_zero(client, room_id); //Returns: -2 on error, -1 if room was destroyed, room_id if master changed and 0 if has not
+  if (status < -1) { 
     //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
     return false;
   }
+
   if (status > 0 && room_id != 0) { //if master changed
     notify_new_master(room_id);
   }
-  //TODO debug print to remove
-  else { //if has not changed
+
+  if (status == 0) {
     log_debug("Master of room %d has not changed", room_id);
+  }
+
+  if (status == -1) { //if room was destroyed
+    log_info("Room %d was destroyed", room_id);
+    return true; //when room is destroyed, we don't want to send a message to client
+  }
+
+  if (status == -2) { //if error occured
+    log_warn("Could not remove client with socket_id:%d from room:%d", client_socket_id, room_id);
+    return false;
   }
 
   //Send to client information for ui chat

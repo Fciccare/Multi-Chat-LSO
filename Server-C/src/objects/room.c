@@ -163,11 +163,11 @@ bool room_add_client(Room* r, Client* client) {
 
 int room_remove_client(Room* r, int socket_id) {
 
-  //Returns: -1 on error, room_id if master changed, 0 if client removed but master not changed
+  //Returns: -2 on error, -1 if room was deleted, room_id if master changed, 0 if client removed but master not changed
   
   if(r == NULL || r->clients_counter <= 0){ //unexpected behaviour
     log_error("Room null or Client count <=0 in room id: %d", r->id);
-    return -1;
+    return -2;
   }
 
   Client** clients = r->clients;
@@ -192,30 +192,30 @@ int room_remove_client(Room* r, int socket_id) {
         if(r->clients_counter == 0 && r->id != 0) { //Check if empty, if true delete the room (but never delete room 0)
           // log_debug("Room %d is empty, destroying it", r->id);
           room_delete(r);
-          return 0;
+          return -1;
         }
 
         //If Client removed was master, choose a new master
         if(r->id != 0 && r->master_client->socket_id == socket_id)
           return room_change_master(r);
 
-        return 0;
+        return 0; //Client removed but master not changed
       }
     }
-    if (count == online_clients) return -1;
+    if (count == online_clients) return -2; //unexpected behaviour
   }
-  return -1;
+  return -2; //unexpected behaviour
 }
 
 int room_change_master(Room* r){
   //Changes it to the first Client it finds in r->Clients
-  //Retuns: -1 on error, room_id on success
+  //Retuns: -2 on error, room_id on success [Never -1]
 
   Client** clients = r->clients;
 
   if(r == NULL || r->clients_counter <= 0){ //unexpected behaviour
     log_error("Room null or Client count <=0");
-    return -1;
+    return -2;
   }
 
   int max = MAX_CLIENTS;
@@ -230,7 +230,7 @@ int room_change_master(Room* r){
   
   //unexpected behaviour
   log_error("Could not change master");
-  return -1;
+  return -2;
 }
 
 bool room_is_empty(Room* r){ //to be called inside mutex
