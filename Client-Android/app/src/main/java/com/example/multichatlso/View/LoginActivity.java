@@ -15,6 +15,8 @@ import com.example.multichatlso.Model.Server;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
+import java.util.zip.CRC32;
+
 import es.dmoral.toasty.Toasty;
 
 public class LoginActivity extends AppCompatActivity {
@@ -86,7 +88,11 @@ public class LoginActivity extends AppCompatActivity {
         }
         String name = username.getText().toString();
         String password = passwordText.getText().toString();
-        String message = "[LGN]" + name + "<>" + password;
+
+        CRC32 crc32 = new CRC32();
+        crc32.update(password.getBytes());
+
+        String message = "[LGN]" + name + "<>" + Long.toHexString(crc32.getValue()).toUpperCase();
         Log.d(TAG, message);
         Server.getInstance().write(message);
         Server.getInstance().read();

@@ -13,6 +13,8 @@ import com.example.multichatlso.R;
 import com.example.multichatlso.Model.Server;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
+import java.util.zip.CRC32;
+
 import es.dmoral.toasty.Toasty;
 
 public class SignupActivity extends AppCompatActivity {
@@ -52,7 +54,11 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        String message = "[RGT]" + txtUsername + "<>" + txtPassword1;
+        CRC32 crc32 = new CRC32();
+        crc32.update(txtPassword1.getBytes());
+
+        String message = "[RGT]" + txtUsername + "<>" + Long.toHexString(crc32.getValue()).toUpperCase();
+        Log.d(TAG, "Sending: " + message);
         Server.getInstance().write(message);
         Server.getInstance().read();
 
