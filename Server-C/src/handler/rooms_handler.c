@@ -270,7 +270,7 @@ int rooms_remove_client(Client* client){ //Removes client from its room
     return -1;
   }
 
-  int status = room_remove_client(rooms[room_id], client->socket_id);
+  int status = room_remove_client(rooms[room_id], client->socket_id); //Returns: -1 on error, room_id if master changed and 0 if has not
   
   if(room_id != 0 && rooms[room_id]->clients_counter == 0){ //if room is empty and not starting room
     log_debug("Room is empty and deleted inside, deleting it from rooms array");
@@ -290,7 +290,7 @@ int rooms_move_to_zero(Client* client, int old_room_id){ //Removes from current 
   
   //Returns: -1 on error, room_id if master changed and 0 if has not
   
-
+//TODO DEBBUGGINGGG
   int status = rooms_remove_client(client); //This function has mutex lock inside
 
   log_debug("Locking room_mutexes[0] before adding client to starting room");

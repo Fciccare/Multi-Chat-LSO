@@ -351,7 +351,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     log_info("Client with socket_id %d is leaving room 0", *client_socket_id);
     
 
-  status = rooms_remove_destroy_client(client); //Returns: -1 on error, room_id if master changed and 0 if has not
+    status = rooms_remove_destroy_client(client); //Returns: -1 on error, room_id if master changed and 0 if has not
 
     //Room logic
     if(status > 0 && room_id != 0) //if master changed

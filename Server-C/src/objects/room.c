@@ -162,6 +162,8 @@ bool room_add_client(Room* r, Client* client) {
 }
 
 int room_remove_client(Room* r, int socket_id) {
+
+  //Returns: -1 on error, room_id if master changed, 0 if client removed but master not changed
   
   if(r == NULL || r->clients_counter <= 0){ //unexpected behaviour
     log_error("Room null or Client count <=0 in room id: %d", r->id);
@@ -185,7 +187,7 @@ int room_remove_client(Room* r, int socket_id) {
         // log_debug("Client with socket_id:%d removed from room:%d", socket_id, r->id);
 
         if(r->id == 0)
-          return true;
+          return 0;
 
         if(r->clients_counter == 0 && r->id != 0) { //Check if empty, if true delete the room (but never delete room 0)
           // log_debug("Room %d is empty, destroying it", r->id);
@@ -207,6 +209,7 @@ int room_remove_client(Room* r, int socket_id) {
 
 int room_change_master(Room* r){
   //Changes it to the first Client it finds in r->Clients
+  //Retuns: -1 on error, room_id on success
 
   Client** clients = r->clients;
 
