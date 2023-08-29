@@ -305,13 +305,22 @@ void accept_request(char *message) { // Accept user in a room
   unsigned int room_id = atoi(string_room_id);
 
   // Insert client into room
-  //TODO: controlla se questi diventano NULL
   Room *room = rooms_get_room_by_id(room_id);
   Client *client = rooms_get_client_from_room_by_id(0, socket_id_client);
+
+  if(room == NULL || client == NULL){ //Unexpected behaviour
+    log_error("Room or client is NULL, could not add client to room");
+    return;
+  }
+
+//TODO PERCHE' SOCKET_HANDLER CHIAMA DIRETTAMENTE UNA FUNZIONE DI ROOM?? SPOSTARE? LASICARE E FARE FINTA CHE NON SIA COSI'?
+//Si dovrebbe fa sta cosa dentro i lock, che sono gestiti SOLO da rooms_handler.c
+//La mia coscienza mi dice di fare la cose per bene e spostare sta roba dentro rooms_handler.c
+//Ma allo stesso tempo speravo che questo cazz di progetto fosse finito
   room_add_client(room, client);
   rooms_remove_from_zero(client->socket_id);
 
-  // log_debug("Socket id client: %d \nRoom id: %d\n", socket_id_client, room_id);//Debug print
+  log_debug("Client accepted into room. Socket id client: %d. Room id: %d", socket_id_client, room_id);
 
   // Send to Client it has been accepted
   char text[] = "Access accept\n";
@@ -343,7 +352,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   Client* client = rooms_get_client_from_room_by_id(room_id, *client_socket_id);
   if(client == NULL){
     log_warn("Exit from client_socket_id:%d not found in room:%d", *client_socket_id, room_id);
-    //TODO chiamata a disconnect_client
+    close_socket(*client_socket_id, -1);
 
   } //else
 
