@@ -29,5 +29,5 @@ bool rooms_remove_from_zero(int socket_id);
 int rooms_remove_client(Client* client); //Returns: -1 on error, room_id if master changed and 0 if has not
 int rooms_move_to_zero(Client* client, int old_room_id); //Returns: -1 on error, room_id if master changed and 0 if has not
 int rooms_remove_destroy_client(Client* client); //Returns: -1 on error, room_id if master changed and 0 if has not
-
+bool rooms_move_to_room(Client* client, int room_id);
 #endif

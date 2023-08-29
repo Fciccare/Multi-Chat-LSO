@@ -339,3 +339,45 @@ int rooms_remove_destroy_client(Client* client) { //Removes client from room and
   return status;
 
 }
+
+bool rooms_move_to_room(Client* client, int room_id) { //Adds client to room HAS MUTEX LOCK INSIDE
+
+  //This function is called by socket_handler when a client is accepted in a room
+  //It locks the room_mutexes[room_id] and room_mutexes[0]
+
+  if(client == NULL){ //unexpected behaviour
+    log_error("Trying to add NULL client to room");
+    return false;
+  }
+
+  log_debug("Locking room_mutexes[%d] and room_mutexes[0] before adding client", room_id);
+  pthread_mutex_lock(&room_mutexes[room_id]);
+  pthread_mutex_lock(&room_mutexes[0]);
+
+  if (rooms[room_id] == NULL) {
+    log_error("Trying to add client with socket_id %d to NULL room n.%d", client->socket_id, room_id);
+    pthread_mutex_unlock(&room_mutexes[room_id]);
+    pthread_mutex_unlock(&room_mutexes[0]);
+    return false;
+  }
+
+  int status = room_remove_client(rooms[0], client->socket_id); //Returns: -2 on error, -1 if room was deleted, room_id if master changed, 0 if client removed but master not changed (or if it is room 0)
+  if(status == -2){ //Unexpected behaviour
+    log_error("Could not remove from starting room client with socket_id %d", client->socket_id);
+  }
+
+  if (!(room_add_client(rooms[room_id], client))){
+    log_error("Could not add client with socket_id %d to room %d", client->socket_id, room_id);
+    status = -2;
+  }
+
+  log_debug("Unlocking room_mutexes[%d] and room_mutexes[0]", room_id);
+  pthread_mutex_unlock(&room_mutexes[room_id]);
+  pthread_mutex_unlock(&room_mutexes[0]);
+
+  if(status == -1)
+    return false;
+  
+  log_debug("Client %s moved to room %d", client_to_string(client), room_id);
+  return true;
+}

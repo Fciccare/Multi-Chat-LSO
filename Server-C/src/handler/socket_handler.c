@@ -29,7 +29,6 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
     register_user(&(*message), client_socket_id);
   } else if (strncmp(tag, "[CRT]", 5) == 0) { // Create room
     create_room(&(*message), client_socket_id);
-    //print_rooms();                            // debug
   } else if (strncmp(tag, "[LST]", 5) == 0) { // Get List of room
     get_list(client_socket_id);
   } else if (strncmp(tag, "[RQT]", 5) == 0) { // Request from client to enter in a room
@@ -122,7 +121,6 @@ void login(char *message, int *client_socket_id) {
       if (log_user(user_create(username, password), *client_socket_id)) { //put user in starting room
         status = "1";
         dbUpdateStatus(username, status);
-        //strcpy(buffer, "Login successful\n");
         sprintf(buffer, "Login successful<>%d\n", *client_socket_id);
         log_info("Server is sending(%ld): %s", strlen(buffer), buffer); // Debug print
         if(write(*client_socket_id, buffer, strlen(buffer)) < 0)               // Java recv needs string end with EOF
@@ -262,7 +260,7 @@ void get_list(int *client_socket_id) {
     memset(buff, 0, sizeof(buff)); // reset buff
     i++;
   }
-  log_info("Server is sending(%ld): %s", strlen(end), end); // Debug print
+  log_info("Server is sending(%ld): %s", strlen(end), end); //Server Log
   if(write(*client_socket_id, end, strlen(end)) < 0)
     fatal_error_handler("Errore write");
   log_info("Room List sent successfully"); //Server Log
@@ -304,21 +302,16 @@ void accept_request(char *message) { // Accept user in a room
   int socket_id_client = atoi(string_socket_id_client);
   unsigned int room_id = atoi(string_room_id);
 
-  // Insert client into room
-  Room *room = rooms_get_room_by_id(room_id);
-  Client *client = rooms_get_client_from_room_by_id(0, socket_id_client);
-
-  if(room == NULL || client == NULL){ //Unexpected behaviour
-    log_error("Room or client is NULL, could not add client to room");
+  Client* client = rooms_get_client_from_room_by_id(0, socket_id_client);
+  if(client == NULL){ //Unexpected behaviour
+    log_error("Client is NULL, could not add client to room");
     return;
   }
 
-//TODO PERCHE' SOCKET_HANDLER CHIAMA DIRETTAMENTE UNA FUNZIONE DI ROOM?? SPOSTARE? LASICARE E FARE FINTA CHE NON SIA COSI'?
-//Si dovrebbe fa sta cosa dentro i lock, che sono gestiti SOLO da rooms_handler.c
-//La mia coscienza mi dice di fare la cose per bene e spostare sta roba dentro rooms_handler.c
-//Ma allo stesso tempo speravo che questo cazz di progetto fosse finito
-  room_add_client(room, client);
-  rooms_remove_from_zero(client->socket_id);
+  if(!(rooms_move_to_room(client, room_id))){
+    log_error("Could not add client with socket_id:%d to room:%d", socket_id_client, room_id);
+    return;
+  }
 
   log_debug("Client accepted into room. Socket id client: %d. Room id: %d", socket_id_client, room_id);
 
@@ -352,7 +345,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   Client* client = rooms_get_client_from_room_by_id(room_id, *client_socket_id);
   if(client == NULL){
     log_warn("Exit from client_socket_id:%d not found in room:%d", *client_socket_id, room_id);
-    close_socket(*client_socket_id, -1);
+    return false; //when returning false, socket is closed
 
   } //else
 
@@ -376,7 +369,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
 
     if(status == -1){ //if error occured
       log_warn("Could not remove client with socket_id:%d from room:%d", client_socket_id, room_id);
-      return false; //when returning false, close socket
+      return false; //when returning false, socket is closed
     }
 
     //DB logic
@@ -386,7 +379,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
     char message_to_send[] = "Disconnected";
     if(write(*client_socket_id, message_to_send, strlen(message_to_send)) < 0)
       fatal_error_handler("Errore write");
-    return false; //when returning false, close socket
+    return false; //when returning false, socket is closed
 
   } //else
 
@@ -395,7 +388,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
   if (status < -1) { 
     //Unexpected behaviour
     log_warn("Could not move client with socket_id:%d out of room:%d", client_socket_id, room_id);
-    return false;
+    return false; //when returning false, socket is closed
   }
 
   if (status > 0 && room_id != 0) { //if master changed
@@ -413,7 +406,7 @@ bool exit_room(char* message, int *client_socket_id) { //Exit room
 
   if (status == -2) { //if error occured
     log_warn("Could not remove client with socket_id:%d from room:%d", client_socket_id, room_id);
-    return false;
+    return false; //when returning false, socket is closed
   }
 
   //Send to client information for ui chat

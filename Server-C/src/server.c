@@ -201,7 +201,7 @@ void *socket_handler(void *client_socket_id_void) { // passare a un puntatore e 
     log_info("Message received: %s", buffer);
 
     if (!socketDispatcher(&client_socket_id, buffer)){ //fulfill request
-      //if soscketDispatcher returns false, invalid request: close socket
+      //if soscketDispatcher returns false, invalid request or error occurred close socket
 
       close_socket(client_socket_id, -1);
     }
