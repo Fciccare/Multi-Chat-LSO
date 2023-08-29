@@ -76,14 +76,16 @@ Client* rooms_get_client_by_id(int socket_id){ //HAS MUTEX LOCK INSIDE
     pthread_mutex_lock(&room_mutexes[i]);
     if (rooms[i] != NULL) {
       counter++;
-      if ((c = rooms_get_client_from_room_by_id(i, socket_id)) != NULL)
+      if ((c = rooms_get_client_from_room_by_id(i, socket_id)) != NULL){
+        log_debug("Client %d found in room %d", socket_id, i);
+        pthread_mutex_unlock(&room_mutexes[i]);
         break;
+      }
     }
     pthread_mutex_unlock(&room_mutexes[i]);
   }
   
   log_debug("Unlocking rooms_mutex after searching for client %d", socket_id);
-  pthread_mutex_unlock(&room_mutexes[c->room_id]);
   pthread_mutex_unlock(&rooms_mutex);
   return c;
 }
