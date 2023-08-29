@@ -39,13 +39,11 @@ sudo pacman -S postgresql-libs
 
 **Cose a cui dare priorità (Vale)**
 
- - RegEx per le richieste (ODDDIOO NON LO VOGLIO FARE -Vale)
  - Gestione errore di Broadcast message (? c'è un TODO di questa cosa ma non so bene che si deve fare ?) 
- - Gestione read/write : fatto in parte, si usa la funzione fatal_error_handler
- - Controllare le deallocazioni : Fatto in parte, controllare soprattutto per quando si chiude il server
+ - Controllare le deallocazioni : Fatto in parte, controllare soprattutto per quando si chiude il server [Dipende quanto ci vogliamo impegnare, c'è qualcosa che rimane dalla cancellazione delle room]
 
 **Logica di controllo**
-  - :black_square_button: Controllo e gestione degli errori :construction:WIP:construction:
+  - :white_check_mark: Controllo e gestione degli errori
   - :white_check_mark: Controllo se utente già loggato
 
 **Impementazione della logica dei Client all'interno delle stanze**
