@@ -34,17 +34,6 @@ void user_destroy(User* u){
   u = NULL;
 }
 
-
-//Set
-void user_setName(User* u, const char* name) {
-  strcpy(u->name, name);
-}
-
-void user_setPassword(User* u, const char* password) {
-  strcpy(u->password, password);
-}
-
-
 //Debug
 
 char* user_to_string(User* u) {

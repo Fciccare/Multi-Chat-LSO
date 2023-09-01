@@ -77,25 +77,6 @@ void room_destroy(Room* r) { //Called by room_delete
   // log_debug("Room destroyed");
 }
 
-
-//Set
-void room_setId(Room* r, unsigned int id) {
-  r->id = id;
-}
-
-void room_setName(Room* r, const char* name) {
-  strcpy(r->name,name);
-}
-
-void room_setClients_counter(Room* r, unsigned int clients_counter){
-  r->clients_counter = clients_counter;
-}
-
-void room_setMaster_client(Room* r, Client* master_client) {
-  r->master_client = master_client;
-}
-
-
 //Get
 Client* room_get_client_by_id(Room* r, int client_socket_id){
   int online_client = r->clients_counter;

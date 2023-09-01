@@ -25,12 +25,6 @@ Room* room_create(unsigned int id, const char* name, Client* master_client);
 void room_delete(Room* r);
 void room_destroy(Room* r);
 
-//Set
-void room_setId(Room* r, unsigned int id);
-void room_setName(Room* r, const char* name);
-void room_setClients_counter(Room* r, unsigned int clients_counter);
-void room_setMaster_client(Room* r, Client* master_client);
-
 //Get
 Client* room_get_client_by_id(Room* r, int client_socket_id);
 
