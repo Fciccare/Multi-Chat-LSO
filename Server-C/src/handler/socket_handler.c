@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <regex.h>
 
 #include "rooms_handler.h"
 #include "socket_handler.h"
@@ -18,8 +19,6 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
   message = strdup(message);  // get rid of tag
 
   bool status = true;
-
-  //TODO: Check if messages are correctly formatted (in every funcion called)
 
   if (strncmp(tag, "[MSG]", 5) == 0) { // Message sent in room
     broadcast_message_into_room(&(*message), client_socket_id);
@@ -52,9 +51,15 @@ bool socketDispatcher(int *client_socket_id, char *buffer) {
 //Request Processing
 void broadcast_message_into_room(char *message, int *client_socket_id) {
   // Send message to every client in room
-  //TODO: Check regex input        \[MSG\].*<>\d*
   //TODO: PLS ADD LOGS
-  
+  regex_t regex;
+  regcomp(&regex, "[^<>]+<>[0-9]+", REG_EXTENDED);//[^<>] Tutti i caratteri tranne < >
+  if (!regexec(&regex, message, 0, NULL, 0) == 0) {
+    log_error("Message don't match with regex");
+    regfree(&regex);
+    return;
+  }else regfree(&regex);
+
   char *message_to_send = strtok(message, "<>");
   char *string_room_id = strtok(NULL, "<>");
   
@@ -67,7 +72,6 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
   
   if(room == NULL){ //TODO Unexpected behaviour?
     log_error("Room to send message is NULL, stop broadcasting");
-    //TODO: add client response (send error?), room is null
     return;
   }
   
@@ -107,6 +111,14 @@ void broadcast_message_into_room(char *message, int *client_socket_id) {
 
 
 void login(char *message, int *client_socket_id) {
+  regex_t regex;
+  regcomp(&regex, "[^<>]+<>[^<>]+", REG_EXTENDED);//[^<>] Tutti i caratteri tranne < >
+  if (!regexec(&regex, message, 0, NULL, 0) == 0) {
+    log_error("Message don't match with regex");
+    regfree(&regex);
+    return;
+  }else regfree(&regex);
+
   char *text = strdup(message);
 
   char *username = strtok(text, "<>");
@@ -153,6 +165,13 @@ void login(char *message, int *client_socket_id) {
 }
 
 void register_user(char *message, int *client_socket_id) {
+  regex_t regex;
+  regcomp(&regex, "[^<>]+<>[^<>]+", REG_EXTENDED);//[^<>] Tutti i caratteri tranne < >
+  if (!regexec(&regex, message, 0, NULL, 0) == 0) {
+    log_error("Message don't match with regex");
+    regfree(&regex);
+    return;
+  }else regfree(&regex);
   char *text = strdup(message);
 
   char *username = strtok(text, "<>");
@@ -268,6 +287,13 @@ void get_list(int *client_socket_id) {
 
 
 void request_to_enter_room(char *message, int *client_socket_id) {
+  regex_t regex;
+  regcomp(&regex, "[0-9]+", REG_EXTENDED);//[^<>] Tutti i caratteri tranne < >
+  if (!regexec(&regex, message, 0, NULL, 0) == 0) {
+    log_error("Message don't match with regex");
+    regfree(&regex);
+    return;
+  }else regfree(&regex);
 
   // client_socket_id is client requesting to enter room
   unsigned int room_id = atoi(message);
@@ -293,6 +319,14 @@ void request_to_enter_room(char *message, int *client_socket_id) {
 
 void accept_request(char *message) { // Accept user in a room
   // TODO: Rivedi i casi limiti strani QUALI??
+
+  regex_t regex;
+  regcomp(&regex, "[0-9]+<>[0-9]+", REG_EXTENDED);//[^<>] Tutti i caratteri tranne < >
+  if (!regexec(&regex, message, 0, NULL, 0) == 0) {
+    log_error("Message don't match with regex");
+    regfree(&regex);
+    return;
+  }else regfree(&regex);
 
   char *string_socket_id_client = strtok(message, "<>");
   char *string_room_id = strtok(NULL, "<>");
@@ -330,6 +364,15 @@ void accept_request(char *message) { // Accept user in a room
 
 void not_accept_request(char *message) { // Don't accept a Client in a room
   // Send to Client it has not been accepted
+
+  regex_t regex;
+  regcomp(&regex, "[0-9]+", REG_EXTENDED);//[^<>] Tutti i caratteri tranne < >
+  if (!regexec(&regex, message, 0, NULL, 0) == 0) {
+    log_error("Message don't match with regex");
+    regfree(&regex);
+    return;
+  }else regfree(&regex);
+
   unsigned int client_socket_id = atoi(message);
   char text[] = "Access denied\n";
   log_info("Server is sending(%ld): %s", strlen(text), text); // Debug print
@@ -339,6 +382,14 @@ void not_accept_request(char *message) { // Don't accept a Client in a room
 
 
 bool exit_room(char* message, int *client_socket_id) { //Exit room
+  regex_t regex;
+  regcomp(&regex, "[0-9]+", REG_EXTENDED);//[^<>] Tutti i caratteri tranne < >
+  if (!regexec(&regex, message, 0, NULL, 0) == 0) {
+    log_error("Message don't match with regex");
+    regfree(&regex);
+    return false;
+  }else regfree(&regex);
+
   int room_id = atoi(message);
   int status = 0;
 
