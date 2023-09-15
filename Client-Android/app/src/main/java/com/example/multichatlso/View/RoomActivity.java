@@ -155,67 +155,6 @@ public class RoomActivity extends AppCompatActivity {
         return dialog;
     }
 
-    /*private void fetchMessage(){
-        executor = Executors.newSingleThreadExecutor();
-        //Handler h = new Handler(Looper.getMainLooper());
-        executor.execute(() -> {
-            t = new Thread(() -> {
-                while(true){
-                    String result = "";
-                    result = Server.getInstance().blockingRead();
-                    Log.d(TAG, "Server sended: " + result);
-                    if (result.contains("[MSG]")){
-                        String[] splitted = result.trim().split("<>");
-                        Message m = new Message(splitted[0].replace("[MSG]", ""), Integer.parseInt(splitted[1]), splitted[2]);
-                        messages.add(m);
-                        runOnUiThread(() -> {
-                            adapter.notifyDataSetChanged();
-                            recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
-                        });
-                    } else if(result.contains("[RQT]")){
-                        //[RQT]client_socket_id<>username<>room_id
-                        result = result.replace("[RQT]", "");
-                        String[] splitted = result.trim().split("<>");//0:Client_to_enter_Socket_id, 1:Username, 2:Room_id
-                        runOnUiThread(() -> {
-                            Sweetalert dialog = new Sweetalert(this, Sweetalert.WARNING_TYPE)
-                                    .setTitleText("Richiesta di entrata")
-                                    .setContentText("Vuoi fare entrare " + splitted[1]+" nella stanza?")
-                                    .setCancelButton("No", sweetAlertDialog -> {
-                                        Log.d(TAG, "Server sending: " + "[NAC]"+splitted[0]);
-                                        Server.getInstance().write("[NAC]"+splitted[0]);
-                                        sweetAlertDialog.dismissWithAnimation();
-                                    })
-                                    .setNeutralButton("Sì", sweetAlertDialog -> {
-                                        Log.d(TAG, "Server sending: " + "[ACC]"+splitted[0]);
-                                        Server.getInstance().write("[ACC]"+splitted[0]+"<>"+splitted[2]);
-                                        sweetAlertDialog.dismissWithAnimation();
-                                    }).setNeutralButtonBackgroundColor("green");
-                            dialog.setCancelable(false);
-                            dialog.show();
-                            new CountDownTimer(10000, 10000){
-
-                                @Override
-                                public void onTick(long l) {
-
-                                }
-
-                                @Override
-                                public void onFinish() {
-                                    Log.d(TAG, "Finish 10 sec");
-                                    dialog.dismissWithAnimation();
-                                }
-                            }.start();
-                        });
-
-                    }
-                }
-            });
-            t.start();
-        });
-    }*/
-
-
-
     @Override
     public void onBackPressed() {
         Log.d(TAG, "Tasto Back premuto");
@@ -243,11 +182,11 @@ public class RoomActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
+  /*  @Override
     public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.room_menu, menu);
         return true;
-    }
+    }*/
 
     public static int getRoomId() {
         return room.getId();

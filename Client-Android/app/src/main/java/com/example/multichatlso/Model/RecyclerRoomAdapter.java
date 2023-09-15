@@ -46,11 +46,13 @@ public class RecyclerRoomAdapter extends RecyclerView.Adapter<RecyclerRoomAdapte
         public ViewHolder(final View view) {
             super(view);
             roomName = view.findViewById(R.id.txtRoomCardName);
+            roomName.setSelected(true);//enable text marquee
             roomCounter = view.findViewById(R.id.txtRoomCardCounter);
         }
 
         public void setDetail(Room room) {
             roomName.setText(room.getName());
+            roomName.setSelected(true);//enable text marquee
             roomCounter.setText(String.format("%d/%d", room.getClients_counter(), room.getMax_client()));
         }
     }

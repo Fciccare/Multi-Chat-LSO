@@ -226,8 +226,8 @@ void create_room(char *message, int *client_socket_id) {
   if (rooms_add_room(room)) {
     // log_debug("Room %d added", room->id);
 
-    char text[35];
-    sprintf(text, "Room create successful<>%d\n", room->id);
+    char text[40];
+    sprintf(text, "Room create successful<>%d<>%d\n", room->id, MAX_CLIENTS);
     // log_debug("Server is sending(%ld): %s", strlen(text), text) // Debug print
     if(write(*client_socket_id, text, strlen(text)) < 0)
       fatal_error_handler("Errore write");

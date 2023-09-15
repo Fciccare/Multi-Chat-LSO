@@ -3,6 +3,7 @@ package com.example.multichatlso.Model;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.MutableLiveData;
@@ -15,6 +16,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+
+import es.dmoral.toasty.Toasty;
 
 public class Server {
 
@@ -51,7 +54,7 @@ public class Server {
            while(true){
                 try {
                     socket = new Socket();
-                    socket.connect(new InetSocketAddress("multichat.ddns.net", 9294), 15000); //Timeout 15 sec for to avoid stuck
+                    socket.connect(new InetSocketAddress("192.168.42.221", 9294), 15000); //Timeout 15 sec for to avoid stuck
                     Log.d(TAG, "Socket connected");
                     break;
                 } catch (IOException e) {

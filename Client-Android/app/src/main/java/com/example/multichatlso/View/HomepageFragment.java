@@ -179,32 +179,6 @@ public class HomepageFragment extends Fragment {
         });
     }
 
-    /*private void listRoom(){
-        String message = "[LST]";
-        Log.d(TAG, "Write to Server: " + message);
-        Server.getInstance().write(message);
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        //executor.execute(() -> {
-            new Thread(() -> {
-                String result = "";
-                do {
-                    String temp = Server.getInstance().blockingRead() + "\n";//TODO: ERROR HANDLING
-                    Log.d(TAG, "Il server ha risposto con: " + temp);
-                    result += temp;
-                }while (!result.contains("[/LST]"));
-
-                Log.d(TAG, "Lista di stanza: " + result);
-                List<Room> roomArrayList = castListToRoom(result);
-                rooms.clear();
-                rooms.addAll(roomArrayList);
-                Log.d(TAG, "Lista Room: " + rooms);
-                getActivity().runOnUiThread(() -> {
-                    adapter.notifyDataSetChanged();
-                });
-            }).start();
-        //});
-    }*/
-
     private List<Room> castListToRoom(String list){
         String[] lines = list.split("\n");
 
@@ -219,6 +193,8 @@ public class HomepageFragment extends Fragment {
                 String[] splitted = s.split("<>");
                 int id = Integer.parseInt(splitted[0].trim());
                 int online_client = Integer.parseInt(splitted[2]);
+                if (max_client==0)
+                    max_client=32;
                 rooms.add(new Room(id, splitted[1], online_client, max_client));
             }
         }

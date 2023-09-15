@@ -87,12 +87,14 @@ public class InsertRoomFragment extends Fragment {
             Log.d(TAG, "Server responde: " + response);
             if(!response.toLowerCase().contains("successful")){
                 Toasty.error(requireContext(), "Errore creazione stanza").show();
+                return;
             }
 
             String[] splitted = response.trim().split("<>");
             int id = Integer.parseInt(splitted[1]);
+            int max_client = Integer.parseInt(splitted[2]);
 
-            Room room = new Room(id, roomName, 1, 32); //TODO:Fix hardcoded MAX_CLIENT
+            Room room = new Room(id, roomName, 1, max_client);
 
             Log.d(TAG, "Room creata, passaggio schermata");
 

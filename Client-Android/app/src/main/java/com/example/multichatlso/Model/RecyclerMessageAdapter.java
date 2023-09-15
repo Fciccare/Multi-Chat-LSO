@@ -62,7 +62,7 @@ public class RecyclerMessageAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     }
 
     @Override
-    public int getItemViewType(int position) {//TODO: Add logic
+    public int getItemViewType(int position) {
         if (messages.get(position).getUser_id() == user_id){
             return OUTCOMING_MESSAGE;
         }else if ((messages.get(position).getUser_id()==0)){

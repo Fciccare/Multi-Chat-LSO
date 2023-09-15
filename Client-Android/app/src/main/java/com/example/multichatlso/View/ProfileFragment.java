@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.example.multichatlso.Model.Server;
 import com.example.multichatlso.R;
@@ -27,9 +28,9 @@ public class ProfileFragment extends Fragment {
 
     private static ProfileFragment profileFragment = null;
     private static final String TAG = "ProfileFragment";
+    public static String username;
 
-    private EditText txtSocket;
-    private Button button;
+    private TextView txtUsername;
 
     private ExtendedFloatingActionButton logoutButton;
 
@@ -57,28 +58,16 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        txtSocket = view.findViewById(R.id.editTextSocket);
         logoutButton = view.findViewById(R.id.buttonLogOut);
-        button = view.findViewById(R.id.buttonSocket);
+        txtUsername = view.findViewById(R.id.profileText);
+
+        txtUsername.setText(username);
 
         logoutButton.setOnClickListener(view12 -> {
             Log.d(TAG, "Socket close");
             Server.getInstance().stopServer();
             requireActivity().finish();
         });
-
-        button.setOnClickListener(view1 -> {
-            Server.getInstance().write(txtSocket.getText().toString());
-            Log.d(TAG, "Scrivo allo socket: " + txtSocket.getText().toString());
-
-            String result = "";
-            result = Server.getInstance().blockingRead();
-
-            if(result.contains("Error"))
-                Toasty.error(requireContext(), result).show();
-            else
-                Toasty.info(requireContext(), result).show();
-            txtSocket.setText("");
-        });
     }
+
 }

@@ -53,34 +53,6 @@ public class LoginActivity extends AppCompatActivity {
         Server.getInstance();
     }
 
-    /*public void login(){
-        if(username.getText().toString().isEmpty() || passwordText.getText().toString().isEmpty()){
-            Toasty.error(getApplicationContext(), "Riempi i campi", Toast.LENGTH_SHORT, true).show();
-            return;
-        }
-
-        String name = username.getText().toString();
-        String password = passwordText.getText().toString();
-        String message = "[LGN]" + name + "<>" + password;
-        Log.d(TAG, message);
-        Server.getInstance().write(message);
-        String receivingString = Server.getInstance().blockingRead();
-        if(receivingString == null || receivingString.isEmpty()){
-            Log.e(TAG, "Socket read null");
-            Toasty.error(getApplicationContext(), "Errore, riprova").show();
-            return;
-        }
-        Log.d(TAG, receivingString);
-        String user_id = receivingString.trim().split("<>")[1];
-        RecyclerMessageAdapter.user_id=Integer.parseInt(user_id);
-        if(receivingString != null && receivingString.contains("Login successful"))
-            startActivity(new Intent(this, BottomNavigationActivity.class));
-        else{
-            Log.d(TAG, "Server responde with: " + receivingString);
-            Toasty.error(getApplicationContext(), "Login errato", Toast.LENGTH_SHORT, true).show();
-        }
-    }*/
-
     public void login(){
         if(username.getText().toString().isEmpty() || passwordText.getText().toString().isEmpty()){
             Toasty.error(getApplicationContext(), "Riempi i campi", Toast.LENGTH_SHORT, true).show();
@@ -97,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
         Server.getInstance().write(message);
         Server.getInstance().read();
 
-        Server.getInstance().getListen().singleObserve(this, receivingString -> {//TODO: SPLIT FUNCTION
+        Server.getInstance().getListen().singleObserve(this, receivingString -> {
             Log.d(TAG, "Observer started");
             if(receivingString == null || receivingString.isEmpty()){
                 Log.e(TAG, "Socket read null");
@@ -108,6 +80,7 @@ public class LoginActivity extends AppCompatActivity {
             if(receivingString.contains("Login successful")){
                 String user_id = receivingString.trim().split("<>")[1];
                 RecyclerMessageAdapter.user_id=Integer.parseInt(user_id);
+                ProfileFragment.username = name;
                 startActivity(new Intent(this, BottomNavigationActivity.class));
                 //finish();
             } else{
