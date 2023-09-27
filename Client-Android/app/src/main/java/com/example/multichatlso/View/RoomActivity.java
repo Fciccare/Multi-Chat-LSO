@@ -175,10 +175,11 @@ public class RoomActivity extends AppCompatActivity {
         if (item.getItemId() == android.R.id.home) {
             onBackPressed(); // Chiama il metodo di default per tornare indietro
             return true;
-        }else if(item.getItemId() == R.id.listButton){
-            Toasty.normal(this, "Lista persone").show();
-            return true;
         }
+        //}else if(item.getItemId() == R.id.listButton){
+        //    Toasty.normal(this, "Lista persone").show();
+        //    return true;
+        //}
         return super.onOptionsItemSelected(item);
     }
 

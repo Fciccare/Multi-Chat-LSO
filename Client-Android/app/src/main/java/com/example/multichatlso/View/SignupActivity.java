@@ -1,16 +1,19 @@
 package com.example.multichatlso.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.multichatlso.R;
 import com.example.multichatlso.Model.Server;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import java.util.zip.CRC32;
@@ -22,6 +25,7 @@ public class SignupActivity extends AppCompatActivity {
     private static final String TAG = "SignupActivity";
 
     private EditText password, confirmPassword, username;
+    private MaterialToolbar toolbar;
     ExtendedFloatingActionButton signup;
 
     @Override
@@ -33,6 +37,12 @@ public class SignupActivity extends AppCompatActivity {
         password = findViewById(R.id.editTextTextPassword1);
         confirmPassword = findViewById(R.id.editTextTextPassword2);
         signup = findViewById(R.id.buttonRegister);
+        toolbar = findViewById(R.id.MaterialToolbar2);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setTitle("Registrazione");
 
         signup.setOnClickListener(view -> {
             signUp();
@@ -78,5 +88,18 @@ public class SignupActivity extends AppCompatActivity {
             }
             Server.getInstance().getListen().removeObservers(this);
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed(); // Chiama il metodo di default per tornare indietro
+            return true;
+        }
+        //}else if(item.getItemId() == R.id.listButton){
+        //    Toasty.normal(this, "Lista persone").show();
+        //    return true;
+        //}
+        return super.onOptionsItemSelected(item);
     }
 }
