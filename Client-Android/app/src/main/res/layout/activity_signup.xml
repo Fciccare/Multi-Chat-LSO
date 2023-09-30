@@ -31,7 +31,7 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/discord_icon_svgrepo_com" />
+        app:srcCompat="@drawable/logo" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout"
